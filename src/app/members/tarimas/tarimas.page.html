@@ -1,0 +1,87 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-title>Armado de Tarimas</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content padding>
+  <form class="list-form">
+    <ion-item>
+      <ion-label position="floating" color="primary">
+        <ion-icon name="cart" slot="start" color="primary"> </ion-icon> Codigo de Producto
+      </ion-label>
+      <ion-input [(ngModel)]="code" name="code"></ion-input>
+    </ion-item>
+
+    <ion-item>
+      <ion-label position="floating" color="primary">
+        <ion-icon slot="start" name="barcode" color="primary"> </ion-icon> Sku/Upc
+      </ion-label>
+      <ion-input [(ngModel)]="codeBar" name="codeBar"></ion-input>
+    </ion-item>
+
+    <ion-item>
+      <ion-label position="floating" color="primary">
+        <ion-icon slot="start" name="archive" color="primary"></ion-icon> Lote
+      </ion-label>
+      <ion-input [(ngModel)]="lote" name="lote"></ion-input>
+    </ion-item>
+  </form>
+
+  <ion-button color="primary" expand="block" shape="round" (click)="searchProduct()">
+    <ion-icon name="search"></ion-icon> BUSCAR
+  </ion-button>
+
+  <ion-row *ngIf="product">
+    <ion-col>
+      <ion-list inset="true">
+        <ion-item color="light">
+          <ion-label>
+            <ion-text color="dark">
+              <h3>Codigo Producto: {{product.codigoProtevs}}</h3>
+            </ion-text>
+          </ion-label>
+        </ion-item>
+        <ion-item color="primary">
+          <ion-label>
+            <ion-text color="light">
+              <h3>Nombre Producto: </h3>
+            </ion-text>
+            <p>{{product.name}}</p>
+          </ion-label>
+        </ion-item>
+      </ion-list>
+      <ion-item>
+        <ion-label color="primary" position="floating">Cantidad
+        </ion-label>
+        <ion-input type="number" [(ngModel)]="cantidad"></ion-input>
+      </ion-item>
+    </ion-col>
+  </ion-row>
+  <ion-row *ngIf="product">
+    <ion-col>
+      <ion-button *ngIf="product" shape="round" expand="block" color="danger" routerLink="/members/home">
+        Cancelar
+      </ion-button>
+    </ion-col>
+    <ion-col>
+      <ion-button *ngIf="product" shape="round" expand="block" (click)="armarTarima()">
+        Armar Tarima
+      </ion-button>
+    </ion-col>
+  </ion-row>
+</ion-content>
+<ion-footer>
+  <ion-toolbar color="dark">
+    <ion-buttons slot="start" routerLink="/members/profile">
+      <ion-button>
+        <ion-icon slot="icon-only" name="home"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-buttons slot="end">
+      <ion-button>
+        <ion-icon slot="icon-only" name="chatbubbles"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-footer>

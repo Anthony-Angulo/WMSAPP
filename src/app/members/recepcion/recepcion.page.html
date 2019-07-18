@@ -8,97 +8,88 @@
   <ion-row class="vertical-align-content">
     <ion-col>
       <ion-item>
-        <ion-input type="number" placeholder="Numero Orden" [(ngModel)]="number"></ion-input>
+        <ion-label color="primary">Orden de Compra #</ion-label>
+        <ion-input autofocus="true" type="number" [(ngModel)]="number"></ion-input>
+        <ion-button shape="round" expand="full" color="light" (click)="getOrden()">
+          <ion-icon slot="icon-only" name="search"></ion-icon>
+        </ion-button>
       </ion-item>
     </ion-col>
-    <ion-col>
-      <ion-button shape="round" expand="full" color="light" (click)="getOrden()">
-        <ion-icon slot="icon-only" name="search"></ion-icon>
-      </ion-button>
-    </ion-col>
   </ion-row>
-  <div *ngIf="proveedorData" style="text-align: center">
-    <h6>Datos de Proveedor</h6>
+  <div *ngIf="proveedorData">
+    <div *ngIf="proveedorData" style="text-align: center">
+      <h6>Datos de Proveedor</h6>
+    </div>
+    <ion-row *ngIf="proveedorData">
+      <ion-col>
+        <ion-item>
+          <ion-card>
+            <ion-card-header>
+              <ion-card-subtitle>
+                Codigo: {{proveedorData.cod}}
+              </ion-card-subtitle>
+            </ion-card-header>
+            <ion-card-content>
+              Nombre: {{proveedorData.nombre_proveedor}} <p>
+                Fantasia: {{proveedorData.fantasia}}
+            </ion-card-content>
+          </ion-card>
+        </ion-item>
+      </ion-col>
+    </ion-row>
+    <ion-row>
+      <ion-col>
+        <ion-button shape="block" expand="full" (click)="goToProduct(null)">
+          <ion-icon slot="icon-only" name="barcode"> </ion-icon>Productos
+        </ion-button>
+      </ion-col>
+    </ion-row>
+    <ion-row style="background: #C8D6D7">
+      <ion-col size="3">
+        SKU
+      </ion-col>
+      <ion-col size="5">
+        Description
+      </ion-col>
+      <ion-col size="2.5">
+        Cantidad
+      </ion-col>
+      <ion-col size="1.5">
+        UOM
+      </ion-col>
+    </ion-row>
+
+    <div style="text-align: center" *ngIf="productsList == ''">
+      <h6>Ingresa Un Codigo De Orden De Compra</h6>
+    </div>
+
+    <ion-row *ngFor="let products of productsList">
+      <ion-col size="3" (click)="goToProduct(products.codbarSB)">
+        {{products.codigo_prothevs}}
+      </ion-col>
+      <ion-col size="5">
+        {{products.descripcion}}
+      </ion-col>
+      <ion-col size="2.5">
+        {{products.count}}
+      </ion-col>
+      <ion-col size="1.5">
+        {{products.unidad_medida}}
+      </ion-col>
+    </ion-row>
   </div>
-  <ion-row *ngIf="proveedorData">
-    <ion-col>
-      <ion-item>
-        <ion-card>
-          <ion-card-header>
-            <ion-card-subtitle>
-              Codigo: {{proveedorData.cod}}
-            </ion-card-subtitle>
-          </ion-card-header>
-          <ion-card-content>
-            Nombre: {{proveedorData.nombre}} <p>
-              Fantasia: {{proveedorData.fantasia}}
-          </ion-card-content>
-        </ion-card>
-      </ion-item>
-    </ion-col>
-  </ion-row>
   <ion-row>
     <ion-col>
-      <ion-button shape="block" expand="full">
-        <ion-icon slot="icon-only" name="barcode"> </ion-icon>Productos
+      <ion-button shape="round" color="danger" routerLink="/members/home" expand="block">
+        Cancelar
+      </ion-button>
+    </ion-col>
+    <ion-col>
+      <ion-button *ngIf="proveedorData" shape="round" expand="block" (click)="recibirProductos()">
+        Recibir
       </ion-button>
     </ion-col>
   </ion-row>
-  <!-- <ion-row>
-    <ion-button shape="block" expand="full" color="light">
-      <ion-icon slot="icon-only" name="barcode"></ion-icon>
-    </ion-button>
-    <ion-input (ionChange)="scannProduct($event);" clearOnEdit debounce="500"
-      placeholder="Escribe o Escanea un producto" clearInput></ion-input>
-  </ion-row> -->
-  <ion-row style="background: #C8D6D7">
-    <ion-col size="2.5">
-      SKU
-    </ion-col>
-    <ion-col size="2.75">
-      Description
-    </ion-col> 
-    <ion-col size="2.5">
-      Cantidad
-    </ion-col>
-    <ion-col size="1.5">
-      UOM
-    </ion-col>
-    <ion-col size="2.75">
-      Fecha
-    </ion-col>
-  </ion-row>
-
-  <div style="text-align: center" *ngIf="productsList == ''">
-    <h6>Ingresa Un Codigo De Orden De Compra</h6>
-  </div>
-
-  <ion-row *ngFor="let products of productsList">
-    <ion-col size="2.5">
-      {{products.produto}}
-    </ion-col>
-    <ion-col size="2.75">
-      {{products.descri}}
-    </ion-col>
-    <ion-col size="2.5">
-      {{products.count}} / {{products.qtsegum}}
-    </ion-col>
-    <ion-col size="1">
-      {{products.um}}
-    </ion-col>
-    <ion-col size="2.75">
-      {{products.fechaDeEntrega}}
-    </ion-col>
-  </ion-row>
-
-  <div>
-    <ion-button shape="round" color="danger" routerLink="/members/home" expand="block">
-      Cancelar
-    </ion-button>
-    <ion-button shape="round" expand="block">
-      Recibir
-    </ion-button>
-  </div>
 </ion-content>
 <ion-footer>
   <ion-toolbar color="dark">

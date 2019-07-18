@@ -1,0 +1,138 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-back-button routerLink="/members/recepcion"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Recepcion de Mercancia</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content padding>
+  <ion-row>
+    <ion-col>
+      <ion-item>
+        <ion-label color="primary">Orden de Compra</ion-label>
+        {{data.orderData.orden_compra}}
+      </ion-item>
+    </ion-col>
+  </ion-row>
+  <ion-row>
+    <ion-col>
+      <ion-item>
+        <ion-button shape="block" expand="full" color="light">
+          <ion-icon slot="icon-only" name="barcode"> </ion-icon>
+        </ion-button>
+        <ion-label color="primary">SKU/UPC</ion-label>
+        <ion-input [(ngModel)]="productCode" (ionChange)="scannProduct($event)" debounce="900"
+          placeholder="Escribe o Escanea un producto"></ion-input>
+      </ion-item>
+    </ion-col>
+  </ion-row>
+  <ion-row *ngIf="band">
+    <ion-col>
+      <ion-item>
+        <ion-button shape="block" expand="full" color="light">
+          <ion-icon slot="icon-only" name="cart"> </ion-icon>
+        </ion-button>
+        <ion-label color="primary">CANTIDAD</ion-label>
+        <ion-input [(ngModel)]="cantidad" type="number" placeholder="Ingresa la cantidad recibida"></ion-input>
+      </ion-item>
+    </ion-col>
+  </ion-row>
+  <ion-row style="background: #C8D6D7">
+    <ion-col size="3">
+      SKU
+    </ion-col>
+    <ion-col size="6">
+      Description
+    </ion-col>
+    <ion-col size="1.5">
+      UOM
+    </ion-col>
+  </ion-row>
+  <ion-row *ngIf="scannedProduct">
+    <ion-col size="3">
+      {{scannedProduct.codbarSB}}
+    </ion-col>
+    <ion-col size="6">
+      {{scannedProduct.descripcion}}
+    </ion-col>
+    <ion-col size="1.5">
+      {{scannedProduct.unidad_medida}}
+    </ion-col>
+  </ion-row>
+  <ion-row *ngIf="!band">
+    <ion-col>
+      <ion-item>
+        <ion-label position="floating" color="primary">Codigo</ion-label>
+        <ion-input [(ngModel)]="codigoCarne" name="codigoCarne"></ion-input>
+      </ion-item>
+    </ion-col>
+  </ion-row>
+  <ion-row *ngIf="!band">
+    <ion-col>
+      <ion-item>
+        <ion-label position="floating" color="primary">KG</ion-label>
+        <ion-input [(ngModel)]="KGcarne" type="number" name="KGcarne"></ion-input>
+      </ion-item>
+    </ion-col>
+  </ion-row>
+  <ion-row *ngIf="!band">
+    <ion-col>
+      <ion-button expand="block" shape="round" (click)="registrarCarnes()">Registrar</ion-button>
+    </ion-col>
+  </ion-row>
+  <div *ngIf="beefScanned != ''">
+    <ion-row>
+      <ion-col style="text-align: center">
+        <h3>Scanned Products</h3>
+      </ion-col>
+    </ion-row>
+    <ion-row style="background: #C8D6D7">
+      <ion-col size="7">
+        SKU
+      </ion-col>
+      <ion-col size="2">
+        KG
+      </ion-col>
+    </ion-row>
+    <ion-row *ngFor="let carne of beefScanned">
+      <ion-col size="7">
+        {{carne.codigobarras}}
+      </ion-col>
+      <ion-col size="2">
+        {{carne.cantidad}}
+      </ion-col>
+    </ion-row>
+  </div>
+  <div *ngIf="!band">
+    <h2 style="text-align: right;margin-right: 5%">Total: {{total}} KG</h2>
+  </div>
+  <ion-row>
+    <ion-col>
+      <ion-button shape="round" color="danger" routerLink="/members/recepcion" expand="block">
+        Cancelar
+      </ion-button>
+    </ion-col>
+    <ion-col>
+      <ion-button shape="round" expand="block" (click)="receptionProducts()">
+        Aceptar
+      </ion-button>
+    </ion-col>
+  </ion-row>
+</ion-content>
+
+<ion-footer>
+  <ion-toolbar color="dark">
+    <ion-buttons slot="start" routerLink="/members/profile">
+      <ion-button>
+        <ion-icon slot="icon-only" name="home"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-buttons slot="end">
+      <ion-button>
+        <ion-icon slot="icon-only" name="chatbubbles"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-footer>

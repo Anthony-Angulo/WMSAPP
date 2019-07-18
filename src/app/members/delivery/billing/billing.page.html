@@ -1,0 +1,87 @@
+<ion-content>
+  <div *ngIf="clientData" style="text-align: center">
+    <h6>Datos de cliente</h6>
+  </div>
+  <ion-row *ngIf="clientData">
+    <ion-col>
+      <ion-item>
+        <ion-card>
+          <ion-card-header>
+            <ion-card-subtitle>
+              Codigo: {{clientData.A1_COD}}
+            </ion-card-subtitle>
+          </ion-card-header>
+          <ion-card-content>
+            Nombre: {{clientData.A1_NREDUZ}}
+            Direccion: {{clientData.A1_END}} {{clientData.A1_NUMEXT}} {{clientData.A1_BAIRRO}}
+          </ion-card-content>
+        </ion-card>
+      </ion-item>
+    </ion-col>
+  </ion-row>
+  <ion-row style="background: #C8D6D7">
+    <ion-col size="1.5">
+      Documento
+    </ion-col>
+    <ion-col size="1.5">
+      2da Unidad
+    </ion-col>
+    <ion-col size="1.5">
+      1ra Unidad
+    </ion-col>
+    <ion-col size="1.5">
+      COD
+    </ion-col>
+    <ion-col size="1.5">
+      Description
+    </ion-col>
+    <ion-col size="1.5">
+      Precio 1ra
+    </ion-col>
+    <ion-col size="1.5">
+      Precio 2da
+    </ion-col>
+    <ion-col size="1.5">
+      Importe
+    </ion-col>
+
+  </ion-row>
+
+  <div style="text-align: center" *ngIf="productsList == []">
+    <h6>Seleccione Un cliente</h6>
+  </div>
+
+  <ion-row *ngFor="let product of productsList">
+    <ion-col size="1.5">
+      {{product.D2_DOC}}
+    </ion-col>
+    <ion-col size="1.5">
+      {{product.D2_QTSEGUM}} {{product.D2_SEGUM}}
+    </ion-col>
+    <ion-col size="1.5">
+      {{product.D2_QUANT}} {{product.D2_UM}}
+    </ion-col>
+    <ion-col size="1.5">
+      {{product.D2_COD}}
+    </ion-col>
+    <ion-col size="1.5">
+      {{product.D2_DESCRI}}
+    </ion-col>
+    <ion-col size="1.5">
+      {{product.D2_PRCVEN}}
+    </ion-col>
+    <ion-col size="1.5">
+      {{product.D2_PRECO2}}
+    </ion-col>
+
+    <ion-col *ngIf="product.F2_MOEDA==1" size="1.5">
+      {{product.D2_TOTAL}} MN
+    </ion-col>
+
+    <ion-col *ngIf="product.F2_MOEDA!=1" size="1.5">
+      {{product.D2_TOTAL}} DLLS
+    </ion-col>
+
+  </ion-row>
+
+</ion-content>

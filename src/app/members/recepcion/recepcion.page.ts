@@ -1,7 +1,10 @@
-import { Component, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { Component, OnInit } from '@angular/core';
 import { BarcodeScanner } from '@ionic-native/barcode-scanner/ngx';
-import { ToastController } from '@ionic/angular';
+import { NavExtrasService } from 'src/app/services/nav-extras.service';
+import { environment } from 'src/environments/environment';
+import { Router } from '@angular/router';
+import { forEach } from '@angular/router/src/utils/collection';
 
 @Component({
   selector: 'app-recepcion',
@@ -10,50 +13,119 @@ import { ToastController } from '@ionic/angular';
 })
 export class RecepcionPage implements OnInit {
 
-  url = 'http://192.168.101.123'
   number: number;
   productsList: any = [];
   proveedorData: any;
-  codigoBarra: string = '';
+  orderData: any;
+  scannedProductsList: any = [];
+  scannedBeefList: any = [];
+  total_orden: number = 0;
 
-  constructor(private http: HttpClient,
+
+  constructor(
+    private http: HttpClient,
     private barcodeScanner: BarcodeScanner,
-    private toastController: ToastController) { }
+    private navExtras: NavExtrasService,
+    private router: Router) { }
 
   ngOnInit() {
+
   }
 
-  public getOrden() {
-    this.http.get(this.url + '/api/ordenDeCompras/' + this.number + '/' + 1)
-      .subscribe((data: any) => {
-        this.productsList = data.orders;
-        this.productsList.forEach(element => {
-          element.count = 0;
-        });
-        this.proveedorData = data.proveedor;
-        console.log(data);
-      });
+  ngOnDestroy() {
+    this.navExtras.setExtras(null)
+    this.navExtras.setScannedProducts(null)
   }
 
-  public scannProduct(val: any) {
-    let valor = val.target.value;
-    if (valor != '') {
-      let product_index = this.productsList.findIndex(product => product.produto == valor)
-      if (product_index >= 0) {
-        this.productsList[product_index].count += 1
+  ionViewWillEnter() {
+
+    let scannedBeef = this.navExtras.getScannedBeef();
+    let scannedProduct = this.navExtras.getScannedProducts();
+    let dataTot = this.navExtras.getScannedCodeAndTotal();
+
+    if (scannedBeef != null) {
+      let index = this.productsList.findIndex(product => product.codigo_prothevs == dataTot.codigo_prot)
+      if (index < 0) {
+        console.log("error: no se encuantra el codigo")
       } else {
-        this.presentToast();
+        this.productsList[index].count = dataTot.total;
+        this.scannedProductsList.push(scannedBeef);
       }
-      this.codigoBarra = '';
+
+      console.log(this.scannedProductsList);
+
+      this.navExtras.setScannedBeef(null);
+      this.navExtras.setScannedCodeAndTotal(null);
+
+    } else {
+      if (scannedProduct != null) {
+
+        let index = this.productsList.findIndex(product => product.codigo_prothevs == scannedProduct.codigo)
+
+        if (index < 0) {
+          console.log("error: no se encuantra el codigo")
+        } else {
+          this.productsList[index].count = scannedProduct.cantidad
+          this.scannedProductsList.push(this.productsList[index]);
+        }
+
+        this.navExtras.setScannedProducts(null);
+      }
     }
   }
 
-  async presentToast() {
-    const toast = await this.toastController.create({
-      message: 'El codigo no coincide con ningun producto.',
-      duration: 2000
-    });
-    toast.present();
+  public getOrden() {
+
+    this.http.get(environment.apiProtevs + '/api/ordenDeCompras/' + this.number + '/' + 1)
+      .subscribe((data: any) => {
+
+        this.productsList = data.detalle;
+        this.proveedorData = data.proveedor;
+        this.orderData = data.encabezado;
+
+        let codes = [];
+
+        this.productsList.forEach((element) => {
+          codes.push(element.codigo_prothevs);
+        });
+
+        this.http.get(environment.apiWMS + '/getLoteNeed/' + codes).subscribe((data: any[]) => {
+          this.productsList.forEach((element) => {
+            let valor = data.find(product => { return product.codigoProtevs == element.codigo_prothevs })
+            element.needLote = Number(valor.maneja_lote);
+          })
+        });
+      });
   }
 
+  setDatos() {
+    const myData = {
+      products: this.productsList,
+      orderData: this.orderData,
+    }
+    this.navExtras.setExtras(myData);
+    console.log(myData);
+  }
+
+  goToProduct(id) {
+    this.navExtras.setScannedProducts(id);
+    this.setDatos()
+    this.router.navigate(['/members/scannproducts']);
+  }
+
+
+  recibirProductos() {
+
+    const recepcionData = {
+      'order_encabezado': this.orderData.orden_compra,
+      'scanned_products': this.scannedProductsList
+    };
+
+    console.log(recepcionData);
+
+    this.http.post(environment.apiWMS + '/TempRecepcion', recepcionData).subscribe((data: any) => {
+      console.log(data);
+    });
+
+  }
 }
