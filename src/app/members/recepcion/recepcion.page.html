@@ -37,13 +37,6 @@
         </ion-item>
       </ion-col>
     </ion-row>
-    <ion-row>
-      <ion-col>
-        <ion-button shape="block" expand="full" (click)="goToProduct(null)">
-          <ion-icon slot="icon-only" name="barcode"> </ion-icon>Productos
-        </ion-button>
-      </ion-col>
-    </ion-row>
     <ion-row style="background: #C8D6D7">
       <ion-col size="3">
         SKU
@@ -63,8 +56,8 @@
       <h6>Ingresa Un Codigo De Orden De Compra</h6>
     </div>
 
-    <ion-row *ngFor="let products of productsList">
-      <ion-col size="3" (click)="goToProduct(products.codbarSB)">
+    <ion-row *ngFor="let products of productsList; let index = index">
+      <ion-col size="3" (click)="goToProduct(index)">
         {{products.codigo_prothevs}}
       </ion-col>
       <ion-col size="5">

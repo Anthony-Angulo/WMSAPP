@@ -1,6 +1,11 @@
 import { Component, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { ToastController } from '@ionic/angular';
+import { Router } from '@angular/router';
 import { environment } from 'src/environments/environment';
+import { Storage } from '@ionic/storage';
+
+const SUCURSAL_KEY = '0';
 
 @Component({
   selector: 'app-tarimas',
@@ -15,7 +20,11 @@ export class TarimasPage implements OnInit {
   code: any;
   lote: any;
 
-  constructor(private http: HttpClient) { }
+  constructor(
+    private http: HttpClient,
+    private toastController: ToastController,
+    private router: Router,
+    private storage: Storage) { }
 
   ngOnInit() {
   }
@@ -23,24 +32,41 @@ export class TarimasPage implements OnInit {
 
   searchProduct() {
 
-    this.http.get(environment.apiWMS + '/public/api/codeBarFromInventory/' + this.codeBar)
-      .subscribe((data: any) => {
-        this.product = data.product[0];
-        console.log(this.product);
-        this.code = this.product.codigoProtevs;
-        this.lote = this.product.maneja_lote;
-      });
+    this.storage.get(SUCURSAL_KEY).then(val => {
+      this.http.get(environment.apiWMS + '/codeBarFromInventory/' + this.codeBar + '/' + val)
+        .subscribe((data: any) => {
+          this.product = data.product[0];
+          console.log(this.product);
+          this.code = this.product.codigoProtevs;
+          this.lote = this.product.maneja_lote;
+        });
+    })
+
   }
+
   armarTarima() {
+
     let body = {
       'producto': this.product,
       'cantidad': this.cantidad
     }
-    console.log(body);
-    this.http.post(environment.apiWMS + '/public/api/saveTarima', body).subscribe(val => {
-      console.log(val);
+
+    this.http.post(environment.apiWMS + '/saveTarima', body).subscribe(val => {
+      this.presentToast('Se Creo Tarima Satisfactoriamente');
+      this.router.navigate(['/members/home']);
     }, error => {
       console.log(error);
     });
+
+  }
+
+  async presentToast(msg: string) {
+    const toast = await this.toastController.create({
+      message: msg,
+      position: "middle",
+      color: "success",
+      duration: 2000
+    });
+    toast.present();
   }
 }

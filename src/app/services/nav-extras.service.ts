@@ -5,7 +5,7 @@ import { Injectable } from '@angular/core';
 })
 export class NavExtrasService {
 
-  extras: any;
+  orderData: any;
   products: any;
   scannedProducts: any;
   scannedBeef: any;
@@ -13,15 +13,15 @@ export class NavExtrasService {
 
   constructor() { }
 
-  public setExtras(data: any) {
-    this.extras = data;
+  public setOrderData(data: any) {
+    this.orderData = data;
   }
 
-  public getExtras() {
-    return this.extras;
+  public getOrderData() {
+    return this.orderData;
   }
 
-  public setProducts(data: any) {
+  public setProductToGetScanned(data: any) {
     this.products = data;
   }
 

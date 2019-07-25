@@ -4,6 +4,7 @@ import { BarcodeScanner } from '@ionic-native/barcode-scanner/ngx';
 import { NavExtrasService } from 'src/app/services/nav-extras.service';
 import { environment } from 'src/environments/environment';
 import { Router } from '@angular/router';
+import { ToastController } from '@ionic/angular';
 import { forEach } from '@angular/router/src/utils/collection';
 
 @Component({
@@ -26,6 +27,7 @@ export class RecepcionPage implements OnInit {
     private http: HttpClient,
     private barcodeScanner: BarcodeScanner,
     private navExtras: NavExtrasService,
+    private toastController: ToastController,
     private router: Router) { }
 
   ngOnInit() {
@@ -33,45 +35,23 @@ export class RecepcionPage implements OnInit {
   }
 
   ngOnDestroy() {
-    this.navExtras.setExtras(null)
+    this.navExtras.setOrderData(null)
     this.navExtras.setScannedProducts(null)
   }
 
   ionViewWillEnter() {
 
-    let scannedBeef = this.navExtras.getScannedBeef();
-    let scannedProduct = this.navExtras.getScannedProducts();
-    let dataTot = this.navExtras.getScannedCodeAndTotal();
+    let productsScanned = this.navExtras.getScannedProducts();
 
-    if (scannedBeef != null) {
-      let index = this.productsList.findIndex(product => product.codigo_prothevs == dataTot.codigo_prot)
-      if (index < 0) {
-        console.log("error: no se encuantra el codigo")
-      } else {
-        this.productsList[index].count = dataTot.total;
-        this.scannedProductsList.push(scannedBeef);
-      }
+    if (productsScanned != null) {
+      let index = this.productsList.findIndex(product => { return product.codigoProtevs == productsScanned.codigo_prothevs });
 
-      console.log(this.scannedProductsList);
-
-      this.navExtras.setScannedBeef(null);
-      this.navExtras.setScannedCodeAndTotal(null);
-
-    } else {
-      if (scannedProduct != null) {
-
-        let index = this.productsList.findIndex(product => product.codigo_prothevs == scannedProduct.codigo)
-
-        if (index < 0) {
-          console.log("error: no se encuantra el codigo")
-        } else {
-          this.productsList[index].count = scannedProduct.cantidad
-          this.scannedProductsList.push(this.productsList[index]);
-        }
-
-        this.navExtras.setScannedProducts(null);
+      if (index >= 0) {
+        this.productsList[index] = productsScanned;
       }
     }
+
+    this.navExtras.setScannedProducts(null);
   }
 
   public getOrden() {
@@ -90,42 +70,49 @@ export class RecepcionPage implements OnInit {
         });
 
         this.http.get(environment.apiWMS + '/getLoteNeed/' + codes).subscribe((data: any[]) => {
+          this.productsList.map(x => Object.assign(x, data.find(y => y.codigoProtevs == x.codigo_prothevs)))
           this.productsList.forEach((element) => {
-            let valor = data.find(product => { return product.codigoProtevs == element.codigo_prothevs })
-            element.needLote = Number(valor.maneja_lote);
+            element.needLote = Number(element.maneja_lote)
           })
         });
       });
   }
 
-  setDatos() {
-    const myData = {
-      products: this.productsList,
-      orderData: this.orderData,
-    }
-    this.navExtras.setExtras(myData);
-    console.log(myData);
-  }
+  goToProduct(index: number) {
 
-  goToProduct(id) {
-    this.navExtras.setScannedProducts(id);
-    this.setDatos()
+    this.navExtras
+      .setOrderData(this.productsList[index]);
+
     this.router.navigate(['/members/scannproducts']);
   }
 
-
   recibirProductos() {
 
-    const recepcionData = {
-      'order_encabezado': this.orderData.orden_compra,
-      'scanned_products': this.scannedProductsList
-    };
+    let registros = [];
 
-    console.log(recepcionData);
+    let products = this.productsList.filter(product => { return product.detalle != null });
 
-    this.http.post(environment.apiWMS + '/TempRecepcion', recepcionData).subscribe((data: any) => {
-      console.log(data);
+    products.forEach(element => {
+      registros = registros.concat(element.detalle);
     });
 
+    let enviar = {
+      products: registros
+    }
+
+    this.http.post(environment.apiWMS + '/TempRecepcion', enviar).subscribe(response => {
+      this.presentToast('Recepcion Satisfactoria.');
+      this.router.navigate(['/members/home']);
+    });
+  }
+
+  async presentToast(msg: string) {
+    const toast = await this.toastController.create({
+      message: msg,
+      position: "middle",
+      color: "success",
+      duration: 2000
+    });
+    toast.present();
   }
 }

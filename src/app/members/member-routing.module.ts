@@ -8,6 +8,7 @@ const routes: Routes = [
   { path: 'recepcion', loadChildren: './recepcion/recepcion.module#RecepcionPageModule' },
   { path: 'scannproducts', loadChildren: './scannproducts/scannproducts.module#ScannproductsPageModule' },
   { path: 'delivery', loadChildren: './delivery/delivery.module#DeliveryPageModule' },  { path: 'tarimas', loadChildren: './tarimas/tarimas.module#TarimasPageModule' },
+  { path: 'ubicar', loadChildren: './ubicar/ubicar.module#UbicarPageModule' },
 
 
 ];

@@ -5,7 +5,8 @@
 export const environment = {
   production: false,
   apiProtevs: 'http://192.168.101.69',
-  apiWMS: 'http://192.168.101.76:8081/public/api'
+  apiWMS: 'http://192.168.101.76:8081/public/api',
+  apiCRM: 'http://192.168.101.76:8080/public/api'
 };
 
 /*
