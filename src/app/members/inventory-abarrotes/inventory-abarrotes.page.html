@@ -1,0 +1,78 @@
+<ion-header>
+  <ion-toolbar class="tool-bar">
+    <ion-buttons slot="start">
+      <ion-back-button routerLink="/members/inventory-order-detail"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Inventario Ciclico Abarrotes</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+
+  <ion-row *ngIf="boxExist">
+    <ion-col>
+      <ion-item lines="none">
+        <ion-label>Modo de Recepcion</ion-label>
+        <ion-toggle [(ngModel)]="modo"></ion-toggle>
+      </ion-item>
+    </ion-col>
+  </ion-row>
+
+  <ion-row *ngIf="productData">
+    <ion-col>
+      <h6>Datos de Producto</h6>
+      <ion-item lines="none" class="container-item">
+        Codigo Prothevs: {{productData.codigo_prothevs}}<br>
+        Descripcion: {{productData.descripcion}}
+      </ion-item>
+    </ion-col>
+  </ion-row>
+
+  <ion-row *ngIf="!boxExist">
+    <ion-col>
+      <h6>El producto no tiene registrado codigo de barra de caja.</h6>
+    </ion-col>
+  </ion-row>
+
+  <div class="alig" *ngIf="!boxExist">
+    <ion-button *ngIf="!boxCode" class="code-button" routerLink="/members/scann-cajas">
+      Registrar codigo caja</ion-button>
+  </div>
+
+
+  <form (ngSubmit)="addProduct()" *ngIf="!this.modo && this.boxExist">
+    <ion-row>
+      <ion-col>
+        <h6>Ingresar cantidad a inventariar.</h6>
+        <ion-input class="product-scann" [(ngModel)]="cantidad" name="cantidad" type="number"
+          placeholder="Ingresa la cantidad"></ion-input>
+      </ion-col>
+    </ion-row>
+    <ion-button type="submit" shape="round" expand="full" class="registrar-button">Inventariar</ion-button>
+  </form>
+
+  <ion-row *ngIf="this.modo">
+    <ion-col>
+      <h6>Escanea codigo de barra de caja.</h6>
+      <ion-input [(ngModel)]="codigoBarra" name="codigoBarra" class="product-scann" type="number"
+        placeholder="Escanea el Codigo de Barra" (ionChange)="addOnChange($event)" debounce="500">
+      </ion-input>
+    </ion-col>
+  </ion-row>
+
+</ion-content>
+
+<ion-footer>
+  <ion-toolbar color="dark">
+    <ion-buttons slot="start" routerLink="/members/home">
+      <ion-button>
+        <ion-icon slot="icon-only" name="home"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-buttons slot="end">
+      <ion-button>
+        <ion-icon slot="icon-only" name="chatbubbles"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-footer>

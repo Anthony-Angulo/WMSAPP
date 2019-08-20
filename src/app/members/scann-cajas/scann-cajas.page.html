@@ -1,0 +1,68 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-back-button routerLink="/members/home"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Scann Cajas</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content padding>
+  <ion-row>
+    <ion-col>
+      <ion-item>
+        <ion-label position="floating" color="primary">Codigo Barra</ion-label>
+        <ion-input placeholder="Escanea el codigo de producto" [(ngModel)]="barcode" name="barcode"
+          (ionChange)="getProduct($event)" debounce="500"></ion-input>
+      </ion-item>
+    </ion-col>
+  </ion-row>
+
+  <ion-row *ngIf="product">
+    <ion-col>
+      <ion-list inset="true">
+        <ion-item color="light">
+          <ion-label>
+            <ion-text color="dark">
+              <h3>Codigo Producto: {{product.codigoProtevs}}</h3>
+            </ion-text>
+          </ion-label>
+        </ion-item>
+        <ion-item color="primary">
+          <ion-label>
+            <ion-text color="light">
+              <h3>Nombre Producto: </h3>
+            </ion-text>
+            <p>{{product.name}}</p>
+          </ion-label>
+        </ion-item>
+      </ion-list>
+      <ion-item>
+        <ion-label color="primary" position="floating">Codigo Barra Caja
+        </ion-label>
+        <ion-input [(ngModel)]="boxCodeBar" name="boxCodeBar" placeholder="Escanea el codigo de barra de la caja">
+        </ion-input>
+      </ion-item>
+    </ion-col>
+  </ion-row>
+  <ion-row *ngIf="product">
+    <ion-col>
+      <ion-button expand="block" color="primary" shape="round" (click)="registerBox()">Aceptar</ion-button>
+    </ion-col>
+  </ion-row>
+</ion-content>
+
+<ion-footer>
+  <ion-toolbar color="dark">
+    <ion-buttons slot="start">
+      <ion-button routerLink="/members/home">
+        <ion-icon slot="icon-only" name="home"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-buttons slot="end">
+      <ion-button>
+        <ion-icon slot="icon-only" name="chatbubbles"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-footer>

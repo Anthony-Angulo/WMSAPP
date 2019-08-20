@@ -1,92 +1,82 @@
 <ion-header>
-  <ion-toolbar color="primary">
+  <ion-toolbar class="tool-bar">
+    <ion-buttons slot="start">
+      <ion-back-button routerLink="/members/home"></ion-back-button>
+    </ion-buttons>
     <ion-title>Recepcion de Mercancia</ion-title>
   </ion-toolbar>
 </ion-header>
 
-<ion-content padding>
-  <ion-row class="vertical-align-content">
+<ion-content>
+  <ion-row *ngIf="!order">
     <ion-col>
-      <ion-item>
-        <ion-label color="primary">Orden de Compra #</ion-label>
-        <ion-input autofocus="true" type="number" [(ngModel)]="number"></ion-input>
-        <ion-button shape="round" expand="full" color="light" (click)="getOrden()">
-          <ion-icon slot="icon-only" name="search"></ion-icon>
+      <h6>Ingresa un numero de orden de compra.</h6>
+      <form (ngSubmit)="getOrden()">
+        <ion-input class="input-recepcion" placeholder="Orden De Compra" type="number" [(ngModel)]="number"
+          name="number">
+        </ion-input>
+        <ion-button type="submit" class="search-order-button" shape="round" expand="full">
+          Buscar
         </ion-button>
-      </ion-item>
+      </form>
     </ion-col>
   </ion-row>
-  <div *ngIf="proveedorData">
-    <div *ngIf="proveedorData" style="text-align: center">
-      <h6>Datos de Proveedor</h6>
-    </div>
-    <ion-row *ngIf="proveedorData">
+  <div *ngIf="order">
+    <ion-row>
       <ion-col>
-        <ion-item>
-          <ion-card>
-            <ion-card-header>
-              <ion-card-subtitle>
-                Codigo: {{proveedorData.cod}}
-              </ion-card-subtitle>
-            </ion-card-header>
-            <ion-card-content>
-              Nombre: {{proveedorData.nombre_proveedor}} <p>
-                Fantasia: {{proveedorData.fantasia}}
-            </ion-card-content>
-          </ion-card>
+        <h6>Datos de Proveedor</h6>
+        <ion-item lines="none" class="container-item">
+          Codigo: {{order.proveedor.cod}}<br>
+          Nombre: {{order.proveedor.nombre_proveedor}}<br>
+          Fantasia: {{order.proveedor.fantasia}}
         </ion-item>
       </ion-col>
     </ion-row>
-    <ion-row style="background: #C8D6D7">
+    <h6>Productos</h6>
+    <h6>Selecciona un codigo de producto para escanear.</h6>
+    <ion-row class="table">
       <ion-col size="3">
         SKU
       </ion-col>
-      <ion-col size="5">
+      <ion-col size="5.5">
         Description
       </ion-col>
-      <ion-col size="2.5">
-        Cantidad
+      <ion-col size="2">
+        Qty
       </ion-col>
       <ion-col size="1.5">
-        UOM
+        UM
       </ion-col>
     </ion-row>
 
-    <div style="text-align: center" *ngIf="productsList == ''">
-      <h6>Ingresa Un Codigo De Orden De Compra</h6>
-    </div>
-
-    <ion-row *ngFor="let products of productsList; let index = index">
-      <ion-col size="3" (click)="goToProduct(index)">
+    <ion-row class="text-content" *ngFor="let products of order.detalle; let index = index"
+      (click)="goToProduct(index)">
+      <ion-col size="3">
         {{products.codigo_prothevs}}
       </ion-col>
-      <ion-col size="5">
+      <ion-col size="5.5">
         {{products.descripcion}}
       </ion-col>
-      <ion-col size="2.5">
+      <ion-col size="2">
         {{products.count}}
       </ion-col>
       <ion-col size="1.5">
         {{products.unidad_medida}}
       </ion-col>
     </ion-row>
+    <ion-row>
+      <ion-col>
+        <ion-button class="search-order-button" shape="round" expand="block" (click)="recibirProductos()">
+          Recibir
+        </ion-button>
+      </ion-col>
+    </ion-row>
   </div>
-  <ion-row>
-    <ion-col>
-      <ion-button shape="round" color="danger" routerLink="/members/home" expand="block">
-        Cancelar
-      </ion-button>
-    </ion-col>
-    <ion-col>
-      <ion-button *ngIf="proveedorData" shape="round" expand="block" (click)="recibirProductos()">
-        Recibir
-      </ion-button>
-    </ion-col>
-  </ion-row>
 </ion-content>
+
 <ion-footer>
   <ion-toolbar color="dark">
-    <ion-buttons slot="start" routerLink="/members/profile">
+    <ion-buttons slot="start" routerLink="/members/home">
       <ion-button>
         <ion-icon slot="icon-only" name="home"></ion-icon>
       </ion-button>

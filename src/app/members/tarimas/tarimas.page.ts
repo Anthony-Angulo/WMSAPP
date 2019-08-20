@@ -16,7 +16,7 @@ export class TarimasPage implements OnInit {
 
   codeBar: any;
   product: any;
-  cantidad: number;
+  cantidad: number = 0;
   code: any;
   lote: any;
 
@@ -35,9 +35,8 @@ export class TarimasPage implements OnInit {
     this.storage.get(SUCURSAL_KEY).then(val => {
       this.http.get(environment.apiWMS + '/codeBarFromInventory/' + this.codeBar + '/' + val)
         .subscribe((data: any) => {
+          console.log(data.product)
           this.product = data.product[0];
-          console.log(this.product);
-          this.code = this.product.codigoProtevs;
           this.lote = this.product.maneja_lote;
         });
     })
@@ -45,26 +44,32 @@ export class TarimasPage implements OnInit {
   }
 
   armarTarima() {
+    if (this.cantidad != 0) {
 
-    let body = {
-      'producto': this.product,
-      'cantidad': this.cantidad
+      let body = {
+        'producto': this.product,
+        'cantidad': this.cantidad
+      }
+
+      this.http.post(environment.apiWMS + '/saveTarima', body).subscribe(val => {
+        this.presentToast('Se Creo Tarima Satisfactoriamente', 'success');
+        this.router.navigate(['/members/home']);
+      }, error => {
+        this.presentToast('Error al guardar. Vuelva a Intentarlo', 'danger')
+      });
+
+    } else {
+      this.presentToast('Ingresa una cantidad para continuar.', 'warning')
     }
 
-    this.http.post(environment.apiWMS + '/saveTarima', body).subscribe(val => {
-      this.presentToast('Se Creo Tarima Satisfactoriamente');
-      this.router.navigate(['/members/home']);
-    }, error => {
-      console.log(error);
-    });
 
   }
 
-  async presentToast(msg: string) {
+  async presentToast(msg: string, color: string) {
     const toast = await this.toastController.create({
       message: msg,
-      position: "middle",
-      color: "success",
+      position: "bottom",
+      color: color,
       duration: 2000
     });
     toast.present();

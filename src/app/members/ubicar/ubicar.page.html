@@ -1,5 +1,5 @@
 <ion-header>
-  <ion-toolbar color="primary">
+  <ion-toolbar class="tool-bar">
     <ion-buttons slot="start">
       <ion-back-button routerLink="/members/home"></ion-back-button>
     </ion-buttons>
@@ -7,63 +7,57 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content padding>
+<ion-content>
 
   <ion-row>
     <ion-col>
-      <ion-item>
-        <ion-label position="floating">Codigo Master Tarima</ion-label>
-        <ion-input [(ngModel)]="masterTarima" name="masterTarima" (ionChange)="searchCM($event)" debounce="500">
-        </ion-input>
-      </ion-item>
+      <h6>Escanea un codigo de barra de tarima para buscar.</h6>
+      <ion-input class="form-tarima " placeholder="Ingresa Codigo Master" clearInput [(ngModel)]="masterTarima"
+        name="masterTarima" (ionChange)="searchCM($event)" debounce="500">
+      </ion-input>
     </ion-col>
   </ion-row>
 
-  <ion-row>
-    <ion-col>
-      <ion-item>
-        <ion-label position="floating">Codigo Rack</ion-label>
-        <ion-input [(ngModel)]="codeRack" name="codeRack"></ion-input>
-      </ion-item>
-    </ion-col>
-  </ion-row>
 
   <ion-row *ngIf="product">
     <ion-col>
-      <ion-list>
-        <ion-item>
-          <ion-label>
-            Codigo Protevs:
-          </ion-label>
-          {{product.codigo_protehus}}
-        </ion-item>
-        <ion-item>
-          <ion-label>
-            Codigo de Barra:
-          </ion-label>
-          {{product.codigoBarras}}
-        </ion-item>
-        <ion-item>
-          <ion-label>
-            Cantidad de Cajas:
-          </ion-label>
-          {{product.cantidad}}
-        </ion-item>
-      </ion-list>
+      <h6>Datos de Producto</h6>
+      <ion-item lines="none" class="item-format">
+        <div class="text-format">
+          Codigo Protevs
+          <br>
+          <span>{{product.codigo_protehus}}</span>
+          Codigo de Barra
+          <br>
+          <span>{{product.codigoBarras}}</span>
+          Cantidad de Cajas
+          <br>
+          <span>{{product.cantidad}}</span>
+        </div>
+      </ion-item>
     </ion-col>
   </ion-row>
 
-  <ion-row>
-    <ion-col>
-      <ion-button shape="round" expand="block" color="primary" (click)="ubicarTarima()">Ubicar</ion-button>
-    </ion-col>
-  </ion-row>
+  <form (ngSubmit)="ubicarTarima()" *ngIf="product">
+    <ion-row>
+      <ion-col>
+        <h6>Escanea un codigo de rack.</h6>
+        <ion-input class="form-tarima" placeholder="Ingresa Codigo de Rack" [(ngModel)]="codeRack" name="codeRack">
+        </ion-input>
+      </ion-col>
+    </ion-row>
 
+    <ion-row>
+      <ion-col>
+        <ion-button shape="round" expand="full" class="search-button" type="submit">Ubicar</ion-button>
+      </ion-col>
+    </ion-row>
+  </form>
 </ion-content>
 
 <ion-footer>
   <ion-toolbar color="dark">
-    <ion-buttons slot="start" routerLink="/members/profile">
+    <ion-buttons slot="start" routerLink="/members/home">
       <ion-button>
         <ion-icon slot="icon-only" name="home"></ion-icon>
       </ion-button>

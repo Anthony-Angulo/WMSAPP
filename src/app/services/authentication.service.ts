@@ -31,16 +31,16 @@ export class AuthenticationService {
   }
 
   login(value) {
-    this.http.post(environment.apiCRM + '/login', value).subscribe((data: any) => {
-
-      console.log(data.id);
+    this.http.post(environment.apiCRM + '/login', value).toPromise().then((data: any) => {
 
       this.storage.set(SUCURSAL_KEY, data.sucursal);
       this.storage.set(USER_ID, data.id);
 
-      this.storage.set(TOKEN_KEY, data.token).then(() => {
-        this.authenticationState.next(true);
-      });
+      return this.storage.set(TOKEN_KEY, data.token)
+    }).then(() => {
+      this.authenticationState.next(true);;
+    }).catch(error => {
+      console.error(error)
     });
 
 

@@ -5,51 +5,70 @@ import { Injectable } from '@angular/core';
 })
 export class NavExtrasService {
 
-  orderData: any;
-  products: any;
-  scannedProducts: any;
-  scannedBeef: any;
-  totalAndCode: any;
+  orderData: any
+  products: any
+  scannedProducts: any
+  scannedBeef: any
+  totalAndCode: any
+
+  inventoryDetail: any
+  inventoryProduct: any;
 
   constructor() { }
 
   public setOrderData(data: any) {
-    this.orderData = data;
+    this.orderData = data
   }
 
   public getOrderData() {
-    return this.orderData;
+    return this.orderData
   }
 
   public setProductToGetScanned(data: any) {
-    this.products = data;
+    this.products = data
   }
 
   public getProducts() {
-    return this.products;
+    return this.products
   }
 
   public setScannedProducts(data: any) {
-    this.scannedProducts = data;
+    this.scannedProducts = data
   }
 
   public getScannedProducts() {
-    return this.scannedProducts;
+    return this.scannedProducts
   }
 
   public setScannedBeef(data: any) {
-    this.scannedBeef = data;
+    this.scannedBeef = data
   }
 
   public getScannedBeef() {
-    return this.scannedBeef;
+    return this.scannedBeef
   }
 
   public setScannedCodeAndTotal(data: any) {
-    this.totalAndCode = data;
+    this.totalAndCode = data
   }
 
   public getScannedCodeAndTotal() {
-    return this.totalAndCode;
+    return this.totalAndCode
+  }
+
+  public setInventoryDetail(data: any) {
+    this.inventoryDetail = data
+  }
+
+  public getInventoryDetail() {
+    return this.inventoryDetail
+  }
+
+  public setInventoryProduct(data: any) {
+    this.inventoryProduct = data
+  }
+
+  public getInventoryProduct() {
+    return this.inventoryProduct
   }
 }

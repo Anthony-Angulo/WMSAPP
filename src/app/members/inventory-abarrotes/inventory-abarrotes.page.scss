@@ -2,9 +2,9 @@ ion-content{
   --background: #e6eced;
 } 
 
-ion-item.item-display{
-     display: inline-block;
-     width: 100%;
+ion-toolbar.tool-bar{
+     --background: #160ff2;
+     --color: #ffffff;
 }
 
 ion-item.container-item{
@@ -14,7 +14,7 @@ ion-item.container-item{
      font-family: 'Franklin Gothic Medium';
 }
 
-ion-input.input-recepcion{
+ion-input.product-scann{
      border: 2px solid #000000;
      border-radius: 5pc;
      margin-bottom: 5px;
@@ -22,27 +22,19 @@ ion-input.input-recepcion{
      --background: #ffffff;
 }
 
-ion-button.search-order-button{
+ion-button.code-button{
      --background: #160ff2;
 }
 
-ion-toolbar.tool-bar{
+ion-button.registrar-button{
      --background: #160ff2;
-     --color: #ffffff;
 }
 
-ion-row.table{
-     background:  #160ff2;
-     color: #ffffff;
-     font-family: 'Franklin Gothic Medium';
+div.alig{
+     text-align: center;
 }
-
-ion-row.text-content{
-     font-family: 'Franklin Gothic Medium';
-}
-
 
 h6{
      font-family: 'Franklin Gothic Medium';
+     margin-left: 5px;
 }
-

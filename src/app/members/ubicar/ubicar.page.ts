@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { ToastController } from '@ionic/angular';
+import { ToastController, LoadingController } from '@ionic/angular';
 import { Router } from '@angular/router';
 import { environment } from 'src/environments/environment';
 import { Storage } from '@ionic/storage';
@@ -19,26 +19,40 @@ export class UbicarPage implements OnInit {
   codeRack: any;
   product: any;
   locationData: any = [];
+  load: any;
 
   constructor(private http: HttpClient,
     private toastController: ToastController,
     private router: Router,
-    private storage: Storage) { }
+    private storage: Storage,
+    private loading: LoadingController) { }
 
   ngOnInit() {
   }
 
   searchCM(e) {
+
+    this.presentLoading('Buscando Producto...')
+
     this.http.get(environment.apiWMS + '/codeBarFromInventory/' + e.target.value)
       .subscribe((data: any) => {
-        this.product = data.product[0];
-        console.log(this.product);
+
+        if (data.product.length == 1) {
+          this.product = data.product[0];
+        } else {
+          this.product = data.product[0];
+          this.product.cantidad = data.product.length
+        }
+        this.hideLoading()
       }, error => {
+        this.hideLoading()
         this.presentToast('Codigo Incorrecto', 'danger');
       });
   }
 
   ubicarTarima() {
+
+    this.presentLoading('Guardando Tarima...')
 
     let newstr = this.codeRack.split("-");
 
@@ -64,9 +78,11 @@ export class UbicarPage implements OnInit {
 
               this.http.post(environment.apiWMS + '/saveOrUpdateLocation', newLocation).subscribe(data => {
                 this.presentToast('Se guardo tarima satisfactoriamente', 'success');
+                this.hideLoading()
                 this.router.navigate(['/members/home']);
               }, error => {
-                console.log(error);
+                this.presentToast('Error al guardar tarima. Vuelva a Intentarlo', 'danger')
+                this.hideLoading()
               });
 
 
@@ -86,13 +102,15 @@ export class UbicarPage implements OnInit {
               }
 
               this.http.post(environment.apiWMS + '/saveOrUpdateLocation', updateData).subscribe(data => {
+                this.hideLoading()
                 this.presentToast('Se guardo tarima satisfactoriamente', 'success');
                 this.router.navigate(['/members/home']);
               }, error => {
-                console.log(error);
+                this.presentToast('Error al Guardar Tarima. Vuelva a Intentarlo', 'danger')
               });
             } else {
-              this.presentToast('La posicion ya contiene una tarima', 'danger');
+              this.hideLoading()
+              this.presentToast('La posicion ya contiene una tarima', 'warning');
             }
           });
       });
@@ -107,5 +125,19 @@ export class UbicarPage implements OnInit {
       duration: 2500
     });
     toast.present();
+  }
+
+  async presentLoading(msg: string) {
+    this.load = await this.loading.create({
+      message: msg,
+      duration: 3000
+    });
+
+    await this.load.present()
+  }
+
+  hideLoading() {
+    console.log('loading')
+    this.load.dismiss()
   }
 }
