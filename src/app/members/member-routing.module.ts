@@ -15,6 +15,12 @@ const routes: Routes = [
   { path: 'inventory-order-detail', loadChildren: './inventory-order-detail/inventory-order-detail.module#InventoryOrderDetailPageModule' },
   { path: 'inventory-abarrotes', loadChildren: './inventory-abarrotes/inventory-abarrotes.module#InventoryAbarrotesPageModule' },
   { path: 'inventory-beef', loadChildren: './inventory-beef/inventory-beef.module#InventoryBeefPageModule' },
+  { path: 'full-inventory', loadChildren: './full-inventory/full-inventory.module#FullInventoryPageModule' },
+  { path: 'full-inventory-orders', loadChildren: './full-inventory-orders/full-inventory-orders.module#FullInventoryOrdersPageModule' },
+  { path: 'ubicaciones', loadChildren: './ubicaciones/ubicaciones.module#UbicacionesPageModule' },
+  { path: 'surtido', loadChildren: './surtido/surtido.module#SurtidoPageModule' },
+  { path: 'surtido-abarrotes', loadChildren: './surtido-abarrotes/surtido-abarrotes.module#SurtidoAbarrotesPageModule' },
+  { path: 'surtido-beef', loadChildren: './surtido-beef/surtido-beef.module#SurtidoBeefPageModule' },
 
 ];
 

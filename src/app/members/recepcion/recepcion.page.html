@@ -33,7 +33,13 @@
       </ion-col>
     </ion-row>
     <h6>Productos</h6>
-    <h6>Selecciona un codigo de producto para escanear.</h6>
+    <h6>Selecciona un codigo de producto para escanear o busca por codigo de caja.</h6>
+    <ion-row>
+      <ion-col>
+        <ion-input (ionChange)="goToProductOnChange($event)" [(ngModel)]="codigoCaja" name="codigoCaja"
+          class="product-scann" placeholder="Escanea o ingresa codigo de caja"></ion-input>
+      </ion-col>
+    </ion-row>
     <ion-row class="table">
       <ion-col size="3">
         SKU

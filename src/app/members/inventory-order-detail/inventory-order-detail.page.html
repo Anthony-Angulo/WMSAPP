@@ -8,6 +8,13 @@
 </ion-header>
 
 <ion-content>
+
+  <ion-row *ngIf="inventoryStatus">
+    <ion-col>
+      <ion-button (click)="presentDialog()" color="danger" expand="full">Terminar inventario</ion-button>
+    </ion-col>
+  </ion-row>
+
   <h6>Selecciona un codigo para inventariar.</h6>
   <ion-row class="table">
     <ion-col size="3">
@@ -34,7 +41,8 @@
     </ion-col>
   </ion-row>
 
-  <ion-button class="send" expand="full" shape="round" (click)="sendProducts()">Enviar Inventario</ion-button>
+  <ion-button *ngIf="inventoryStatus" class="send" expand="full" shape="round" (click)="sendProducts()">Enviar
+    Inventario</ion-button>
 
 </ion-content>
 

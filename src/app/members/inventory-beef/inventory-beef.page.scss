@@ -1,0 +1,33 @@
+ion-content{
+  --background: #e6eced;
+} 
+
+ion-toolbar.tool-bar{
+     --background: #160ff2;
+     --color: #ffffff;
+}
+
+ion-item.container-item{
+     border: 2px solid #000000;
+     border-radius: 4px;
+     border-color: #86c1d1;
+     font-family: 'Franklin Gothic Medium';
+}
+
+ion-input.product-scann{
+     border: 2px solid #000000;
+     border-radius: 5pc;
+     margin-bottom: 5px;
+     border-color: #86c1d1;
+     --background: #ffffff;
+}
+
+ion-button.registrar-button{
+     --background: #160ff2;
+}
+
+
+h6{
+     font-family: 'Franklin Gothic Medium';
+     margin-left: 5px;
+}

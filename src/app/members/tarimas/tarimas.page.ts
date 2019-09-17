@@ -33,12 +33,15 @@ export class TarimasPage implements OnInit {
   searchProduct() {
 
     this.storage.get(SUCURSAL_KEY).then(val => {
-      this.http.get(environment.apiWMS + '/codeBarFromInventory/' + this.codeBar + '/' + val)
-        .subscribe((data: any) => {
-          console.log(data.product)
-          this.product = data.product[0];
+      this.http.get(environment.apiWMS + '/codeBarFromInventory/' + this.codeBar + '/' + val).toPromise().then((data: any) => {
+        if (!data) {
+          this.presentToast('No se encontro codigo de caja', 'warning')
+        } else {
+          console.log(data)
+          this.product = data;
           this.lote = this.product.maneja_lote;
-        });
+        }
+      })
     })
 
   }
@@ -46,9 +49,10 @@ export class TarimasPage implements OnInit {
   armarTarima() {
     if (this.cantidad != 0) {
 
+      this.product.cantidad = this.cantidad
+
       let body = {
         'producto': this.product,
-        'cantidad': this.cantidad
       }
 
       this.http.post(environment.apiWMS + '/saveTarima', body).subscribe(val => {

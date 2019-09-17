@@ -21,6 +21,7 @@ export class InventoryAbarrotesPage implements OnInit {
   codigoBarra: any = '';
   cantidad: number;
   eventCodeBar: any;
+  lote: any = 0
 
   //toggle binding
   modo: any;
@@ -53,11 +54,16 @@ export class InventoryAbarrotesPage implements OnInit {
   }
 
   addProduct() {
-    if (this.cantidad != 0) {
+    if (this.cantidad != 0 && this.cantidad != undefined) {
       this.productData.cantidad_contada = this.cantidad
       this.productData.cantidad_diferencia = this.cantidad - this.productData.cantidad_teorica
+      this.productData.lote = this.lote
+      this.router.navigate(['/members/inventory-order-detail'])
+    } else {
+      this.presentToast('Ingresa primero una cantidad y/o lote.', 'warning')
     }
 
+    this.lote = ''
   }
 
   addOnChange(event) {
@@ -65,15 +71,16 @@ export class InventoryAbarrotesPage implements OnInit {
       if (this.productData.cantidad_contada != 0) {
         this.productData.cantidad_contada = Number(this.productData.cantidad_contada) + 1
         this.productData.cantidad_diferencia = this.productData.cantidad_contada - this.productData.cantidad_teorica
+        this.productData.lote = this.lote
       } else {
         this.productData.cantidad_contada = 1
         this.productData.cantidad_diferencia = this.productData.cantidad_contada - this.productData.cantidad_teorica
+        this.productData.lote = this.lote
       }
       this.inventarirarProducts()
     } else {
       this.presentToast('El codigo no coincide. Intenta de nuevo', 'warning')
     }
-
   }
 
   inventarirarProducts() {

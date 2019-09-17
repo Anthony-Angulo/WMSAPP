@@ -24,6 +24,7 @@ export class RecepcionPage implements OnInit {
   scannedProductList: any = [];
   scannedBeefList: any = [];
   total_orden: number = 0;
+  codigoCaja: any;
   load: any;
 
 
@@ -79,7 +80,9 @@ export class RecepcionPage implements OnInit {
       ])
     }).then(([orderData, dataExist]: any[]) => {
       order = orderData
+      dataExist.order.map(x => x.cantidad = Number(x.cantidad))
       order.detalle.map(x => Object.assign(x, { detalle: dataExist.order.filter(y => y.codigo_protehus == x.codigo_prothevs) }))
+      order.detalle.map(x => x.count = x.detalle.map(y => y.cantidad).reduce((a, b) => a + b, 0))
       return orderData.detalle.map(a => a.codigo_prothevs)
     }).then(codes => {
       return Promise.all([
@@ -87,19 +90,44 @@ export class RecepcionPage implements OnInit {
         this.http.get(environment.apiWMS + '/codebardescriptions/' + codes).toPromise()
       ])
     }).then(([needLote, codebarDescription]: any[]) => {
-
+      console.log(codebarDescription)
       order.detalle.map(product => {
         product.needLote = Number(needLote.find(y => y.codigoProtevs == product.codigo_prothevs).maneja_lote)
         product.detalle_codigo = codebarDescription.find(y => y.codigo_protevs == product.codigo_prothevs)
       })
-      console.log(order)
       this.order = order
+      console.log(this.order)
     }).catch(error => {
-      this.hideLoading()
       this.presentToast('Error al buscar orden. Vuelva a Intentarlo', 'danger')
     }).finally(() => {
       this.hideLoading()
     })
+
+  }
+
+  goToProductOnChange(event) {
+
+    if (event.target.value == '') {
+
+    } else {
+      this.codigoCaja = event.target.value
+
+      let ind = this.order.detalle.findIndex(product => product.codbarSB == this.codigoCaja)
+
+      if (ind >= 0) {
+        this.navExtras
+          .setOrderData(this.order.detalle[ind])
+        if (this.order.detalle[ind].tipo == 3) {
+          this.router.navigate(['members/recepcion-beef'])
+        } else {
+          this.router.navigate(['/members/scannproducts'])
+        }
+      } else {
+        this.presentToast('No se encontro codigo de caja de producto en la lista', 'warning')
+      }
+    }
+    this.codigoCaja = ''
+    event.target.value = ''
 
   }
 

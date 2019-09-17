@@ -1,0 +1,92 @@
+<ion-header>
+  <ion-toolbar class="tool-bar">
+    <ion-buttons slot="start">
+      <ion-back-button routerLink="/members/home"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Surtido</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-row>
+    <ion-col>
+      <h6>Ingresa un numero de orden de pedido.</h6>
+      <form (ngSubmit)="getOrden()">
+        <ion-input class="input-recepcion" placeholder="Orden De Pedido" type="number" [(ngModel)]="number"
+          name="number">
+        </ion-input>
+        <ion-button type="submit" class="search-order-button" shape="round" expand="full">
+          Buscar
+        </ion-button>
+      </form>
+    </ion-col>
+  </ion-row>
+
+  <div *ngIf="order">
+    <ion-row>
+      <ion-col>
+        <h6>Datos de Proveedor</h6>
+        <ion-item lines="none" class="container-item">
+          Codigo: {{order.order.customer_no}}<br>
+          Nombre: {{order.order.full_name}}<br>
+          Fantasia: {{order.order.nombre_reducido}}
+        </ion-item>
+      </ion-col>
+    </ion-row>
+
+    <h6>Productos</h6>
+    <h6>Selecciona un codigo de producto para surtir.</h6>
+
+    <ion-row class="table">
+      <ion-col size="3">
+        SKU
+      </ion-col>
+      <ion-col size="5.5">
+        Description
+      </ion-col>
+      <ion-col size="2">
+        Qty
+      </ion-col>
+      <ion-col size="1.5">
+        UM
+      </ion-col>
+    </ion-row>
+
+    <ion-row class="text-content" *ngFor="let products of order.rows; let index = index" (click)="goToProduct(index)">
+      <ion-col size="3">
+        {{products.codigoProtevs}}
+      </ion-col>
+      <ion-col size="5.5">
+        {{products.product_name}}
+      </ion-col>
+      <ion-col size="2">
+        {{products.quantity}}
+      </ion-col>
+      <ion-col size="1.5">
+        {{products.unidad_medida}}
+      </ion-col>
+    </ion-row>
+    <ion-row>
+      <ion-col>
+        <ion-button class="search-order-button" shape="round" expand="block" (click)="enviarProductos()">
+          Recibir
+        </ion-button>
+      </ion-col>
+    </ion-row>
+  </div>
+</ion-content>
+
+<ion-footer>
+  <ion-toolbar color="dark">
+    <ion-buttons slot="start" routerLink="/members/home">
+      <ion-button>
+        <ion-icon slot="icon-only" name="home"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-buttons slot="end">
+      <ion-button>
+        <ion-icon slot="icon-only" name="chatbubbles"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-footer>

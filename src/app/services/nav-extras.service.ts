@@ -14,6 +14,9 @@ export class NavExtrasService {
   inventoryDetail: any
   inventoryProduct: any;
 
+  surtidoDetail: any
+  surtidoProduct: any
+
   constructor() { }
 
   public setOrderData(data: any) {
@@ -70,5 +73,21 @@ export class NavExtrasService {
 
   public getInventoryProduct() {
     return this.inventoryProduct
+  }
+
+  public setSurtidoDetail(data: any) {
+    this.surtidoDetail = data
+  }
+
+  public getSurtidoDetail() {
+    return this.surtidoDetail
+  }
+
+  public setSurtidoProduct(data: any) {
+    this.surtidoProduct = data
+  }
+
+  public getSurtidoProduct() {
+    return this.surtidoProduct
   }
 }

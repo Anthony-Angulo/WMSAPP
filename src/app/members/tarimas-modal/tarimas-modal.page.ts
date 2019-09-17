@@ -49,15 +49,15 @@ export class TarimasModalPage implements OnInit {
   armarTarima() {
 
     this.storage.get(SUCURSAL_KEY).then(val => {
-      this.http.get(environment.apiWMS + '/codeBarFromInventory/' + this.codeBar + '/' + val)
-        .subscribe((data: any) => {
-
-          let productTarima = data.product[0];
-
+      this.http.get(environment.apiWMS + '/codeBarFromInventory/' + this.codeBar + '/' + val).toPromise().then((resp: any) => {
+        if (!resp) {
+          this.presentToast('Error al generar tarima', 'warning')
+        } else {
+          let productTarima = resp
           productTarima.cantidad = this.cantidad
-          productTarima.fecha_caducidad = this.datePipe.transform(this.fecha_caducidad, 'yyyy-MM-dd');
+          productTarima.fecha_caducidad = this.datePipe.transform(this.fecha_caducidad, 'yyyy-MM-dd')
 
-          console.log(productTarima);
+          console.log(productTarima)
 
           let body = {
             'products': [
@@ -72,12 +72,13 @@ export class TarimasModalPage implements OnInit {
               cantidad: this.cantidad
             });
 
-            this.presentToast('Se Creo Tarima Satisfactoriamente');
+            this.presentToast('Se Creo Tarima Satisfactoriamente', 'success');
             this.closeModal(this.product);
           }, error => {
             console.log(error);
           });
-        });
+        }
+      })
     })
 
   }
@@ -92,11 +93,11 @@ export class TarimasModalPage implements OnInit {
     this.modalController.dismiss()
   }
 
-  async presentToast(msg: string) {
+  async presentToast(msg: string, color: string) {
     const toast = await this.toastController.create({
       message: msg,
-      position: "middle",
-      color: "success",
+      position: "bottom",
+      color: color,
       duration: 2000
     });
     toast.present();

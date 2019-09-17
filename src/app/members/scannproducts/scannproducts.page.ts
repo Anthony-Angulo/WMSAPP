@@ -18,15 +18,15 @@ import { TarimasModalPage } from '../tarimas-modal/tarimas-modal.page';
 export class ScannproductsPage implements OnInit {
 
   productData: any;
-  codigoBarra: any = '';
   cantidad: number;
   cantidadTemp: number = 0;
   scannedProducts: any = [];
   productTable: any = [];
   productsToDelete: any = [];
   lote: string = '';
-  modo: any;
+  modo: boolean = false;
   eventCodeBar: any;
+  cant = 0
 
   constructor(
     private http: HttpClient,
@@ -40,14 +40,19 @@ export class ScannproductsPage implements OnInit {
 
     this.productData = this.navExtras.getOrderData();
     console.log(this.productData)
-    if (this.productData.tipo != 3) {
-      this.codigoBarra = this.productData.codbarSB;
-    }
 
     if (!this.productData.detalle) this.productData.detalle = []
     if (!this.productData.tarimas) this.productData.tarimas = []
 
     this.navExtras.setOrderData(null)
+
+    this.cantidad = this.productData.count
+
+    this.http.get(environment.apiWMS + '/verifySetting').toPromise().then((setting: any) => {
+      if (setting.value == 1) {
+        this.modo = true
+      }
+    })
   }
 
   ngOnDestroy() {
@@ -58,6 +63,8 @@ export class ScannproductsPage implements OnInit {
 
   public scannOnChange(event) {
 
+    let index
+
     this.eventCodeBar = event.target.value
 
     if (this.lote == '') {
@@ -65,65 +72,70 @@ export class ScannproductsPage implements OnInit {
     }
 
     if (this.eventCodeBar != '') {
-      let index = this.productData.detalle.findIndex(product => product.codigobarras == this.eventCodeBar);
-      if (index < 0) {
-        this.productData.detalle.push({
-          orden_compra: this.productData.num,
-          codigo_protehus: this.productData.codigo_prothevs,
-          cantidad: 1,
-          codigobarras: this.codigoBarra,
-          lote: this.lote,
-          sucursal_id: 1,
-          fecha_produccion: null,
-          peso: 0,
-          peso_lbs: 0,
-          codigobarras_master: null
-        });
+      if (this.productData.codbarSB == this.eventCodeBar) {
+        index = this.productData.detalle.findIndex(product => product.codigobarras == this.eventCodeBar);
+        if (index < 0) {
+          this.productData.detalle.push({
+            orden_compra: this.productData.num,
+            codigo_protehus: this.productData.codigo_prothevs,
+            cantidad: 1,
+            codigobarras: this.eventCodeBar,
+            lote: this.lote,
+            sucursal_id: 1,
+            fecha_produccion: null,
+            peso: 0,
+            peso_lbs: 0,
+            codigobarras_master: null
+          })
+        } else {
+          this.productData.detalle[index].cantidad = Number(this.productData.detalle[index].cantidad)
+          this.productData.detalle[index].cantidad += 1;
+        }
       } else {
-        this.productData.detalle[index].cantidad = Number(this.productData.detalle[index].cantidad)
-        this.productData.detalle[index].cantidad += 1;
+        this.presentToast('El codigo de barra no coincide con el producto', 'warning')
       }
-
+      console.log(this.productData.detalle[index])
+      this.cantidad = this.productData.detalle[index].cantidad
       this.eventCodeBar = ''
       event.target.value = ''
 
     }
   }
 
-  public scannProduct() {
-    if (this.lote == '') {
-      this.lote = null
-    }
-    if (this.codigoBarra != '' && this.cantidad != 0) {
-      let index = this.productData.detalle.findIndex(product => product.codigobarras == this.codigoBarra);
-      if (index < 0) {
-        this.productData.detalle.push({
-          orden_compra: this.productData.num,
-          codigo_protehus: this.productData.codigo_prothevs,
-          cantidad: this.cantidad,
-          codigobarras: this.codigoBarra,
-          lote: this.lote,
-          sucursal_id: 1,
-          fecha_produccion: null,
-          peso: 0,
-          peso_lbs: 0,
-          codigobarras_master: null
-        });
-      } else {
-        if (this.productData.detalle[index].id != undefined) {
-          this.productsToDelete.push(this.productData.detalle[index].id)
-          delete this.productData.detalle[index].id
-        }
-        this.productData.detalle[index].cantidad = Number(this.productData.detalle[index].cantidad)
-        this.productData.detalle[index].cantidad = Number(this.cantidad);
-      }
-      this.codigoBarra = '';
-      this.cantidad = 0;
+  // public scannProduct() {
+  //   if (this.lote == '') {
+  //     this.lote = null
+  //   }
+  //   if (this.codigoBarra != '' && this.cantidad != 0) {
+  //     let index = this.productData.detalle.findIndex(product => product.codigobarras == this.codigoBarra);
+  //     if (index < 0) {
+  //       this.productData.detalle.push({
+  //         orden_compra: this.productData.num,
+  //         codigo_protehus: this.productData.codigo_prothevs,
+  //         cantidad: this.cantidad,
+  //         codigobarras: this.codigoBarra,
+  //         lote: this.lote,
+  //         sucursal_id: 1,
+  //         fecha_produccion: null,
+  //         peso: 0,
+  //         peso_lbs: 0,
+  //         codigobarras_master: null
+  //       });
+  //     } else {
+  //       if (this.productData.detalle[index].id != undefined) {
+  //         this.productsToDelete.push(this.productData.detalle[index].id)
+  //         delete this.productData.detalle[index].id
+  //       }
+  //       this.productData.detalle[index].cantidad = Number(this.productData.detalle[index].cantidad)
+  //       this.productData.detalle[index].cantidad = Number(this.cantidad);
+  //     }
+  //     this.codigoBarra = '';
+  //     this.cantidad = 0;
 
-    } else {
-      this.presentToast("Ingresa primero un codigo y/o cantidad", 'warning');
-    }
-  }
+  //   } else {
+  //     this.presentToast("Ingresa primero un codigo y/o cantidad", 'warning');
+  //   }
+  // }
 
   public eliminarRegistro(index) {
     console.log(this.productData.detalle[index])
@@ -183,6 +195,43 @@ export class ScannproductsPage implements OnInit {
   }
 
   public receptionProducts() {
+
+    if (this.lote == '') {
+      this.lote = null
+    }
+    console.log(this.modo)
+    if (this.modo == false) {
+      if (this.cantidad != 0) {
+        let index = this.productData.detalle.findIndex(product => product.codigobarras == this.productData.codbarSB);
+        if (index < 0) {
+          this.productData.detalle.push({
+            orden_compra: this.productData.num,
+            codigo_protehus: this.productData.codigo_prothevs,
+            cantidad: this.cantidad,
+            codigobarras: this.productData.codbarSB,
+            lote: this.lote,
+            sucursal_id: 1,
+            fecha_produccion: null,
+            peso: 0,
+            peso_lbs: 0,
+            codigobarras_master: null
+          });
+        } else {
+          if (this.productData.detalle[index].id != undefined) {
+            this.productsToDelete.push(this.productData.detalle[index].id)
+            delete this.productData.detalle[index].id
+          }
+          this.productData.detalle[index].cantidad = Number(this.productData.detalle[index].cantidad)
+          this.productData.detalle[index].cantidad = Number(this.cantidad);
+        }
+
+        this.cantidad = 0;
+
+      } else {
+        this.presentToast("Ingresa primero un codigo y/o cantidad", 'warning');
+      }
+    }
+
 
     let cantidadVal = 0;
     this.productData.count = 0;

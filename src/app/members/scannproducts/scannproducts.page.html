@@ -9,14 +9,14 @@
 
 <ion-content>
 
-  <ion-row>
+  <!-- <ion-row>
     <ion-col>
       <ion-item lines="none">
         <ion-label>Modo de Recepcion</ion-label>
         <ion-toggle [(ngModel)]="modo"></ion-toggle>
       </ion-item>
     </ion-col>
-  </ion-row>
+  </ion-row> -->
 
   <ion-row *ngIf="productData">
     <ion-col>
@@ -28,22 +28,19 @@
     </ion-col>
   </ion-row>
 
-  <form (ngSubmit)="scannProduct()" *ngIf="!this.modo">
-    <ion-row>
-      <ion-col>
-        <h6>Escanea codigo de barra.</h6>
-        <ion-input class="product-scann" [(ngModel)]="codigoBarra" name="codigoBarra"
-          placeholder="Escribe o Escanea un producto"></ion-input>
-      </ion-col>
-      <ion-col>
-        <h6>Ingresar cantidad recibida.</h6>
-        <ion-input class="product-scann" [(ngModel)]="cantidad" name="cantidad" type="number"
-          placeholder="Ingresa la cantidad"></ion-input>
-      </ion-col>
-    </ion-row>
-    <ion-button type="submit" shape="round" expand="full" class="registrar-button">Registrar</ion-button>
-  </form>
-
+  <ion-row *ngIf="!this.modo">
+    <ion-col>
+      <h6>Codigo de barra.</h6>
+      <ion-label class="codbar">
+        <h6>{{productData.codbarSB}}</h6>
+      </ion-label>
+    </ion-col>
+    <ion-col>
+      <h6>Ingresar cantidad recibida.</h6>
+      <ion-input class="product-scann" [(ngModel)]="cantidad" name="cantidad" type="number"
+        placeholder="Ingresa la cantidad"></ion-input>
+    </ion-col>
+  </ion-row>
 
   <ion-row *ngIf="this.modo">
     <ion-col>
@@ -61,13 +58,13 @@
     </ion-col>
   </ion-row>
 
-  <ion-row *ngIf="productData.detalle != ''">
+  <!-- <ion-row *ngIf="productData.detalle != ''">
     <ion-col>
       <h6>Producto Escaneado</h6>
     </ion-col>
-  </ion-row>
+  </ion-row> -->
 
-  <ion-row *ngFor="let scanned of productData.detalle;let index = index">
+  <!-- <ion-row *ngFor="let scanned of productData.detalle;let index = index">
     <ion-col>
       <ion-item lines="none" class="item-format">
         <div class="text-format">Codigo de Barra
@@ -83,6 +80,12 @@
           </ion-button>
         </div>
       </ion-item>
+    </ion-col>
+  </ion-row> -->
+
+  <ion-row *ngIf="productData.detalle">
+    <ion-col>
+      <h6>Cantidad: {{cantidad}}</h6>
     </ion-col>
   </ion-row>
 

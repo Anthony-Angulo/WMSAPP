@@ -3,7 +3,7 @@
     <ion-buttons slot="start">
       <ion-back-button routerLink="/members/inventory-order-detail"></ion-back-button>
     </ion-buttons>
-    <ion-title>Inventario Ciclico Abarrotes</ion-title>
+    <ion-title>Inventario Ciclico</ion-title>
   </ion-toolbar>
 </ion-header>
 
@@ -43,9 +43,16 @@
   <form (ngSubmit)="addProduct()" *ngIf="!this.modo && this.boxExist">
     <ion-row>
       <ion-col>
-        <h6>Ingresar cantidad a inventariar.</h6>
+        <h6>Ingresa cantidad a inventariar.</h6>
         <ion-input class="product-scann" [(ngModel)]="cantidad" name="cantidad" type="number"
           placeholder="Ingresa la cantidad"></ion-input>
+      </ion-col>
+    </ion-row>
+    <ion-row *ngIf="productData.needLote != 0">
+      <ion-col>
+        <h6>Ingresa el lote de producto.</h6>
+        <ion-input class="product-scann" [(ngModel)]="lote" name="lote" placeholder="Ingresa el lote">
+        </ion-input>
       </ion-col>
     </ion-row>
     <ion-button type="submit" shape="round" expand="full" class="registrar-button">Inventariar</ion-button>
@@ -59,7 +66,13 @@
       </ion-input>
     </ion-col>
   </ion-row>
-
+  <ion-row *ngIf="productData.needLote != 0">
+    <ion-col>
+      <h6>Ingresa el lote de producto.</h6>
+      <ion-input class="product-scann" [(ngModel)]="lote" name="lote" placeholder="Ingresa el lote">
+      </ion-input>
+    </ion-col>
+  </ion-row>
 </ion-content>
 
 <ion-footer>

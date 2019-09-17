@@ -45,9 +45,17 @@ export class InventarioCiclicoPage implements OnInit {
         this.http.get(environment.apiWMS + '/getInventoryRequest/' + sucursal_id + '/' + user_id)
           .toPromise().then((inventory_orders: any) => {
             this.inventory_orders = inventory_orders
-            this.hideLoading()
             console.log(this.inventory_orders)
-          }).catch(() => {
+            return this.inventory_orders.detalle.map(a => a.codigo_prothevs)
+          }).then((codes) => {
+            return this.http.get(environment.apiWMS + '/getLoteNeed/' + codes).toPromise()
+          }).then((needLote: any[]) => {
+            this.inventory_orders.detalle.map(product => {
+              product.needLote = Number(needLote.find(y => y.codigoProtevs == product.codigo_prothevs).maneja_lote)
+            })
+            console.log(this.inventory_orders)
+          }).catch((error) => {
+            console.log(error)
             this.presentToast('Error al obtener ordenes.', 'danger')
           }).finally(() => {
             this.hideLoading()

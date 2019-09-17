@@ -1,9 +1,65 @@
 <ion-header>
-  <ion-toolbar>
-    <ion-title>inventoryBeef</ion-title>
+  <ion-toolbar class="tool-bar">
+    <ion-buttons slot="start">
+      <ion-back-button routerLink="/members/inventory-order-detail"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Inventario Ciclico Carnes</ion-title>
   </ion-toolbar>
 </ion-header>
 
 <ion-content>
 
+  <ion-row *ngIf="productData">
+    <ion-col>
+      <h6>Datos de Producto</h6>
+      <ion-item lines="none" class="container-item">
+        Codigo Prothevs: {{productData.codigo_prothevs}}<br>
+        Descripcion: {{productData.descripcion}}
+      </ion-item>
+    </ion-col>
+  </ion-row>
+
+  <ion-row>
+    <ion-col>
+      <h6>Lote de producto.</h6>
+      <ion-input clearInput [(ngModel)]="lote" name="lote" class="product-scann"
+        placeholder="Ingresa lote de producto.">
+      </ion-input>
+    </ion-col>
+  </ion-row>
+
+  <ion-row>
+    <ion-col>
+      <h6>Escanea codigo de barra de caja.</h6>
+      <ion-input clearInput [(ngModel)]="codigoBarra" name="codigoBarra" class="product-scann" type="number"
+        placeholder="Escanea el Codigo de Barra" (ionChange)="addOnChange($event)" debounce="500">
+      </ion-input>
+    </ion-col>
+  </ion-row>
+
+  <ion-row *ngIf="productData.cantidad_contada != 0">
+    <ion-col>
+      <h6>Cantidad: {{productData.cantidad_contada}}</h6>
+    </ion-col>
+  </ion-row>
+
+  <ion-button *ngIf="productData.cantidad_contada != 0" (click)="inventarirarProducts()" expand="full" shape="round"
+    class="registrar-button">Aceptar
+  </ion-button>
+
 </ion-content>
+
+<ion-footer>
+  <ion-toolbar color="dark">
+    <ion-buttons slot="start" routerLink="/members/home">
+      <ion-button>
+        <ion-icon slot="icon-only" name="home"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-buttons slot="end">
+      <ion-button>
+        <ion-icon slot="icon-only" name="chatbubbles"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-footer>
