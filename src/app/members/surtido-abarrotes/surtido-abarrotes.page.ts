@@ -30,78 +30,23 @@ export class SurtidoAbarrotesPage implements OnInit {
 
   ngOnInit() {
     this.productInfo = this.navExtras.getSurtidoDetail()
-    if (this.productInfo.codigoBarras == '') {
-      console.log(1)
-      this.codeExist = false
-    } else {
-      this.codeExist = true
-      if (!this.productInfo.detalle) this.productInfo.detalle = []
-      this.navExtras.setSurtidoDetail(null)
-      this.cantidad = this.productInfo.cantidad
-      console.log(this.productInfo)
-    }
+    this.cantidad = this.productInfo.count
   }
 
-  public scannOnChange(event) {
-
-    this.eventCodeBar = event.target.value
-    let index
-
-    if (this.eventCodeBar != '') {
-      console.log(1)
-      index = this.productInfo.detalle.findIndex(product => product.codigoBarras == this.eventCodeBar)
-      if (index < 0) {
-        console.log(2)
-        this.productInfo.detalle.push({
-          Tipo_movimiento_id: 2,
-          pedido_id: this.productInfo.pedido_id,
-          codigo_protehus: this.productInfo.codigoProtevs,
-          cantidad: 1,
-          codigoBarras: this.eventCodeBar,
-          producto_id: this.productInfo.id
-        })
-      } else {
-        this.productInfo.detalle[index].cantidad = Number(this.productInfo.detalle[index].cantidad)
-        this.productInfo.detalle[index].cantidad += 1;
-      }
-      console.log(this.productInfo)
-      this.eventCodeBar = ''
-      event.target.value = ''
-
-    }
-  }
 
   surtirProducts() {
-    let index
-    if (this.modo == false) {
-      if (this.cantidad != 0) {
-        index = this.productInfo.detalle.findIndex(product => product.codigoBarras == this.productInfo.codigoBarras)
-        if (index < 0) {
-          this.productInfo.detalle.push({
-            Tipo_movimiento_id: 2,
-            pedido_id: this.productInfo.pedido_id,
-            codigo_protehus: this.productInfo.codigoProtevs,
-            cantidad: this.cantidad,
-            codigoBarras: this.productInfo.codigoBarras,
-            producto_id: this.productInfo.id
-          })
-        } else {
-          this.productInfo.detalle[index].cantidad = Number(this.productInfo.detalle[index].cantidad)
-          this.productInfo.detalle[index].cantidad = Number(this.cantidad);
-        }
-      } else {
-        this.presentToast("Ingresa primero un codigo y/o cantidad", 'warning');
+    
+    let productToSend
+    if(this.cantidad !=0 || this.cantidad != undefined){
+      productToSend = {
+        count: this.cantidad,
+        Line: this.productInfo.LineNum
       }
-    }
-    this.productInfo.cantidad = 0
-    if (this.productInfo.detalle.length != 0) {
-      this.productInfo.detalle.forEach(product => {
-        this.productInfo.cantidad += Number(product.cantidad)
-      })
-    }
-
-    this.navExtras.setSurtidoProduct(this.productInfo)
+    this.navExtras.setSurtidoProduct(productToSend)
     this.router.navigate(['/members/surtido']);
+    }else{
+      this.presentToast('Debe ingresar cantidad a surtir.','warning')
+    }
   }
 
   async presentToast(msg: string, color: string) {

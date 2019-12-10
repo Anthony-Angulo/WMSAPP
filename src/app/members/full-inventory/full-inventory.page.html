@@ -32,45 +32,45 @@
     </ion-col>
   </ion-row>
 
-  <div class="alig" *ngIf="!boxExist">
+  <!-- <div class="alig" *ngIf="!boxExist">
     <ion-button class="code-button" routerLink="/members/scann-cajas">
       Registrar codigo caja</ion-button>
-  </div>
+  </div> -->
 
-  <ion-row *ngIf="productInfo && boxExist">
+  <!-- <ion-row *ngIf="productInfo && boxExist">
     <ion-col>
       <ion-item lines="none" *ngIf="productInfo.product_type_id != 3">
         <ion-label>Modo de Escaneo</ion-label>
         <ion-toggle [(ngModel)]="modo"></ion-toggle>
       </ion-item>
     </ion-col>
-  </ion-row>
+  </ion-row> -->
 
-  <ion-row *ngIf="!modo && boxExist && productInfo">
-    <ion-col *ngIf="productInfo.product_type_id != 3">
+  <ion-row *ngIf="!modo && productInfo">
+    <ion-col *ngIf="productInfo.product_type_id != 3  && this.productInfo.status != 1">
       <h6>Ingresa cantidad a inventariar.</h6>
       <ion-input [(ngModel)]=" cantidad" name="cantidad" class="product-scann" placeholder="Cantidad">
       </ion-input>
     </ion-col>
   </ion-row>
 
-  <ion-row *ngIf="!modo && boxExist && productInfo && productInfo.maneja_lote !=0">
-    <ion-col>
-      <h6>Ingresa cantidad a inventariar.</h6>
-      <ion-input [(ngModel)]=" cantidad" name="cantidad" class="product-scann" placeholder="Cantidad">
-      </ion-input>
-    </ion-col>
-  </ion-row>
-
+    <!-- <ion-row *ngIf="!modo && boxExist && productInfo && productInfo.maneja_lote !=0 && this.productInfo.status != '1'">
+      <ion-col>
+        <h6>Ingresa cantidad a inventariar.</h6>
+        <ion-input [(ngModel)]="cantidad" name="cantidad" class="product-scann" placeholder="Cantidad">
+        </ion-input>
+      </ion-col>
+    </ion-row> -->
+  
   <!-- Escaneo de abarrotes -->
-  <ion-row *ngIf="modo && boxExist && productInfo">
+  <!-- <ion-row *ngIf="modo && boxExist && productInfo">
     <ion-col>
       <h6>Escanea producto a inventariar.</h6>
       <ion-input [(ngModel)]="codigoBarra" (ionChange)="addOnChange($event)" name="codigoBarra" class="product-scann"
         placeholder="Codigo Barra">
       </ion-input>
     </ion-col>
-  </ion-row>
+  </ion-row> -->
   <!-- \\\\\\\ -->
 
   <!-- Escaneo de carnes -->
@@ -78,40 +78,50 @@
     <ion-col>
       <h6>Escanea producto a inventariar.</h6>
       <ion-input [(ngModel)]="codigoBarra" id="input-codigo" (ionChange)="addOnChange($event)" name="codigoBarra"
-        class="product-scann" placeholder="Codigo Barra">
+        class="product-scann" debounce="500" placeholder="Codigo Barra">
       </ion-input>
     </ion-col>
   </ion-row>
   <ion-row *ngIf="productInfo && productInfo.product_type_id == 3">
     <ion-col>
       <h6>Ingresa Lote</h6>
-      <ion-input placeholder="Codigo Barra" [(ngModel)]="lote" class="product-scann" name="lote"></ion-input>
+      <ion-input placeholder="lote" [(ngModel)]="lote" class="product-scann" name="lote"></ion-input>
+    </ion-col>
+  </ion-row>
+  <ion-row *ngIf="productInfo && productInfo.product_type_id == 3 && !isDesc">
+    <ion-col>
+      <h6>Ingresa Peso</h6>
+      <ion-input placeholder="Peso" [(ngModel)]="peso" class="product-scann" name="peso"></ion-input>
     </ion-col>
   </ion-row>
   <!-- \\\\\\\ -->
+    <ion-row *ngIf="productInfo">
+      <ion-col>
+          <h6>Cantidad Inventariada: {{productInfo.cantidad_contada}}</h6>
+      </ion-col>
+      <ion-col *ngIf="productInfo.product_type_id == 3">
+       <h6>Peso: {{productInfo.cantidad_contada_lbs}}</h6>
+      </ion-col>
+    </ion-row>
 
-  <div *ngIf="productInfo">
-    <h6>Cantidad Inventariada: {{productInfo.cantidad_contada}}</h6>
-  </div>
-
-  <ion-row *ngIf="boxExist && productInfo">
+  <ion-row *ngIf="productInfo">
     <ion-col>
       <ion-button *ngIf="!done" expand="full" (click)="inventariarProducts()" class="code-button" shape="round">Enviar
       </ion-button>
     </ion-col>
-    <ion-col>
+    <!-- <ion-col>
       <ion-button *ngIf="!done" expand="full" shape="round" color="danger" (click)="closeInventory()">Cerrar Inventario
       </ion-button>
-    </ion-col>
+    </ion-col> -->
   </ion-row>
 
-  <ion-row *ngIf="productInfo && done">
+  <!-- <ion-row *ngIf="productInfo && done">
     <ion-col>
       <ion-text color="danger">
         <h6>Este producto ya fue inventariado.</h6>
       </ion-text>
     </ion-col>
-  </ion-row>
+  </ion-row> -->
 
 </ion-content>
 

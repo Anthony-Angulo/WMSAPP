@@ -1,0 +1,87 @@
+<ion-header>
+  <ion-toolbar class="tool-bar">
+    <ion-buttons slot="start">
+      <ion-back-button routerLink="/members/home"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Surtido de Mercancia</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-row *ngIf="!order">
+    <ion-col>
+      <h6>Ingresa un numero de orden de surtido.</h6>
+      <form (ngSubmit)="getOrden()">
+        <ion-input class="input-recepcion" placeholder="Orden De Surtido" type="number" [(ngModel)]="number"
+          name="number">
+        </ion-input>
+        <ion-button type="submit" class="search-order-button" expand="full">
+          Buscar
+        </ion-button>
+      </form>
+    </ion-col>
+  </ion-row>
+  <ion-row *ngIf="order">
+    <ion-col>
+      <h6>Datos de Contacto</h6>
+      <ion-item lines="none" class="container-item">
+        Codigo: {{order.ORDR.CardCode}}<br>
+        Nombre: {{order.ORDR.CardName}}
+      </ion-item>
+    </ion-col>
+  </ion-row>
+  <div *ngIf="order">
+    <h6>Productos</h6>
+    <ion-row>
+      <ion-col>
+        <div  class="search-order-product">
+            <ion-input class="input-recepcion" placeholder="Buscar en la lista"  [(ngModel)]="search"
+            name="search">
+            </ion-input>
+            <ion-button   class="search-order-button" (click) = "searchProduct()">
+              Buscar
+            </ion-button>
+        </div>
+      </ion-col>
+    </ion-row>
+    <ion-row class="table">
+      <ion-col size="3">
+        ItemCode
+      </ion-col>
+      <ion-col size="5.5">
+        Description
+      </ion-col>
+      <ion-col size="2">
+        Qty
+      </ion-col>
+      <ion-col size="1.5">
+        UM
+      </ion-col>
+    </ion-row>
+    <ion-row class="text-content" *ngFor="let products of order.RDR1; let index = index" 
+    (click)="products.LineStatus == 'O' && goToProduct(index)" 
+    [ngStyle]="{ 'color': products.LineStatus === 'C' ? 'green': 'black' }">
+      <ion-col size="3">
+        {{products.ItemCode}}
+      </ion-col>
+      <ion-col size="5.5">
+        {{products.Dscription}}
+      </ion-col>
+      <ion-col size="2">
+        {{products.count | number }} / {{products.OpenQty | number}} 
+      </ion-col>
+      <ion-col size="1.5">
+        {{products.UomCode}}
+      </ion-col>
+    </ion-row>
+    <ion-row>
+      <ion-col>
+        <ion-button class="search-order-button" shape="round" expand="block" (click)="sendProducts()">
+          Surtir
+        </ion-button>
+      </ion-col>
+    </ion-row>
+  </div>
+
+
+</ion-content>

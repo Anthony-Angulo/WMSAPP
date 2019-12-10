@@ -81,19 +81,20 @@ export class RecepcionPage implements OnInit {
     }).then(([orderData, dataExist]: any[]) => {
       order = orderData
       dataExist.order.map(x => x.cantidad = Number(x.cantidad))
-      order.detalle.map(x => Object.assign(x, { detalle: dataExist.order.filter(y => y.codigo_protehus == x.codigo_prothevs) }))
+      order.detalle.map(x => x.detalle = dataExist.order.filter(y => y.codigo_protehus == x.codigo_prothevs))
       order.detalle.map(x => x.count = x.detalle.map(y => y.cantidad).reduce((a, b) => a + b, 0))
       return orderData.detalle.map(a => a.codigo_prothevs)
     }).then(codes => {
       return Promise.all([
         this.http.get(environment.apiWMS + '/getLoteNeed/' + codes).toPromise(),
-        this.http.get(environment.apiWMS + '/codebardescriptions/' + codes).toPromise()
+        this.http.get(environment.apiWMS + '/codebardescriptionsVariants/' + codes).toPromise(),
+        this.http.get(environment.apiWMS +'/getBoxCodes/' + codes).toPromise()
       ])
-    }).then(([needLote, codebarDescription]: any[]) => {
-      console.log(codebarDescription)
+    }).then(([needLote, codebarDescription, boxcodes]: any[]) => {
       order.detalle.map(product => {
         product.needLote = Number(needLote.find(y => y.codigoProtevs == product.codigo_prothevs).maneja_lote)
         product.detalle_codigo = codebarDescription.find(y => y.codigo_protevs == product.codigo_prothevs)
+        product.codbarSB = boxcodes.find(y => y.itemNo == product.codigo_prothevs)
       })
       this.order = order
       console.log(this.order)
@@ -107,23 +108,24 @@ export class RecepcionPage implements OnInit {
 
   goToProductOnChange(event) {
 
-    if (event.target.value == '') {
-
-    } else {
+    if (event.target.value != '') {
+      console.log(event.target.value)
       this.codigoCaja = event.target.value
-
-      let ind = this.order.detalle.findIndex(product => product.codbarSB == this.codigoCaja)
-
+      console.log(this.codigoCaja)
+      let filtrada = this.order.detalle.filter(prod => prod.codbarSB != undefined)
+      console.log(filtrada)
+      let ind = filtrada.findIndex(product => product.codbarSB.Barcode == this.codigoCaja)
+      console.log(ind)
       if (ind >= 0) {
         this.navExtras
-          .setOrderData(this.order.detalle[ind])
+          .setOrderData(filtrada[ind])
         if (this.order.detalle[ind].tipo == 3) {
           this.router.navigate(['members/recepcion-beef'])
         } else {
           this.router.navigate(['/members/scannproducts'])
         }
       } else {
-        this.presentToast('No se encontro codigo de caja de producto en la lista', 'warning')
+        this.presentToast('No se encontro codigo de caja de producto en la lista o no tiene registrado un codigo de barra', 'warning')
       }
     }
     this.codigoCaja = ''

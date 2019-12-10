@@ -11,13 +11,13 @@
 
   <ion-row *ngIf="inventoryStatus">
     <ion-col>
-      <ion-button (click)="presentDialog()" color="danger" expand="full">Terminar inventario</ion-button>
+      <ion-button (click)="presentDialog()" color="danger" expand="full">Cerrar Inventario</ion-button>
     </ion-col>
   </ion-row>
 
   <h6>Selecciona un codigo para inventariar.</h6>
   <ion-row class="table">
-    <ion-col size="3">
+    <ion-col size="2">
       SKU
     </ion-col>
     <ion-col size="5.5">
@@ -26,11 +26,14 @@
     <ion-col size="2">
       Qty
     </ion-col>
+    <ion-col size=2>
+      Peso
+    </ion-col>
   </ion-row>
 
   <ion-row class="text-content" *ngFor="let products of inventoryDetail; let index = index"
     (click)="goToProduct(index)">
-    <ion-col size="3">
+    <ion-col size="2">
       {{products.codigo_prothevs}}
     </ion-col>
     <ion-col size="5.5">
@@ -39,9 +42,12 @@
     <ion-col size="2">
       {{products.cantidad_contada}}
     </ion-col>
+    <ion-col size="2">
+      {{products.cantidad_contada_lbs }}
+    </ion-col>
   </ion-row>
 
-  <ion-button *ngIf="inventoryStatus" class="send" expand="full" shape="round" (click)="sendProducts()">Enviar
+  <ion-button *ngIf="inventoryStatus" class="send" expand="full" shape="round" (click)="sendProducts()">Registrar
     Inventario</ion-button>
 
 </ion-content>

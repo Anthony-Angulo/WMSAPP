@@ -37,7 +37,7 @@
     <ion-row>
       <ion-col>
         <ion-input (ionChange)="goToProductOnChange($event)" [(ngModel)]="codigoCaja" name="codigoCaja"
-          class="product-scann" placeholder="Escanea o ingresa codigo de caja"></ion-input>
+          class="product-scann" placeholder="Escanea o ingresa codigo de caja" debounce="500"></ion-input>
       </ion-col>
     </ion-row>
     <ion-row class="table">
@@ -80,7 +80,7 @@
   </div>
 </ion-content>
 
-<ion-footer>
+<!-- <ion-footer>
   <ion-toolbar color="dark">
     <ion-buttons slot="start" routerLink="/members/home">
       <ion-button>
@@ -93,4 +93,4 @@
       </ion-button>
     </ion-buttons>
   </ion-toolbar>
-</ion-footer>
+</ion-footer> -->

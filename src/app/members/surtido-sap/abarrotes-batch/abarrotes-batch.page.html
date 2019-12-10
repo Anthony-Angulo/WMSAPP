@@ -1,0 +1,103 @@
+<ion-header>
+  <ion-toolbar class="tool-bar">
+    <ion-buttons slot="start">
+      <ion-back-button routerLink="/members/surtido-sap"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Surtido de Mercancia</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+
+  <ion-row *ngIf="productData">
+    <ion-col>
+      <h6>Datos de Producto</h6>
+      <ion-item lines="none" class="container-item">
+        Item Code: {{productData.Detail.ItemCode}}<br>
+        Descripcion: {{productData.Detail.ItemName}}
+      </ion-item>
+    </ion-col>
+  </ion-row>
+  
+  <!-- <h6>Informacion de Lote</h6>
+  <ion-row>
+    <ion-col>
+      <ion-input class="product-scann" [(ngModel)] = "lote" name="lote" placeholder = "Ingresa lote"></ion-input>
+    </ion-col>
+  </ion-row> -->
+
+  <h6>Seleccionar Lote</h6>
+    <ion-row>
+      <ion-col>
+        <ion-select class="product-scann" [(ngModel)]="lote">
+          <ion-select-option  *ngFor="let lote of batch" value= "{{lote.BatchNum}}">{{lote.BatchNum}} - {{lote.Quantity | number}}</ion-select-option>
+        </ion-select> 
+      </ion-col>
+    </ion-row>
+
+  <ion-row>
+      <ion-col>
+          <ion-datetime class="product-scann" placeholder="Fecha de Caducidad" [(ngModel)]="fechaCad" name="fechaCad" max="2030"> 
+          </ion-datetime>
+      </ion-col>
+  </ion-row>
+
+  <h6>Ingresar cantidad a surtir.</h6>
+  <ion-row>
+    <ion-col size="9">
+      <ion-input class="product-scann" [(ngModel)]="cantidad" name="cantidad" type="number"
+        placeholder="Ingresa la cantidad"></ion-input>
+    </ion-col>
+    <ion-col>
+        <ion-button size="small" (click)="addLote()">
+          <ion-icon slot="icon-only" name="add-circle"></ion-icon>
+        </ion-button>
+    </ion-col>
+  </ion-row>
+
+  <h6 *ngIf="lotes">Lotes</h6>
+  <ion-row *ngFor="let lote of lotes; let index = index">
+      <ion-col>
+        <ion-item lines="none" class="container-item">
+          Lote: {{lote.name}}<br>
+          Cantidad: {{lote.quantity}}<br>
+          Fecha: {{lote.expirationDate}}
+          <ion-button color="danger" (click)="eliminar(index)" class="button-eliminar">
+            <ion-icon slot="icon-only" name="close-circle"></ion-icon>
+          </ion-button>
+        </ion-item>
+      </ion-col>
+    </ion-row>
+
+    
+    
+
+
+  <ion-row>
+    <ion-col>
+      <ion-button shape="round" color="danger" routerLink="/members/surtido-sap" expand="block">
+        Cancelar
+      </ion-button>
+    </ion-col>
+    <ion-col>
+      <ion-button shape="round" expand="block" (click)="acceptRecepton()">
+        Aceptar
+      </ion-button>
+    </ion-col>
+  </ion-row>
+</ion-content>
+
+<ion-footer>
+  <ion-toolbar color="dark">
+    <ion-buttons slot="start" routerLink="/members/home">
+      <ion-button>
+        <ion-icon slot="icon-only" name="home"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-buttons slot="end">
+      <ion-button>
+        <ion-icon slot="icon-only" name="chatbubbles"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-footer>

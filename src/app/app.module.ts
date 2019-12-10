@@ -10,6 +10,7 @@ import { AppComponent } from './app.component';
 import { AppRoutingModule } from './app-routing.module';
 import { IonicStorageModule } from '@ionic/storage';
 import { BarcodeScanner } from '@ionic-native/barcode-scanner/ngx';
+import { AppVersion } from '@ionic-native/app-version/ngx';
 import { TarimasModalPageModule } from './members/tarimas-modal/tarimas-modal.module';
 
 @NgModule({
@@ -20,6 +21,7 @@ import { TarimasModalPageModule } from './members/tarimas-modal/tarimas-modal.mo
     StatusBar,
     SplashScreen,
     BarcodeScanner,
+    AppVersion,
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy }
   ],
   bootstrap: [AppComponent]

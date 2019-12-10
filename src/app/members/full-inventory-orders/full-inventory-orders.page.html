@@ -10,7 +10,7 @@
 <ion-content>
   <h6>Seleccione una orden a inventariar.</h6>
   <ion-list class="list-format">
-    <ion-item lines="none" class="item-format" *ngFor="let orders of inventory_orders">
+    <ion-item lines="none" class="item-format" *ngFor="let orders of inventory_orders; let index = index">
       <div class="text-format">Numero de Folio
         <br>
         <span>{{orders.id}}</span>
@@ -18,7 +18,7 @@
         <br>
         <span>{{orders.user_id}}</span>
       </div>
-      <ion-button class="forward-button" (click)="goToOrderDetail()">
+      <ion-button class="forward-button" (click)="goToOrderDetail(index)">
         <ion-icon slot="icon-only" name="arrow-forward"></ion-icon>
       </ion-button>
     </ion-item>

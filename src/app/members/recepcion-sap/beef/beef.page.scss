@@ -1,0 +1,107 @@
+ion-content{
+    --background: #e6eced;
+  } 
+  
+  ion-toolbar.tool-bar{
+       --background: #160ff2;
+       --color: #ffffff;
+  }
+  
+  ion-button.tarima-button{
+       --background: #160ff2;
+  }
+  
+  ion-button.aceptar-button{
+      --background: #160ff2;
+  }
+
+  ion-item.container-item{
+     border: 2px solid #000000;
+     border-radius: 4px;
+     border-color: #86c1d1;
+     font-family: 'Franklin Gothic Medium';
+}
+  
+  
+  ion-input.product-scann{
+       border: 2px solid #000000;
+     //   border-radius: 5pc;
+       margin-bottom: 5px;
+       border-color: #86c1d1;
+       --background: #ffffff;
+  }
+
+  ion-button.button-eliminar {
+     position: absolute;
+     right: 0;
+     bottom: 0;
+   }
+  
+  ion-button.aceptar{
+       border: 1px solid #ffffff;
+       border-radius: 2px;
+  }
+  
+  ion-datetime.product-scann{
+       border: 2px solid #000000;
+     //   border-radius: 5pc;
+       margin-bottom: 5px;
+       border-color: #86c1d1;
+       --background: #ffffff;
+  }
+  
+  ion-item.item-format{
+      border: 2px solid #000000;
+      border-color: #86c1d1;
+      border-radius: 4px;
+      min-width: -webkit-fill-available;
+      display: grid;
+  }
+  
+  ion-button.toggle-button-ST{
+       position: absolute;
+      right: 0;
+      top: 0;
+      height: 40px;
+  }
+  
+  ion-button.toggle-button{
+       position: absolute;
+      right: 50px;
+      top: 0;
+      height: 40px;
+  }
+  
+  div.delete-button{
+      position: absolute;
+      right:    0;
+      bottom:   0;
+  }
+  
+  ion-button.add-button{
+      position: absolute;
+      right:    0;
+      top:   0;
+      height: 40px;
+  }
+  
+  div.input-wrapper{
+       display: block;
+  }
+  
+  div.text-format{
+       color: #160ff2;
+       font-size: 14px;
+       font-weight: bold;
+  }
+  
+  div span{
+      display: table;
+      color: #000000;
+      font-size: 12px;
+      font-weight: normal;
+  }
+  
+  h6{
+       font-family: 'Franklin Gothic Medium';
+  }

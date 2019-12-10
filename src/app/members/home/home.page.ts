@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { AppVersion } from '@ionic-native/app-version/ngx';
 
 @Component({
   selector: 'app-home',
@@ -6,10 +7,15 @@ import { Component, OnInit } from '@angular/core';
   styleUrls: ['./home.page.scss'],
 })
 export class HomePage implements OnInit {
-
-  constructor() { }
+  version 
+  constructor(private appVersion: AppVersion) { }
 
   ngOnInit() {
+    this.appVersion.getVersionNumber().then(version => {
+      this.version = version
+      }).catch(err => {
+        console.log(err)
+      });
   }
 
 }

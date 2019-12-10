@@ -1,0 +1,48 @@
+<ion-header>
+  <ion-toolbar class="tool-bar">
+    <ion-buttons slot="start">
+      <ion-back-button routerLink="/members/home"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Productos</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-row *ngIf="!inventory">
+    <ion-col>
+      <h6>Ingresa codigo de producto.</h6>
+      <form (ngSubmit)="getProducto()">
+        <ion-input class="input-recepcion" placeholder="Codigo de Producto" [(ngModel)]="number" name="number">
+        </ion-input>
+        <ion-button type="submit" class="search-order-button" expand="full">
+          Buscar
+        </ion-button>
+      </form>
+    </ion-col>
+  </ion-row>
+  <ion-row *ngIf="inventory">
+    <ion-col>
+      <h6>Datos de Producto</h6>
+      <ion-item lines="none" class="container-item">
+        Codigo: {{inventory.OITM[0].ItemCode}}<br>
+        Nombre: {{inventory.OITM[0].ItemName}}
+      </ion-item>
+      -----------------------------------------------------------------
+    </ion-col>
+  </ion-row>
+
+  <div *ngIf="inventory">
+    <ion-row *ngFor="let inv of inventory.OITW">
+      <ion-col>
+        <ion-item lines="none" class="container-item">
+          Sucursal: {{inv.WhsCode}}<br>
+          A la mano: {{inv.OnHand | number}}<br>
+          Comprometido: {{inv.IsCommited | number}}<br>
+          En Ordenes: {{inv.OnOrder | number}}<br>
+          Stock Total: {{inv.StockValue | number}}
+        </ion-item>
+      </ion-col>
+    </ion-row>
+  </div>
+
+</ion-content>

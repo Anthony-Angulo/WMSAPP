@@ -22,6 +22,14 @@ ion-item.item-format{
     min-width: -webkit-fill-available;
 }
 
+ion-datetime.product-scann{
+    border: 2px solid #000000;
+    border-radius: 5pc;
+    margin-bottom: 5px;
+    border-color: #86c1d1;
+    --background: #ffffff;
+}
+
 ion-input.product-scann{
      border: 2px solid #000000;
      border-radius: 5pc;

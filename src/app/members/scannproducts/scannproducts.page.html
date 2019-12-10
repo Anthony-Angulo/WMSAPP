@@ -1,7 +1,7 @@
 <ion-header>
   <ion-toolbar class="tool-bar">
     <ion-buttons slot="start">
-      <ion-back-button routerLink="/members/recepcion"></ion-back-button>
+      <ion-back-button routerLink="/members/recepcion-sap"></ion-back-button>
     </ion-buttons>
     <ion-title>Recepcion de Mercancia</ion-title>
   </ion-toolbar>
@@ -9,132 +9,63 @@
 
 <ion-content>
 
-  <!-- <ion-row>
-    <ion-col>
-      <ion-item lines="none">
-        <ion-label>Modo de Recepcion</ion-label>
-        <ion-toggle [(ngModel)]="modo"></ion-toggle>
-      </ion-item>
-    </ion-col>
-  </ion-row> -->
-
   <ion-row *ngIf="productData">
     <ion-col>
       <h6>Datos de Producto</h6>
       <ion-item lines="none" class="container-item">
-        Codigo Prothevs: {{productData.codigo_prothevs}}<br>
-        Descripcion: {{productData.descripcion}}
+        Item Code: {{productData.Detail.ItemCode}}<br>
+        Descripcion: {{productData.Detail.ItemName}}
       </ion-item>
     </ion-col>
   </ion-row>
-
-  <ion-row *ngIf="!this.modo">
+  
+  <h6>Informacion de Lote</h6>
+  <ion-row>
     <ion-col>
-      <h6>Codigo de barra.</h6>
-      <ion-label class="codbar">
-        <h6>{{productData.codbarSB}}</h6>
-      </ion-label>
+      <ion-input class="product-scann" [(ngModel)] = "lote" name="lote" placeholder = "Ingresa lote"></ion-input>
     </ion-col>
-    <ion-col>
-      <h6>Ingresar cantidad recibida.</h6>
+  </ion-row>
+
+  <ion-row>
+      <ion-col>
+          <ion-datetime class="product-scann" placeholder="Fecha de Caducidad" [(ngModel)]="fechaCad" name="fechaCad">
+          </ion-datetime>
+      </ion-col>
+  </ion-row>
+
+  <h6>Ingresar cantidad a recibir.</h6>
+  <ion-row>
+    <ion-col size="9">
       <ion-input class="product-scann" [(ngModel)]="cantidad" name="cantidad" type="number"
         placeholder="Ingresa la cantidad"></ion-input>
     </ion-col>
-  </ion-row>
-
-  <ion-row *ngIf="this.modo">
     <ion-col>
-      <h6>Escanea codigo de barra de producto.</h6>
-      <ion-input [(ngModel)]="eventCodeBar" name="eventCodeBar" class="product-scann" type="number"
-        placeholder="Escanea el Codigo de Barra" (ionChange)="scannOnChange($event)" debounce="500">
-      </ion-input>
-    </ion-col>
-  </ion-row>
-
-  <ion-row *ngIf="productData.needLote != 0">
-    <ion-col>
-      <h6>Ingresa lote de producto.</h6>
-      <ion-input [(ngModel)]="lote" name="lote" class="product-scann" placeholder="Ingresa el lote"></ion-input>
-    </ion-col>
-  </ion-row>
-
-  <!-- <ion-row *ngIf="productData.detalle != ''">
-    <ion-col>
-      <h6>Producto Escaneado</h6>
-    </ion-col>
-  </ion-row> -->
-
-  <!-- <ion-row *ngFor="let scanned of productData.detalle;let index = index">
-    <ion-col>
-      <ion-item lines="none" class="item-format">
-        <div class="text-format">Codigo de Barra
-          <br>
-          <span>{{scanned.codigobarras}}</span>
-          Cantidad
-          <br>
-          <span>{{scanned.cantidad}}</span>
-        </div>
-        <div class="delete-button">
-          <ion-button size="small" color="danger" (click)="presentDialog(index)">
-            <ion-icon slot="icon-only" name="trash"></ion-icon>
-          </ion-button>
-        </div>
-      </ion-item>
-    </ion-col>
-  </ion-row> -->
-
-  <ion-row *ngIf="productData.detalle">
-    <ion-col>
-      <h6>Cantidad: {{cantidad}}</h6>
-    </ion-col>
-  </ion-row>
-
-  <ion-row>
-    <ion-col>
-      <h6>Tarimas Creadas</h6>
-      <div class="tarima-button">
-        <ion-button shape="round" class="add-button" (click)="openModal()">
-          Agregar tarima
+        <ion-button size="small" (click)="addLote()">
+          <ion-icon slot="icon-only" name="add-circle"></ion-icon>
         </ion-button>
-      </div>
     </ion-col>
   </ion-row>
 
-  <ion-row *ngFor="let tarima of productData.tarimas; let index = index">
-    <ion-col>
-      <ion-item lines="none" class="item-format">
-        <div class="text-format">Codigo Master
-          <br>
-          <span>{{tarima.codigo_master}}</span>
-          Cantidad
-          <br>
-          <span>{{tarima.cantidad}}</span>
-        </div>
-        <div class="delete-button">
-          <ion-button size="small" color="danger" (click)="eliminarRegistroTarima(index)">
-            <ion-icon slot="icon-only" name="trash"></ion-icon>
-          </ion-button>
-        </div>
-      </ion-item>
-    </ion-col>
-  </ion-row>
+  <h6 *ngIf="productLote">Lotes</h6>
+  <ion-row *ngFor="let lote of productLote">
+      <ion-col>
+        <ion-item lines="none" class="container-item">
+          Lote: {{lote.Lote}}<br>
+          Cantidad: {{lote.count}}<br>
+          Fecha: {{lote.fechaCad}}
+        </ion-item>
+      </ion-col>
+    </ion-row>
 
-  <!-- <ion-row *ngIf="productData.detalle.length != 0">
-    <ion-col>
-      <ion-button expand="full" shape="round" class="registrar-button" (click)="openModal()">
-        Crear Tarima Master
-      </ion-button>
-    </ion-col>
-  </ion-row> -->
 
   <ion-row>
     <ion-col>
-      <ion-button shape="round" color="danger" routerLink="/members/recepcion" expand="block">
+      <ion-button shape="round" color="danger" routerLink="/members/recepcion-sap" expand="block">
         Cancelar
       </ion-button>
     </ion-col>
     <ion-col>
-      <ion-button shape="round" expand="block" (click)="receptionProducts()">
+      <ion-button shape="round" expand="block" (click)="acceptRecepton()">
         Aceptar
       </ion-button>
     </ion-col>

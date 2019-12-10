@@ -250,104 +250,129 @@ export class RecepcionBeefPage implements OnInit {
   }
 
   getData() {
-    if (this.codigoBarra.length == Number(this.productData.detalle_codigo.length)) {
-      if (this.productData.detalle.findIndex(product => product.codigobarras == this.codigoBarra) != -1) {
-        console.log(this.codigoBarra)
-        this.presentToast('ya existe este codigo', 'warning')
-      } else {
-        let peso = this.codigoBarra.substr(this.productData.detalle_codigo.peso_pos - 1, this.productData.detalle_codigo.peso_length)
-        let fecha_cad = this.codigoBarra.substr(this.productData.detalle_codigo.fecha_cad_pos - 1, this.productData.detalle_codigo.fecha_cad_length)
-        let serie = this.codigoBarra.substr(this.productData.detalle_codigo.numero_serie_pos - 1, this.productData.detalle_codigo.numero_serie_length)
-        let gtin = this.codigoBarra.substr(this.productData.detalle_codigo.gtin_pos - 1, this.productData.detalle_codigo.gtin_length)
-        let sku = this.codigoBarra.substr(this.productData.detalle_codigo.sku_pos - 1, this.productData.detalle_codigo.sku_length)
-        let fecha_prod = this.codigoBarra.substr(this.productData.detalle_codigo.fecha_prod_pos - 1, this.productData.detalle_codigo.fecha_prod_length)
+    
+      this.http.get(environment.apiWMS + '/validateCodeBarInventoryRec/' + this.codigoBarra).toPromise().then((data) => {
 
-        console.log('peso: ' + peso + '  fecha_cad:  ' + fecha_cad + '  serie: ' + serie + '  gtin: ' + gtin + '  sku: ' + sku + '  fecha_prod: ' + fecha_prod)
+        if (this.productData.detalle.findIndex(product => product.codigobarras == this.codigoBarra) != -1 || data) {
 
-        if (this.productData.detalle_codigo.UOM_id != 3) {
-          peso = peso.substring(0, peso.length - 1) + '.' + peso.substring(peso.length - 1, peso.length + 1)
-          if (peso != '.') {
-            this.peso = Number((Number(peso) / 2.205).toFixed(2))
-          } else {
-            peso = 0
-          }
+          console.log(this.codigoBarra)
+
+          this.presentToast('Ya existe este codigo. Intenta de nuevo.', 'warning')
+
         } else {
-          peso = peso.substring(0, peso.length - 2) + '.' + peso.substring(peso.length - 2, peso.length + 1)
-          if (peso != '.') {
-            this.peso = Number(Number(peso).toFixed(2))
+
+          let codFound = this.productData.detalle_codigo.findIndex(y => y.length == this.codigoBarra.trim().length)
+
+          if (codFound < 0) {
+
+            this.presentToast('El codigo de barra no coincide con la informacion de etiqueta de proveedor.', 'warning')
+
           } else {
-            peso = 0
+
+            let peso = this.codigoBarra.substr(this.productData.detalle_codigo.peso_pos - 1, this.productData.detalle_codigo.peso_length)
+            let fecha_cad = this.codigoBarra.substr(this.productData.detalle_codigo.fecha_cad_pos - 1, this.productData.detalle_codigo.fecha_cad_length)
+            let serie = this.codigoBarra.substr(this.productData.detalle_codigo.numero_serie_pos - 1, this.productData.detalle_codigo.numero_serie_length)
+            let gtin = this.codigoBarra.substr(this.productData.detalle_codigo.gtin_pos - 1, this.productData.detalle_codigo.gtin_length)
+            let sku = this.codigoBarra.substr(this.productData.detalle_codigo.sku_pos - 1, this.productData.detalle_codigo.sku_length)
+            let fecha_prod = this.codigoBarra.substr(this.productData.detalle_codigo.fecha_prod_pos - 1, this.productData.detalle_codigo.fecha_prod_length)
+
+            console.log('peso: ' + peso + '  fecha_cad:  ' + fecha_cad + '  serie: ' + serie + '  gtin: ' + gtin + '  sku: ' + sku + '  fecha_prod: ' + fecha_prod)
+
+            if (this.productData.detalle_codigo.UOM_id != 3) {
+
+              peso = peso.substring(0, peso.length - 1) + '.' + peso.substring(peso.length - 1, peso.length + 1)
+
+              if (peso != '.') {
+
+                this.peso = Number((Number(peso) / 2.205).toFixed(2))
+
+              } else {
+
+                peso = 0
+              }
+            } else {
+
+              peso = peso.substring(0, peso.length - 2) + '.' + peso.substring(peso.length - 2, peso.length + 1)
+
+              if (peso != '.') {
+
+                this.peso = Number(Number(peso).toFixed(2))
+
+              } else {
+
+                peso = 0
+
+              }
+            }
+
+            if (fecha_prod != undefined || fecha_prod != '') {
+              let date = moment(fecha_prod, this.productData.detalle_codigo.fecha_prod_orden).toString()
+              this.fechaProd = new Date(date).toISOString()
+            }
+
+            if (peso == 0 && (this.peso == undefined || this.peso <= 0)) {
+              this.presentToast('Debes ingrear peso de producto.', 'warning')
+              return
+            }
+
+            if (fecha_prod == '' && this.fechaProd == undefined) {
+              this.presentToast('Debes ingresar fecha de produccion.', 'warning')
+              return
+            }
+
+            if (this.lote == '' || this.lote == undefined) {
+              this.presentToast('Debes ingresar lote.', 'warning')
+              return
+            }
+
+            if (!this.start) {
+
+              this.index.push(this.productData.detalle.length)
+
+              this.tarimas.products.push({
+                codigoProtevs: this.productData.codigoProtevs,
+                cantidad: 1,
+                UM_mayoreo: this.productData.unidad_medida,
+                lote: this.lote,
+                fecha_produccion: this.fechaProd,
+                codigoBarras: this.codigoBarra
+              })
+            }
+
+            this.productData.detalle.push({
+              orden_compra: this.productData.num,
+              codigo_protehus: this.productData.codigo_prothevs,
+              cantidad: 1,
+              codigobarras: this.codigoBarra,
+              lote: this.lote,
+              sucursal_id: 1,
+              fecha_produccion: this.fechaProd,
+              peso: this.peso,
+              peso_lbs: peso,
+              codigobarras_master: null
+            })
+
+            if (!this.adButton) {
+              if (this.tarimaIndex > -1) {
+                this.productData.detalle[this.productData.detalle.length - 1]
+                  .codigobarras_master = this.productData.tarimas[this.tarimaIndex].codigo_master
+
+                this.productData.tarimas[this.tarimaIndex].cantidad += 1
+              } else {
+                this.presentToast('Error al agregar. Intenta de nuevo.', 'danger')
+              }
+
+            }
+
+            this.presentToast('Se agrego a la lista', 'success')
+
+            this.fechaProd = null
+            this.peso = 0
           }
         }
 
-        if (fecha_prod != undefined || fecha_prod != '') {
-          let date = moment(fecha_prod, this.productData.detalle_codigo.fecha_prod_orden).toString()
-          this.fechaProd = new Date(date).toISOString()
-        }
-
-        if (peso == 0 && (this.peso == undefined || this.peso <= 0)) {
-          this.presentToast('Debes ingrear peso de producto.', 'warning')
-          return
-        }
-
-        if (fecha_prod == '' && this.fechaProd == undefined) {
-          this.presentToast('Debes ingresar fecha de produccion.', 'warning')
-          return
-        }
-
-        if (this.lote == '' || this.lote == undefined) {
-          this.presentToast('Debes ingresar lote.', 'warning')
-          return
-        }
-
-        if (!this.start) {
-
-          this.index.push(this.productData.detalle.length)
-
-          this.tarimas.products.push({
-            codigoProtevs: this.productData.codigoProtevs,
-            cantidad: 1,
-            UM_mayoreo: this.productData.unidad_medida,
-            lote: this.lote,
-            fecha_produccion: this.fechaProd,
-            codigoBarras: this.codigoBarra
-          })
-        }
-
-        this.productData.detalle.push({
-          orden_compra: this.productData.num,
-          codigo_protehus: this.productData.codigo_prothevs,
-          cantidad: 1,
-          codigobarras: this.codigoBarra,
-          lote: this.lote,
-          sucursal_id: 1,
-          fecha_produccion: this.fechaProd,
-          peso: this.peso,
-          peso_lbs: peso,
-          codigobarras_master: null
-        })
-
-        if (!this.adButton) {
-          if (this.tarimaIndex > -1) {
-            this.productData.detalle[this.productData.detalle.length - 1]
-              .codigobarras_master = this.productData.tarimas[this.tarimaIndex].codigo_master
-
-            this.productData.tarimas[this.tarimaIndex].cantidad += 1
-          } else {
-            this.presentToast('Error al agregar. Intenta de nuevo.', 'danger')
-          }
-
-        }
-
-        this.presentToast('Se agrego a la lista', 'success')
-
-        this.fechaProd = null
-        this.peso = 0
-      }
-      document.getElementById('input-codigo').setAttribute('value', '')
-    } else {
-      this.presentToast('El codigo de proveedor no existe o no coincide.', 'warning')
-    }
+      })
+    document.getElementById('input-codigo').setAttribute('value', '')
   }
 
   async presentToast(msg: string, color: string) {

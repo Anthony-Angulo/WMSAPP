@@ -18,6 +18,7 @@ export class SurtidoPage implements OnInit {
   number: number;
   order: any;
   load: any;
+  products: any = []
 
   constructor(
     private http: HttpClient,
@@ -35,75 +36,49 @@ export class SurtidoPage implements OnInit {
     let productSurtido = this.navExtras.getSurtidoProduct()
 
     if (productSurtido != null) {
-      let index = this.order.rows.findIndex(product => { return product.codigoProtevs == productSurtido.codigo_protehus })
+      let index = this.order.RDR1.findIndex(product => product.LineNum == productSurtido.Line )
       if (index >= 0) {
-        this.order.detalle[index] = productSurtido
+        this.order.RDR1[index].count = productSurtido.count
+        this.products.push(productSurtido)
       }
     }
     this.navExtras.setSurtidoProduct(null)
   }
 
   getOrden() {
-
-    this.storage.get(SUCURSAL_KEY).then(sucursal => {
-      this.http.get(environment.apiCRM + '/getOrderByOrderNumber/' + this.number + '/' + sucursal).toPromise().then((data: any) => {
-        this.order = data
-        console.log(this.order)
-        return this.order.rows.map(x => x.codigoProtevs)
-      }).then(codes => {
-        return this.http.get(environment.apiWMS + '/getCodeBarsEmbarques/' + codes).toPromise()
-      }).then((codeBars: any[]) => {
-        console.log(codeBars)
-
-        this.order.rows.map(product => {
-          let find = codeBars.find(y => y.codigoProtevs == product.codigoProtevs)
-          if (find) {
-            product.codigoBarras = find.codigoBarras
-          } else {
-            product.codigoBarras = ''
-          }
-
-        })
+      this.presentLoading('Buscando....')
+      this.http.get(environment.apiSAP + '/api/order/Delivery/' + this.number).toPromise().then((data: any) =>{
+        this.order = data;
         console.log(this.order)
       }).catch(error => {
         console.log(error)
-      }).finally(() => { })
-    })
+      }).finally(() => {
+        this.hideLoading()
+      })
   }
 
   goToProduct(index: number) {
-    if (this.order.rows[index].product_type_id == 3) {
-      this.order.rows[index].pedido_id = this.order.order.order_id
-      this.navExtras.setSurtidoDetail(this.order.rows[index])
-      this.router.navigate(['/members/surtido-beef'])
-    } else {
-      this.order.rows[index].pedido_id = this.order.order.order_id
-      this.navExtras.setSurtidoDetail(this.order.rows[index])
-      this.router.navigate(['/members/surtido-abarrotes'])
-    }
+    this.navExtras.setSurtidoDetail(this.order.RDR1[index])
+    this.router.navigate(['/members/surtido-abarrotes'])
   }
 
   enviarProductos() {
+
     this.presentLoading('Surtiendo...')
 
-    let pro = []
-
-    this.order.rows.forEach(product => {
-      if (product.detalle) pro = pro.concat(product.detalle)
-    })
-
-    let enviar = {
-      products: pro
+    let order = {
+      order: this.order.ORDR.DocEntry,
+      products: this.products
     }
 
-    this.http.post(environment.apiWMS + '/saveEmbarque', enviar).toPromise().then((resp: any) => {
-      if (resp.success) {
-        this.presentToast('Se surtio satisfactoriamente', 'success')
-        this.router.navigate(['/members/home']);
+    this.http.post(environment.apiSAP + '/api/Delivery', order).toPromise().then((resp) => {
+      if(resp){
+        this.presentToast('Se surtio correctamente','success')
+        this.router.navigate(['/members/home'])
       }
-    }).catch(error => {
+    }).catch(error =>{
       console.log(error)
-      this.presentToast('Error al surtir. Vuelva a intentarlo', 'danger')
+      this.presentToast('Error al recepcionar. Intenta de nuevo.','danger')
     }).finally(() => {
       this.hideLoading()
     })

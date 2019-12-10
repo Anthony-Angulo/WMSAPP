@@ -45,11 +45,11 @@ export class InventoryAbarrotesPage implements OnInit {
 
     this.productData = this.navExtras.getInventoryProduct()
 
-    if (this.productData.Barcode == null) {
-      this.boxExist = false
-    } else {
-      this.boxExist = true
-    }
+    // if (this.productData.Barcode == null) {
+    //   this.boxExist = false
+    // } else {
+    //   this.boxExist = true
+    // }
     this.navExtras.setInventoryProduct(null)
   }
 
@@ -58,6 +58,8 @@ export class InventoryAbarrotesPage implements OnInit {
       this.productData.cantidad_contada = this.cantidad
       this.productData.cantidad_diferencia = this.cantidad - this.productData.cantidad_teorica
       this.productData.lote = this.lote
+      this.productData.cantidad_contada_lbs = 0
+      this.productData.cantidad_diferencia_lbs = 0
       this.router.navigate(['/members/inventory-order-detail'])
     } else {
       this.presentToast('Ingresa primero una cantidad y/o lote.', 'warning')

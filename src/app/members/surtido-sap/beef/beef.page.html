@@ -1,0 +1,79 @@
+<ion-header>
+  <ion-toolbar class="tool-bar">
+    <ion-buttons slot="start">
+      <ion-back-button routerLink="/members/surtido-sap"></ion-back-button>
+    </ion-buttons>
+    <ion-buttons  slot="end">
+      <ion-button class="aceptar" (click)="submit()">Aceptar</ion-button>
+    </ion-buttons>
+    <ion-title>Surtido</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+
+  <ion-row *ngIf="productData">
+    <ion-col>
+      <h6>Datos de Producto</h6>
+      <ion-item lines="none" class="container-item">
+        Item Code: {{productData.Detail.ItemCode}}<br>
+        Descripcion: {{productData.Detail.ItemName}}
+      </ion-item>
+    </ion-col>
+  </ion-row>
+
+  <!-- <ion-row *ngIf="this.productData.NumPerMsr != 1">
+    <ion-col>
+      <h6>Ingresa Lote</h6>
+      <ion-input class="product-scann"  placeholder="Lote" [(ngModel)]="lote"
+      name="lote">
+    </ion-input>
+    </ion-col>
+  </ion-row> -->
+  <ion-row>
+    <ion-col>
+      <h6>Escanea codigo de barra de producto.</h6>
+      <ion-input class="product-scann" id="input-codigo" placeholder="Codigo de Barra" [(ngModel)]="codigoBarra"
+        name="codigoBarra" (ionChange)="getData()" clearInput debounce="200">
+      </ion-input>
+    </ion-col>
+  </ion-row>
+
+  <h6>Cajas Escaneadas: {{cantidadEscaneada}}</h6>
+
+  <h6>Lotes</h6>
+  <ion-row *ngFor="let prod of detail; let index = index">
+    <ion-col>
+      <ion-item lines="none" class="container-item">
+        Name: {{prod.name}}<br>
+        fecha: {{prod.expirationDate}}<br>
+        peso: {{prod.quantity}}
+        <ion-button color="danger" (click)="eliminar(index)" class="button-eliminar">
+          <ion-icon slot="icon-only" name="close-circle"></ion-icon>
+        </ion-button>
+      </ion-item>
+    </ion-col>
+  </ion-row>
+
+
+  <!-- <ion-row *ngIf="productData.detalle != '' ">
+    <ion-col>
+      <ion-button expand="full" shape="round" class="aceptar-button" (click)="receptionProduct()">Aceptar</ion-button>
+    </ion-col>
+  </ion-row> -->
+</ion-content>
+
+<ion-footer>
+  <ion-toolbar color="dark">
+    <ion-buttons slot="start">
+      <ion-button routerLink="/members/home">
+        <ion-icon slot="icon-only" name="home"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-buttons slot="end">
+      <ion-button>
+        <ion-icon slot="icon-only" name="chatbubbles"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-footer>

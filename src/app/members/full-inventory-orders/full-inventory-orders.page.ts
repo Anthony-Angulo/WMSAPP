@@ -52,7 +52,9 @@ export class FullInventoryOrdersPage implements OnInit {
     })
   }
 
-  goToOrderDetail() {
+  goToOrderDetail(index) {
+    console.log(this.inventory_orders[index])
+    this.navExtras.setMovInv(this.inventory_orders[index].id)
     this.router.navigate(['/members/full-inventory'])
   }
 

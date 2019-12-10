@@ -1,53 +1,78 @@
 <ion-header>
-  <ion-toolbar color="primary">
+  <ion-toolbar class="tool-bar">
     <ion-buttons slot="start">
       <ion-back-button routerLink="/members/home"></ion-back-button>
     </ion-buttons>
-    <ion-title>Scann Cajas</ion-title>
+    <ion-title>Registro de Codigos</ion-title>
   </ion-toolbar>
 </ion-header>
 
-<ion-content padding>
-  <ion-row>
+<ion-content>
+  <ion-row *ngIf="showInputs">
     <ion-col>
-      <ion-item>
-        <ion-label position="floating" color="primary">Codigo Barra</ion-label>
-        <ion-input placeholder="Escanea el codigo de producto" [(ngModel)]="barcode" name="barcode"
-          (ionChange)="getProduct($event)" debounce="500"></ion-input>
-      </ion-item>
+      <h6>Escanea un codigo de producto para buscar.</h6>
+      <ion-input class="product-scann" placeholder="Escanea el codigo de producto" [(ngModel)]="barcode" name="barcode">
+      </ion-input>
+    </ion-col>
+  </ion-row>
+  <ion-row *ngIf="showInputs">
+    <ion-col class="alg-txt">
+      <h6>----- O -----</h6>
+    </ion-col>
+  </ion-row>
+  <ion-row *ngIf="showInputs">
+    <ion-col>
+      <h6>Ingresa codigo de producto a buscar</h6>
+      <ion-input class="product-scann" placeholder="Escanea el codigo de producto" [(ngModel)]="codProt" name="codProt">
+      </ion-input>
+    </ion-col>
+  </ion-row>
+  <ion-row *ngIf="showInputs">
+    <ion-col>
+      <ion-button class="registrar-button" shape="round" expand="block" (click)="getProduct()">Buscar</ion-button>
     </ion-col>
   </ion-row>
 
   <ion-row *ngIf="product">
     <ion-col>
-      <ion-list inset="true">
-        <ion-item color="light">
-          <ion-label>
-            <ion-text color="dark">
-              <h3>Codigo Producto: {{product.codigoProtevs}}</h3>
-            </ion-text>
-          </ion-label>
-        </ion-item>
-        <ion-item color="primary">
-          <ion-label>
-            <ion-text color="light">
-              <h3>Nombre Producto: </h3>
-            </ion-text>
-            <p>{{product.name}}</p>
-          </ion-label>
-        </ion-item>
-      </ion-list>
-      <ion-item>
-        <ion-label color="primary" position="floating">Codigo Barra Caja
-        </ion-label>
-        <ion-input [(ngModel)]="boxCodeBar" name="boxCodeBar" placeholder="Escanea el codigo de barra de la caja">
-        </ion-input>
+      <h6>Datos de Producto</h6>
+      <ion-item lines="none" class="container-item">
+        Codigo Prothevs: {{product.codigoProtevs}}<br>
+        Descripcion: {{product.name}}
       </ion-item>
     </ion-col>
   </ion-row>
-  <ion-row *ngIf="product">
+  <ion-row *ngIf="barcode != undefined && product">
     <ion-col>
-      <ion-button expand="block" color="primary" shape="round" (click)="registerBox()">Aceptar</ion-button>
+        <h6>Codigo de Barra de Caja
+        </h6>
+        <ion-input class="product-scann" [(ngModel)]="boxCodeBar" name="boxCodeBar" placeholder="Escanea el codigo de barra de la caja">
+        </ion-input>
+    </ion-col>
+  </ion-row>
+  <ion-row *ngIf="barcode != undefined && product"> 
+    <ion-col>
+        <h6>Ingresa codigo de exibion(Solo si existe)</h6>
+          <ion-input class="product-scann" [(ngModel)]="exibision" name="exibision" placeholder="Escanea el codigo de exibision">
+          </ion-input>
+    </ion-col>
+  </ion-row>
+  <ion-row *ngIf="barcode == undefined && product">
+    <ion-col>
+      <h6>Escanea codigo de barra de producto.</h6>
+      <ion-input class="product-scann" placeholder="Escanea el codigo de producto" [(ngModel)]="barcodeProd"
+        name="barcodeProd"></ion-input>
+    </ion-col>
+  </ion-row>
+  <ion-row *ngIf="barcode == undefined && product">
+    <ion-col>
+      <ion-button expand="block" shape="round" class="registrar-button" (click)="registerSingleItemCodeBar()">Aceptar
+      </ion-button>
+    </ion-col>
+  </ion-row>
+  <ion-row *ngIf="barcode != undefined && product">
+    <ion-col>
+      <ion-button expand="block" shape="round" class="registrar-button" (click)="registerBox()">Aceptar</ion-button>
     </ion-col>
   </ion-row>
 </ion-content>

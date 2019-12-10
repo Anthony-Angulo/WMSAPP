@@ -16,6 +16,7 @@ export class NavExtrasService {
 
   surtidoDetail: any
   surtidoProduct: any
+  movId: any;
 
   constructor() { }
 
@@ -89,5 +90,13 @@ export class NavExtrasService {
 
   public getSurtidoProduct() {
     return this.surtidoProduct
+  }
+
+  public setMovInv(data: any){
+    this.movId = data
+  }
+
+  public getMovInv(){
+    return this.movId
   }
 }

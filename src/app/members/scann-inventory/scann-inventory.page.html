@@ -1,0 +1,92 @@
+<ion-header>
+  <ion-toolbar class="tool-bar">
+    <ion-buttons slot="start">
+      <ion-back-button routerLink="/members/home"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Scanneado para Inventario</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-row *ngIf="!order">
+    <ion-col>
+      <h6>Ingresa codigo de producto.</h6>
+      <form (ngSubmit)="getOrden()">
+        <ion-input class="input-recepcion" placeholder="Codigo de Producto" [(ngModel)]="number" name="number">
+        </ion-input>
+        <ion-button type="submit" class="search-order-button" expand="full">
+          Buscar
+        </ion-button>
+      </form>
+    </ion-col>
+  </ion-row>
+  <ion-row *ngIf="order">
+    <ion-col>
+      <h6>Datos de Producto</h6>
+      <ion-item lines="none" class="container-item">
+        Codigo: {{order[0].codigo_sap}}<br>
+        Nombre: {{order[0].descripcion_producto}}
+      </ion-item>
+    </ion-col>
+  </ion-row>
+
+  <ion-row *ngIf="order">
+    <ion-col>
+      <h6>Sucursal</h6>
+      <ion-input class="input-recepcion" placeholder="Sucursal" [(ngModel)]="sucursal" name="sucursal">
+      </ion-input>
+    </ion-col>
+  </ion-row>
+
+  <ion-row *ngIf="order">
+    <ion-col>
+      <h6>Lote</h6>
+      <ion-input class="input-recepcion" placeholder="Lote" [(ngModel)]="lote" name="lote">
+      </ion-input>
+    </ion-col>
+  </ion-row>
+
+  <ion-row *ngIf="order && order[0].grupo != 'AVES'">
+    <ion-col>
+      <h6>Codigo de Barra</h6>
+      <ion-input class="input-recepcion" id="input-codigo" placeholder="Codigo de Barra" [(ngModel)]="codigoBarra"
+        name="codigoBarra" (ionChange)="getData()" debounce=400>
+      </ion-input>
+    </ion-col>
+  </ion-row>
+
+  <ion-row *ngIf="order && order[0].grupo == 'AVES'">
+    <ion-col>
+      <h6>Cantidad de Cajas</h6>
+      <ion-input class="input-recepcion" type="number" placeholder="Cantidad de Cajas" [(ngModel)]="cantidad" name="cantidad">
+      </ion-input>
+    </ion-col>
+  </ion-row>
+
+  <h6 *ngIf="order && order[0].grupo != 'AVES'">Cajas Contadas: {{cajasEscaneadas}}</h6>
+  <h6  *ngIf="order && order[0].grupo == 'AVES'">Factor De Conversion De Caja a KG: {{order[0].b1_conv}}</h6>
+
+  <ion-row *ngIf="order && order[0].grupo == 'AVES'">
+    <ion-col>
+      <ion-button class="search-order-button" shape="round" expand="block" (click)="sendPesoFijo()">
+        Enviar
+      </ion-button>
+    </ion-col>
+  </ion-row>
+
+
+  
+  <ion-row *ngFor="let prod of detail">
+    <ion-col>
+      <ion-item lines="none" class="container-item">
+        Name: {{prod.visual}}<br>
+        peso: {{prod.Peso}}
+      </ion-item>
+    </ion-col>
+  </ion-row>
+
+
+
+
+
+</ion-content>

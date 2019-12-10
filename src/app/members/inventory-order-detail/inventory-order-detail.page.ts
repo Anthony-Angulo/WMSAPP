@@ -80,6 +80,8 @@ export class InventoryOrderDetailPage implements OnInit {
           id: element.id,
           cantidad_contada: element.cantidad_contada,
           cantidad_diferencia: element.cantidad_diferencia,
+          cantidad_contada_lbs: element.cantidad_contada_lbs,
+          cantidad_diferencia_lbs: element.cantidad_diferencia_lbs,
           lote_id: element.lote
         })
       }
