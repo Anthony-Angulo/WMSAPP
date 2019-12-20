@@ -21,10 +21,19 @@ ion-content{
        border-color: #86c1d1;
        --background: #ffffff;
   }
+
+  ion-button.aceptar{
+     border: 1px solid #ffffff;
+     border-radius: 2px;
+}
   
   ion-button.search-order-button{
        --background: #160ff2;
   }
+
+  div.search-order-product{
+     display: flex;
+}
   
   ion-toolbar.tool-bar{
        --background: #160ff2;

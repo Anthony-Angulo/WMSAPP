@@ -5,6 +5,7 @@ import { BehaviorSubject } from 'rxjs';
 import { environment } from 'src/environments/environment';
 import { ToastController, LoadingController } from '@ionic/angular';
 import { HttpClient } from '@angular/common/http';
+import { Router } from '@angular/router';
 
 const TOKEN_KEY = 'auth-token';
 const SUCURSAL_KEY = '0';
@@ -16,11 +17,14 @@ const USER_ID = '1';
 export class AuthenticationService {
 
   authenticationState = new BehaviorSubject(null);
+  load: any
 
   constructor(private storage: Storage,
     private plt: Platform,
     private toastController: ToastController,
-    private http: HttpClient) {
+    private http: HttpClient,
+    private router: Router,
+    private loading: LoadingController) {
     this.plt.ready().then(() => {
       this.checkToken();
     });
@@ -34,8 +38,11 @@ export class AuthenticationService {
     })
   }
 
-  login(value) {
+  async login(value) {
     console.log(value)
+
+    await this.presentLoading('Inciando Session.....')
+
     this.http.post(environment.apiCRM + '/login', value).toPromise().then((data: any) => {
       if (!data.status) {
         this.presentToast('User y/o password incorrectos.', 'warning')
@@ -46,13 +53,17 @@ export class AuthenticationService {
         return this.storage.set(TOKEN_KEY, data.token)
       }
     }).catch(error => {
-      console.error(error)
-    });
+      console.log(error)
+      this.presentToast('Error de conexion','danger')
+    }).finally(() => {
+      this.hideLoading()
+    })
   }
 
   public logout(): Promise<void> {
     return this.storage.remove(TOKEN_KEY).then(_ => {
       this.authenticationState.next(false);
+      this.router.navigate(['login'])
     })
   }
 
@@ -68,5 +79,19 @@ export class AuthenticationService {
       duration: 2000
     });
     toast.present();
+  }
+
+  async presentLoading(msg) {
+    this.load = await this.loading.create({
+      message: msg,
+      // duration: 3000
+    });
+
+    await this.load.present()
+  }
+
+  hideLoading() {
+    // console.log('loading')
+    this.load.dismiss()
   }
 }

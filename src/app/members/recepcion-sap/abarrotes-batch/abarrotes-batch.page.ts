@@ -47,14 +47,15 @@ export class AbarrotesBatchPage implements OnInit {
     }
     this.fechaCad = new Date(this.fechaCad)
     let fechaExp = this.fechaCad.getMonth() + '-' + this.fechaCad.getDay() + '-' + this.fechaCad.getFullYear()
-   
-    this.lotes.push({
-      name: this.lote,
-      expirationDate: fechaExp, 
-      quantity: Number(this.cantidad * Number(this.productData.NumPerMsr)).toFixedNoRounding(4),
-      code: '',
-      att1: ''
-    }) 
+    
+      this.lotes.push({
+        name: this.lote,
+        expirationDate: fechaExp, 
+        quantity: Math.floor(Number(Number(this.cantidad * this.productData.Detail.U_IL_PesProm).toFixedNoRounding(4))),
+        code: '',
+        att1: '',
+        pedimento: ''
+      }) 
 
   }
 
@@ -62,6 +63,7 @@ export class AbarrotesBatchPage implements OnInit {
 
     if(this.productData.count != 0 && this.cantidad == 0){
       this.productData.count = this.cantidad
+      console.log(this.productData.count)
       this.receptionService.setReceptionData(this.productData)
       this.router.navigate(['/members/recepcion-sap'])
     } else if(this.cantidad <= 0){
@@ -69,11 +71,13 @@ export class AbarrotesBatchPage implements OnInit {
       return
     } else if(this.productData.Detail.QryGroup41 == 'Y'){
       this.productData.count = this.cantidad
+      console.log(this.productData.count)
       this.productData.detalle = this.lotes
       this.receptionService.setReceptionData(this.productData)
       this.router.navigate(['/members/recepcion-sap'])
     } else {
       this.productData.count = this.lotes.map(lote => lote.quantity).reduce((a,b) => a + b, 0)
+      console.log(this.productData.count)
       this.productData.detalle = this.lotes
       this.receptionService.setReceptionData(this.productData)
       this.router.navigate(['/members/recepcion-sap'])

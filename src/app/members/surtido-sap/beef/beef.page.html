@@ -45,7 +45,7 @@
   <ion-row *ngFor="let prod of detail; let index = index">
     <ion-col>
       <ion-item lines="none" class="container-item">
-        Name: {{prod.name}}<br>
+        Name: {{prod.display}}<br>
         fecha: {{prod.expirationDate}}<br>
         peso: {{prod.quantity}}
         <ion-button color="danger" (click)="eliminar(index)" class="button-eliminar">

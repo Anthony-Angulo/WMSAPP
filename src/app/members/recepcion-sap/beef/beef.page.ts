@@ -50,6 +50,16 @@ export class BeefPage implements OnInit {
       this.cantidadEscaneada = this.productData.cajasEscaneadas
     }
 
+    this.http.get(environment.apiSAP +  '/api/batch/' + this.productData.WhsCode + '/' +  this.productData.ItemCode).toPromise().then((data) => {
+      this.productData.batchs = data
+      console.log(data)
+    }).catch((error) => {
+      console.log(error)
+      this.presentToast(error.error.error,'danger')
+    })
+
+    
+
     console.log(this.productData)
   }
 
@@ -107,7 +117,7 @@ export class BeefPage implements OnInit {
 
           console.log('peso: ' + peso + ' fecha_prod: ' + fecha_prod)
 
-          if (this.productData.detalle_codigo[codFound].maneja_decimal == 1) {
+          if(this.productData.detalle_codigo[codFound].maneja_decimal == 1){
             if (this.productData.detalle_codigo[codFound].UOM_id != 3) {
               this.peso = Number((Number(peso) / 2.2046).toFixed(2))
             } else {
@@ -115,43 +125,45 @@ export class BeefPage implements OnInit {
             }
           } else {
             let contCero: number = 0
-            for (var i = 0; i < peso.length; i++) {
-              if (peso[i] == '0') {
-                contCero++
-              } else {
-                break
-              }
-            }
-            if (this.productData.detalle_codigo[codFound].UOM_id != 3) {
-              if (contCero == 3) {
-                peso = peso.substring(0, peso.length - 1) + '.' + peso.substring(peso.length - 1, peso.length + 1)
-              } else if (contCero == 4) {
-                peso = peso.substring(peso.length - 2)
-              } else {
-                peso = peso.substring(0, peso.length - 2) + '.' + peso.substring(peso.length - 2, peso.length + 1)
-              }
-              if (peso != '.') {
-
-                this.peso = Number((Number(peso) / 2.2046).toFixed(2))
-                console.log(this.peso)
-              } else {
-
-                peso = 0
-              }
+          for(var i = 0; i < peso.length; i ++){
+            if(peso[i] == '0'){
+              contCero++
             } else {
-              console.log(peso)
-              peso = peso.substring(0, peso.length - 2) + '.' + peso.substring(peso.length - 2, peso.length + 1)
-              console.log(peso)
-              if (peso != '.') {
-
-                this.peso = Number(Number(peso).toFixed(2))
-                console.log(this.peso)
-              } else {
-
-                peso = 0
-
-              }
+              break
             }
+          }
+          console.log(contCero)
+          if (this.productData.detalle_codigo[codFound].UOM_id != 3) {
+            if(contCero == 3){
+              peso = peso.substring(0, peso.length - 1) + '.' + peso.substring(peso.length - 1, peso.length + 1)
+            } else if(contCero == 4){
+              peso = peso.substring(peso.length - 2)
+            } else {
+              peso = peso.substring(0, peso.length - 2) + '.' + peso.substring(peso.length - 2, peso.length + 1)
+            }
+  
+            console.log(peso)
+            if (peso != '.') {
+  
+              this.peso = Number((Number(peso) / 2.2046).toFixed(2))
+              console.log(this.peso)
+            } else {
+  
+              peso = 0
+            }
+          } else {
+            peso = peso.substring(0, peso.length - 2) + '.' + peso.substring(peso.length - 2, peso.length + 1)
+            console.log(peso)
+            if (peso != '.') {
+  
+              this.peso = Number(Number(peso).toFixed(2))
+  
+            } else {
+  
+              peso = 0
+  
+            }
+          }
           }
 
           let fechaExp
@@ -178,57 +190,124 @@ export class BeefPage implements OnInit {
           //     this.presentToast('El codigo de barra ya fue escaneado', 'warning')
           //   }
           // } else {
-            if (this.codigoBarra.length <= 36) {
 
-              console.log(this.codigoBarra.trim())
+            let pesProm
 
-              let ind = this.detail.findIndex(product => product.code == this.codigoBarra.trim())
-              let codFoundInBatchs = this.productData.batchs.findIndex(y => y.U_IL_CodBar == this.codigoBarra.trim())
-
-              console.log('codigo mide menos de 36 caracteres')
-
-              if (ind < 0 && codFoundInBatchs < 0) {
-
-                this.detail.push({
-                  name: this.codigoBarra,
-                  code: this.codigoBarra.trim(),
-                  attr1: this.lote,
-                  expirationDate: '11-12-2019',
-                  quantity: this.peso
-                })
-                this.cantidadEscaneada++
-                this.presentToast('Se agrego a la lista', 'success')
-
+            if(Number(this.productData.Detail.U_IL_PesMin) == 0 && Number(this.productData.Detail.U_IL_PesMax) == 0){
+              pesProm = 100
+              if(Number(this.peso) <= pesProm){
+                if (this.codigoBarra.length <= 36) {
+  
+                  console.log(this.codigoBarra.trim())
+    
+                  let ind = this.detail.findIndex(product => product.code == this.codigoBarra.trim())
+                  let codFoundInBatchs = this.productData.batchs.findIndex(y => y.U_IL_CodBar == this.codigoBarra.trim())
+    
+                  console.log('codigo mide menos de 36 caracteres')
+    
+                  if (ind < 0 && codFoundInBatchs < 0) {
+    
+                    this.detail.push({
+                      name: this.codigoBarra,
+                      code: this.codigoBarra.trim(),
+                      attr1: this.lote,
+                      expirationDate: '11-12-2019',
+                      quantity: this.peso
+                    })
+                    this.cantidadEscaneada++
+                    this.presentToast('Se agrego a la lista', 'success')
+    
+                  } else {
+                    this.presentToast('El codigo de barra ya fue escaneado', 'warning')
+                  }
+                } else {
+    
+                  console.log(this.codigoBarra.trim())
+    
+                  let ind = this.detail.findIndex(product => product.code == this.codigoBarra.trim())
+                  let codFoundInBatchs = this.productData.batchs.findIndex(y => y.U_IL_CodBar == this.codigoBarra.trim())
+    
+                  console.log('codigo mide mas de 36 caracteres')
+    
+                  if (ind < 0 && codFoundInBatchs < 0) {
+                    this.detail.push({
+                      name: this.codigoBarra.substr(this.codigoBarra.length - 36),
+                      code: this.codigoBarra.trim(),
+                      attr1: this.lote,
+                      expirationDate: '11-12-2019',
+                      quantity: this.peso
+                    })
+                    this.cantidadEscaneada++
+    
+                    this.presentToast('Se agrego a la lista', 'success')
+    
+                  } else {
+    
+                    this.presentToast('El codigo de barra ya fue escaneado', 'warning')
+    
+                  }
+                }
               } else {
-                this.presentToast('El codigo de barra ya fue escaneado', 'warning')
+                this.presentToast('El peso sobre pasa del promedio. Contactar a departamento de sistemas','warning')
               }
             } else {
-
-              console.log(this.codigoBarra.trim())
-
-              let ind = this.detail.findIndex(product => product.code == this.codigoBarra.trim())
-              let codFoundInBatchs = this.productData.batchs.findIndex(y => y.U_IL_CodBar == this.codigoBarra.trim())
-
-              console.log('codigo mide mas de 36 caracteres')
-
-              if (ind < 0 && codFoundInBatchs < 0) {
-                this.detail.push({
-                  name: this.codigoBarra.substr(this.codigoBarra.length - 36),
-                  code: this.codigoBarra.trim(),
-                  attr1: this.lote,
-                  expirationDate: '11-12-2019',
-                  quantity: this.peso
-                })
-                this.cantidadEscaneada++
-
-                this.presentToast('Se agrego a la lista', 'success')
-
+              if(Number(this.peso) >= Number(this.productData.Detail.U_IL_PesMin) && Number(this.peso) <= Number(this.productData.Detail.U_IL_PesMax)){
+                console.log('Cumple peso promedio')
+                if (this.codigoBarra.length <= 36) {
+  
+                  console.log(this.codigoBarra.trim())
+    
+                  let ind = this.detail.findIndex(product => product.code == this.codigoBarra.trim())
+                  let codFoundInBatchs = this.productData.batchs.findIndex(y => y.U_IL_CodBar == this.codigoBarra.trim())
+    
+                  console.log('codigo mide menos de 36 caracteres')
+    
+                  if (ind < 0 && codFoundInBatchs < 0) {
+    
+                    this.detail.push({
+                      name: this.codigoBarra,
+                      code: this.codigoBarra.trim(),
+                      attr1: this.lote,
+                      expirationDate: '11-12-2019',
+                      quantity: this.peso
+                    })
+                    this.cantidadEscaneada++
+                    this.presentToast('Se agrego a la lista', 'success')
+    
+                  } else {
+                    this.presentToast('El codigo de barra ya fue escaneado', 'warning')
+                  }
+                } else {
+    
+                  console.log(this.codigoBarra.trim())
+    
+                  let ind = this.detail.findIndex(product => product.code == this.codigoBarra.trim())
+                  let codFoundInBatchs = this.productData.batchs.findIndex(y => y.U_IL_CodBar == this.codigoBarra.trim())
+    
+                  console.log('codigo mide mas de 36 caracteres')
+    
+                  if (ind < 0 && codFoundInBatchs < 0) {
+                    this.detail.push({
+                      name: this.codigoBarra.substr(this.codigoBarra.length - 36),
+                      code: this.codigoBarra.trim(),
+                      attr1: this.lote,
+                      expirationDate: '11-12-2019',
+                      quantity: this.peso
+                    })
+                    this.cantidadEscaneada++
+    
+                    this.presentToast('Se agrego a la lista', 'success')
+    
+                  } else {
+    
+                    this.presentToast('El codigo de barra ya fue escaneado', 'warning')
+    
+                  }
+                }
               } else {
-
-                this.presentToast('El codigo de barra ya fue escaneado', 'warning')
-
+                this.presentToast('El peso no cumple con el peso promedio. Contactar a departamento de sistemas','warning')
               }
-            }
+            } 
           // }
           this.fechaProd = null
           this.peso = 0

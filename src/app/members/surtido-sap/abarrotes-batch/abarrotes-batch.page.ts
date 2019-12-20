@@ -41,6 +41,8 @@ export class AbarrotesBatchPage implements OnInit {
     this.http.get(environment.apiSAP + '/api/batch/' + this.productData.WhsCode + '/' +  this.productData.ItemCode).toPromise().then((data) => {
       console.log(data)
       this.batch = data
+    }).catch(() => {
+      this.presentToast('Error al traer lotes de producto','danger')
     })
   }
 
@@ -55,8 +57,12 @@ export class AbarrotesBatchPage implements OnInit {
 
     this.lotes.push({
       name: this.lote,
-      quantity: this.cantidad * Number(this.productData.NumPerMsr),
-    })
+      expirationDate: fechaExp, 
+      quantity: Math.floor(Number(Number(this.cantidad * this.productData.Detail.U_IL_PesProm).toFixedNoRounding(4))),
+      code: '',
+      att1: '',
+      pedimento: ''
+    }) 
 
     
   }

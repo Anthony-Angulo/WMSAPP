@@ -14,7 +14,9 @@ export class ProductsSapPage implements OnInit {
   load: any;
   number: any
   inventory: any
-  
+  sucursales: any
+  sucursal: any
+  productInfo
   constructor(
     private http: HttpClient,
     private toastController: ToastController,
@@ -28,14 +30,31 @@ export class ProductsSapPage implements OnInit {
   getProducto(){
     this.presentLoading('Buscando...')
 
-    this.http.get(environment.apiSAP + '/api/products/' + this.number).toPromise().then((resp: any) => {
-      console.log(resp)
+    return Promise.all([
+      this.http.get(environment.apiSAP + '/api/products/crm/' + this.number.toUpperCase()).toPromise(),
+      this.http.get(environment.apiSAP + '/api/warehouse/list').toPromise(),
+    ]).then(([resp, sucursales]: any []) => {
       this.inventory = resp
+      this.sucursales = sucursales
     }).catch((error) => {
       this.presentToast(error.error.error,'danger')
     }).finally(() => {
       this.hideLoading()
     })
+
+  }
+
+  selectSucursal(){
+    console.log(this.sucursal)
+    this.productInfo = this.inventory.stock.filter(x => x.WhsCode == this.sucursal)
+    this.productInfo.stocks = []
+    this.inventory.uom.forEach(uom => {
+      this.productInfo.stocks.push({
+        Uom: uom.UomCode,
+        quantity: Number(this.productInfo[0].StockValue / uom.BaseQty )
+      })
+    })
+    console.log(this.productInfo)
   }
 
   async presentToast(msg: string, color: string) {

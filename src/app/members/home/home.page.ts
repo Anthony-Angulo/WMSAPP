@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { AppVersion } from '@ionic-native/app-version/ngx';
+import { AuthenticationService } from './../../services/authentication.service';
 
 @Component({
   selector: 'app-home',
@@ -8,7 +9,8 @@ import { AppVersion } from '@ionic-native/app-version/ngx';
 })
 export class HomePage implements OnInit {
   version 
-  constructor(private appVersion: AppVersion) { }
+  constructor(private appVersion: AppVersion,
+    private authService: AuthenticationService) { }
 
   ngOnInit() {
     this.appVersion.getVersionNumber().then(version => {
@@ -16,6 +18,10 @@ export class HomePage implements OnInit {
       }).catch(err => {
         console.log(err)
       });
+  }
+
+  logout(){
+    this.authService.logout()
   }
 
 }

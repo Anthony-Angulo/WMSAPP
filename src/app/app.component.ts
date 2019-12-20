@@ -69,9 +69,9 @@ export class AppComponent {
 
       this.authenticationService.authenticationState.subscribe(state => {
         if (state) {
-          this.router.navigateByUrl('members/home');
+          this.router.navigate(['/members/home'], { replaceUrl: true });
         } else {
-          this.router.navigateByUrl('/login');
+          this.router.navigate(['login']);
         }
       });
 

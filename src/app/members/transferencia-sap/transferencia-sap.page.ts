@@ -16,6 +16,7 @@ export class TransferenciaSapPage implements OnInit {
 
   load;
   order;
+  search;
   number;
   products = []
 
@@ -54,7 +55,7 @@ export class TransferenciaSapPage implements OnInit {
 
   }
 
-  async getOrden(){
+  async getOrden() {
     await this.presentLoading('Buscando....')
     this.http.get(environment.apiSAP + '/api/inventorytransferrequest/reception/' + this.number).toPromise().then((data: any) => {
       this.order = data;
@@ -70,16 +71,44 @@ export class TransferenciaSapPage implements OnInit {
       })
     }).catch(error => {
       console.log(error)
-      if(error.status == 404){
+      if (error.status == 404) {
         this.presentToast('No encontrado o no existe', 'warning')
-      } else if(error.status == 400){
-        this.presentToast(error.error,'warning')
+      } else if (error.status == 400) {
+        this.presentToast(error.error, 'warning')
       } else {
-        this.presentToast('Error de conexion','danger')
+        this.presentToast('Error de conexion', 'danger')
       }
     }).finally(() => {
       this.hideLoading()
     })
+  }
+
+  searchProduct() {
+
+    if (this.search.length <= 8) {
+      let index = this.order.WTQ1.findIndex(x => x.ItemCode == this.search.toUpperCase())
+      if (this.order.WTQ1[index].LineStatus == 'O') {
+        if (index < 0) {
+          this.presentToast('Producto no se encontro en la lista', 'warning')
+        } else {
+          this.receptionService.setOrderData(this.order.WTQ1[index])
+
+          if (this.order.WTQ1[index].Detail.U_IL_TipPes == 'V') {
+            this.router.navigate(['members/transferencia-beef'])
+          } else if (this.order.WTQ1[index].Detail.ManBtchNum == 'Y') {
+            this.router.navigate(['members/transferencia-abarrotes-batch'])
+          } else {
+            this.router.navigate(['/members/transferencia-abarrotes'])
+          }
+        }
+      } else {
+        this.presentToast('Este producto ya se surtio completamente', 'warning')
+      }
+    } else {
+
+    }
+
+
   }
 
   goToProduct(index) {
@@ -102,7 +131,7 @@ export class TransferenciaSapPage implements OnInit {
     const products = this.order.WTQ1.filter(product => product.count).map(product => {
       return {
         ItemCode: product.ItemCode,
-        UoMEntry: product.UomEntry, 
+        UoMEntry: product.UomEntry,
         WarehouseCode: product.WhsCode,
         Line: product.LineNum,
         Count: product.count,
@@ -127,14 +156,14 @@ export class TransferenciaSapPage implements OnInit {
         this.hideLoading()
       });
     } else {
-      this.presentToast('No hay productos que surtir','warning')
+      this.presentToast('No hay productos que surtir', 'warning')
       this.hideLoading()
     }
 
 
   }
 
-  
+
 
   async presentToast(msg: string, color: string) {
     const toast = await this.toastController.create({

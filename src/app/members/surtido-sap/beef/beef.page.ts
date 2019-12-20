@@ -45,6 +45,12 @@ export class BeefPage implements OnInit {
       this.batch = data
     })
     console.log(this.productData)
+    if(this.productData.cajasEscaneadas){
+      this.cantidadEscaneada = Number(this.productData.cajasEscaneadas)
+    } else {
+      this.cantidadEscaneada = 0
+    }
+   
   }
 
   submit() {
@@ -54,7 +60,7 @@ export class BeefPage implements OnInit {
       this.productData.count = this.cantidadEscaneada
       this.receptionService.setReceptionData(this.productData)
       this.router.navigate(['/members/surtido-sap'])
-    } else if(this.cantidadEscaneada <= 0){
+    } else if(this.productData.cajasEscaneadas  <= 0){
       this.presentToast('Debe igresar una cantidad valida','warning')
     } else if(this.productData.Detail.QryGroup41 == 'Y'){
       this.productData.count = this.cantidadEscaneada
@@ -194,6 +200,7 @@ export class BeefPage implements OnInit {
               if (ind < 0) {
                 this.detail.push({
                   name: this.batch[findBatch].BatchNum,
+                  display: this.batch[findBatch].BatchNum.substr(this.batch[findBatch].BatchNum.length - 6),
                   code: this.codigoBarra.trim(),
                   attr1: this.lote,
                   expirationDate: '11-12-2019',
@@ -219,6 +226,7 @@ export class BeefPage implements OnInit {
                 this.detail.push({
                   name: this.batch[findBatch].BatchNum,
                   code: this.codigoBarra.trim(),
+                  display: this.batch[findBatch].BatchNum.substr(this.batch[findBatch].BatchNum.length - 6),
                   attr1: this.lote,
                   expirationDate: '11-12-2019',
                   quantity: this.peso

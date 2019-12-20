@@ -25,6 +25,7 @@
     <ion-col>
       <h6>Datos de Proveedor</h6>
       <ion-item lines="none" class="container-item">
+        Pedido: {{number}}<br>
         Codigo: {{order.OPOR.CardCode}}<br>
         Nombre: {{order.OPOR.CardName}}
       </ion-item>
@@ -57,7 +58,7 @@
         {{products.Dscription}}
       </ion-col>
       <ion-col size="2">
-        {{products.count}}
+        {{products.count | number}}
       </ion-col>
       <ion-col size="1.5">
         {{products.UomCode}}

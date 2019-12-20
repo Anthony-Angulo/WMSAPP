@@ -24,25 +24,47 @@
     <ion-col>
       <h6>Datos de Producto</h6>
       <ion-item lines="none" class="container-item">
-        Codigo: {{inventory.OITM[0].ItemCode}}<br>
-        Nombre: {{inventory.OITM[0].ItemName}}
+        Nombre: {{inventory.products.ItemName}}<br>
+        codigo: {{inventory.products.ItemCode}}<br>
+        Peso Promedio: {{inventory.products.U_IL_PesProm}}
       </ion-item>
       -----------------------------------------------------------------
     </ion-col>
   </ion-row>
 
-  <div *ngIf="inventory">
-    <ion-row *ngFor="let inv of inventory.OITW">
+  <ion-row *ngIf="inventory">
+    <ion-col>
+      <ion-select (ionChange)="selectSucursal()" class="product-scann" placeholder="Selecciona Sucursal"
+        [(ngModel)]="sucursal">
+        <ion-select-option *ngFor="let sucursal of sucursales" value="{{sucursal.WhsCode}}">{{sucursal.WhsName}}
+        </ion-select-option>
+      </ion-select>
+    </ion-col>
+  </ion-row>
+
+  <ion-row class="table">
+    <ion-col size="3">
+      Sucursal
+    </ion-col>
+    <ion-col size="5.5">
+      Description
+    </ion-col>
+    <ion-col size="2">
+      Qty
+    </ion-col>
+    <ion-col size="1.5">
+      UM
+    </ion-col>
+  </ion-row>
+
+  <div *ngIf="productInfo">
+    <ion-row *ngFor="let prod of productInfo.stocks">
       <ion-col>
         <ion-item lines="none" class="container-item">
-          Sucursal: {{inv.WhsCode}}<br>
-          A la mano: {{inv.OnHand | number}}<br>
-          Comprometido: {{inv.IsCommited | number}}<br>
-          En Ordenes: {{inv.OnOrder | number}}<br>
-          Stock Total: {{inv.StockValue | number}}
+          Stock: {{prod.quantity | number}} - {{prod.Uom}}<br>
         </ion-item>
       </ion-col>
     </ion-row>
   </div>
 
-</ion-content>
+</ion-content>93

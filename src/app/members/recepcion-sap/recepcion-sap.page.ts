@@ -58,15 +58,6 @@ export class RecepcionSapPage implements OnInit {
     await this.presentLoading('Buscando....')
     this.http.get(environment.apiSAP + '/api/purchaseorder/Reception/' + this.number).toPromise().then((data: any) => {
       this.order = data;
-      if (this.order.BTNT) {
-        this.order.POR1.map(item => {
-          item.batchs = this.order.BTNT.filter(y => y.ItemCode == item.ItemCode)
-        })
-      } else {
-        this.order.POR1.map(item => {
-          item.batchs = []
-        })
-      }
       console.log(this.order)
       return this.order.POR1.map(x => x.ItemCode)
     }).then((codes) => {
@@ -95,7 +86,7 @@ export class RecepcionSapPage implements OnInit {
 
     this.receptionService.setOrderData(this.order.POR1[index])
 
-    if (this.order.POR1[index].Detail.U_IL_TipPes == 'V' || this.order.POR1[index].Detail.QryGroup41 == 'Y') {
+    if (this.order.POR1[index].Detail.U_IL_TipPes == 'V') {
       this.router.navigate(['members/beef'])
     } else if (this.order.POR1[index].Detail.ManBtchNum == 'Y') {
       this.router.navigate(['members/abarrotes-batch'])
@@ -115,6 +106,7 @@ export class RecepcionSapPage implements OnInit {
         WarehouseCode: product.WhsCode,
         Line: product.LineNum,
         Count: product.count,
+        ItemType: product.Detail.U_IL_TipPes,
         Batch: (product.detalle) ? product.detalle : []
       }
     })

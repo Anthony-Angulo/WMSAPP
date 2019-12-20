@@ -3,7 +3,10 @@
     <ion-buttons slot="start">
       <ion-back-button routerLink="/members/home"></ion-back-button>
     </ion-buttons>
-    <ion-title>Transferencia de Mercancia</ion-title>
+    <ion-buttons  *ngIf="order" slot="end">
+      <ion-button class="aceptar" (click)="sendProducts()">Aceptar</ion-button>
+    </ion-buttons>
+    <ion-title>Transfer</ion-title>
   </ion-toolbar>
 </ion-header>
 
@@ -25,6 +28,7 @@
     <ion-col>
       <h6>Datos de Almacen Receptor</h6>
       <ion-item lines="none" class="container-item">
+        Pedido: {{number}}<br>
         Codigo: {{order.OWTQ.ToWhsCode}}<br>
         <!-- Nombre: {{order.OPOR.CardName}} -->
       </ion-item>
@@ -32,6 +36,18 @@
   </ion-row>
   <div *ngIf="order">
     <h6>Productos</h6>
+    <ion-row>
+      <ion-col>
+        <div  class="search-order-product">
+            <ion-input class="input-recepcion" placeholder="Buscar en la lista"  [(ngModel)]="search"
+            name="search">
+            </ion-input>
+            <ion-button   class="search-order-button" (click) = "searchProduct()">
+              Buscar
+            </ion-button>
+        </div>
+      </ion-col>
+    </ion-row>
     <ion-row class="table">
       <ion-col size="3">
         ItemCode
@@ -57,19 +73,19 @@
         {{products.Dscription}}
       </ion-col>
       <ion-col size="2">
-        {{products.OpenQty}}
+        {{products.OpenQty | number}}
       </ion-col>
       <ion-col size="1.5">
         {{products.UomCode}}
       </ion-col>
     </ion-row>
-    <ion-row>
+    <!-- <ion-row>
       <ion-col>
         <ion-button class="search-order-button" shape="round" expand="block" (click)="sendProducts()">
           Transferir
         </ion-button>
       </ion-col>
-    </ion-row>
+    </ion-row> -->
   </div>
 
 
