@@ -1,6 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { ToastController } from '@ionic/angular';
+import { SettingsService } from '../../../services/settings.service';
+import { Platform } from '@ionic/angular';
 import { RecepcionDataService } from 'src/app/services/recepcion-data.service';
 
 @Component({
@@ -11,14 +13,18 @@ import { RecepcionDataService } from 'src/app/services/recepcion-data.service';
 export class AbarrotesBatchPage implements OnInit {
 
   productData: any
-  cantidad: number = 0
+  cantidad: number
   lotes = []
   lote: any
   fechaCad: Date = new Date()
+  data: any;
+  porcentaje: any;
 
   constructor(
     private toastController: ToastController,
     private router: Router,
+    private platform: Platform,
+    private settings: SettingsService,
     private receptionService: RecepcionDataService
   ) { }
 
@@ -34,6 +40,13 @@ export class AbarrotesBatchPage implements OnInit {
     } else {
       this.lotes = this.productData.detalle
     }
+
+    if (this.platform.is("cordova")) {
+      this.data = this.settings.fileData
+      this.porcentaje = this.data.porcentaje
+    } else {
+      this.porcentaje = "10"
+    }
   }
 
   eliminar(index){
@@ -41,22 +54,51 @@ export class AbarrotesBatchPage implements OnInit {
   }
 
   addLote(){
-    if(this.fechaCad == undefined || this.cantidad <= 0){
+    if(this.fechaCad == undefined || this.cantidad <= 0 || this.lote == undefined || this.lote == ''){
       this.presentToast('Datos faltantes','warning')
       return
     }
     this.fechaCad = new Date(this.fechaCad)
     let fechaExp = this.fechaCad.getMonth() + '-' + this.fechaCad.getDay() + '-' + this.fechaCad.getFullYear()
     
+    let dif = Math.abs(Number(Number(this.cantidad * this.productData.Detail.NumInSale).toFixedNoRounding(4)) - Number(this.productData.OpenInvQty))
+
+    console.log(dif)
+
+    if(dif < 2){
       this.lotes.push({
         name: this.lote,
-        expirationDate: fechaExp, 
-        quantity: Math.floor(Number(Number(this.cantidad * this.productData.Detail.U_IL_PesProm).toFixedNoRounding(4))),
+        expirationDate: '11-22-2019', 
+        quantity: Number(this.productData.OpenInvQty),
         code: '',
         att1: '',
         pedimento: ''
-      }) 
+      })
+    } else {
+      let validPercent = (Number(this.porcentaje) / 100) * Number(this.productData.OpenInvQty)
+      let validQuantity = Number(validPercent) + Number(this.productData.OpenInvQty)
 
+      console.log(validPercent)
+      console.log(validQuantity)
+
+      if(Number(Number(this.cantidad * this.productData.Detail.NumInSale).toFixedNoRounding(4)) > Number(validQuantity)){
+        this.presentToast('Cantidad ingresada excede de la cantidad solicitada','warning')
+      } else {
+        this.lotes.push({
+          name: this.lote,
+          expirationDate: '11-22-2019', 
+          quantity: Number(Number(this.cantidad * this.productData.Detail.NumInSale).toFixedNoRounding(4)),
+          code: '',
+          att1: '',
+          pedimento: ''
+        }) 
+      }
+    }
+
+    
+
+      
+    
   }
 
   acceptRecepton(){

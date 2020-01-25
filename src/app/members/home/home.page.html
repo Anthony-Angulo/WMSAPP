@@ -1,7 +1,7 @@
 <ion-header>
   <ion-toolbar class="tool-bar">
     <ion-buttons slot="start">
-      <ion-button>
+      <ion-button (click)="ajustes()" >
         <ion-icon slot="icon-only" name="settings"></ion-icon>
       </ion-button>
     </ion-buttons>
@@ -70,26 +70,14 @@
     <ion-row>
       <ion-col>
         <ion-button color="primary" routerLink="/members/transferencia-sap">
-          Transfer
-        </ion-button>
-      </ion-col>
-    </ion-row>
-    <!-- <ion-row>
-      <ion-col>
-        <ion-button color="primary" routerLink="/members/scann-cajas">
-          Scann
-        </ion-button>
-      </ion-col>
-      <ion-col>
-        <ion-button color="primary" routerLink="/members/transferencia-sap">
-          Transfer
+          Transferencia a Tienda
         </ion-button>
       </ion-col>
     </ion-row>
     <ion-row>
       <ion-col>
-        <ion-button color="primary" routerLink="/members/generate-etiqueta">
-          Etiquetas
+        <ion-button color="primary" routerLink="/members/scann-cajas">
+          Registrar CB
         </ion-button>
       </ion-col>
       <ion-col>
@@ -97,7 +85,14 @@
           Inventario SAP
         </ion-button>
       </ion-col>
-    </ion-row> -->
+    </ion-row>
+    <ion-row>
+      <ion-col>
+        <ion-button color="primary" routerLink="/members/etiquetas-transferencias">
+          Etiquetas RT
+        </ion-button>
+      </ion-col>
+    </ion-row>
   </ion-grid>
 </ion-content>
 <ion-footer>

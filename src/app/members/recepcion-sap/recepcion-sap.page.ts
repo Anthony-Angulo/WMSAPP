@@ -1,11 +1,10 @@
 import { HttpClient } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
-import { BarcodeScanner } from '@ionic-native/barcode-scanner/ngx';
-// import { NavExtrasService } from 'src/app/services/nav-extras.service';
+import { SettingsService } from './../../services/settings.service';
 import { RecepcionDataService } from 'src/app/services/recepcion-data.service';
 import { environment } from 'src/environments/environment';
 import { Router } from '@angular/router';
-import { Storage } from '@ionic/storage';
+import { Platform } from '@ionic/angular';
 import { ToastController, LoadingController } from '@ionic/angular';
 
 @Component({
@@ -19,19 +18,32 @@ export class RecepcionSapPage implements OnInit {
   number: number;
   load: any;
   products: any = []
+  search
+  ctd
+  data: any
+  apiSAP: any
+
 
   constructor(
     private http: HttpClient,
-    private barcodeScanner: BarcodeScanner,
-    // private navExtras: NavExtrasService,
+    private settings: SettingsService,
     private receptionService: RecepcionDataService,
     private toastController: ToastController,
     private router: Router,
     private loading: LoadingController,
-    private storage: Storage
+    private platform: Platform,
   ) { }
 
-  ngOnInit() { }
+  ngOnInit() {
+
+    if (this.platform.is("cordova")) {
+      this.data = this.settings.fileData
+      this.apiSAP = this.data.apiSAP
+    } else {
+      this.apiSAP = environment.apiSAP
+    }
+
+  }
 
   ionViewWillEnter() {
 
@@ -56,7 +68,7 @@ export class RecepcionSapPage implements OnInit {
 
   async getOrden() {
     await this.presentLoading('Buscando....')
-    this.http.get(environment.apiSAP + '/api/purchaseorder/Reception/' + this.number).toPromise().then((data: any) => {
+    this.http.get(this.apiSAP + '/api/purchaseorder/Reception/' + this.number).toPromise().then((data: any) => {
       this.order = data;
       console.log(this.order)
       return this.order.POR1.map(x => x.ItemCode)
@@ -80,6 +92,77 @@ export class RecepcionSapPage implements OnInit {
     }).finally(() => {
       this.hideLoading()
     })
+  }
+
+  searchProductByCode() {
+
+    let index = this.order.POR1.findIndex(x => x.ItemCode == this.search.toUpperCase())
+    if (index >= 0) {
+      if (this.order.POR1[index].LineStatus == 'O') {
+        this.receptionService.setOrderData(this.order.POR1[index])
+        if (this.order.POR1[index].Detail.U_IL_TipPes == 'V') {
+          this.router.navigate(['members/beef'])
+        } else if (this.order.POR1[index].Detail.ManBtchNum == 'Y') {
+          this.router.navigate(['members/abarrotes-batch'])
+        } else {
+          this.router.navigate(['/members/abarrotes'])
+        }
+      } else {
+        this.presentToast('Este producto ya se surtio completamente', 'warning')
+      }
+    } else {
+      this.presentToast('Producto no se encontro en la lista', 'warning')
+    }
+
+    this.search = ''
+  }
+
+  searchProductByCb() {
+    if (this.search == '') {
+
+    } else {
+
+      let index = this.order.POR1.findIndex(x => {
+        let found = x.CodeBars.findIndex(y => y.BcdCode == this.search.trim())
+        if (found > -1) {
+          return true
+        } else {
+          return false
+        }
+      })
+      if (index >= 0) {
+        if (Number(this.ctd) > Number(this.order.POR1[index].OpenQty)) {
+          this.presentToast('Cantidad Excede el limite', 'warning')
+        } else {
+          if (this.order.POR1[index].LineStatus == 'O') {
+            if (this.order.POR1[index].Detail.ManBtchNum == 'Y') {
+              this.receptionService.setOrderData(this.order.POR1[index])
+              this.presentToast('Ingresa Lote de Producto', 'warning')
+              if (this.order.POR1[index].Detail.U_IL_TipPes == 'V') {
+                this.router.navigate(['members/beef'])
+              } else if (this.order.POR1[index].Detail.ManBtchNum == 'Y') {
+                this.order.POR1[index].count = Number(this.ctd)
+                this.router.navigate(['members/abarrotes-batch'])
+              } else {
+                this.router.navigate(['/members/abarrotes'])
+              }
+            } else {
+              this.order.POR1[index].count = Number(this.ctd)
+              this.presentToast('Se agrego a la lista', 'success')
+            }
+
+          } else {
+            this.presentToast('Este producto ya se recibio completamente', 'warning')
+          }
+        }
+
+      } else {
+        this.presentToast('Producto no se encontro en la lista', 'warning')
+      }
+    }
+
+    this.ctd = ''
+    document.getElementById('input-codigo').setAttribute('value', '')
   }
 
   goToProduct(index) {
@@ -116,7 +199,7 @@ export class RecepcionSapPage implements OnInit {
         order: this.order.OPOR.DocEntry,
         products
       }
-      this.http.post(environment.apiSAP + '/api/PurchaseDelivery', recepcionData).toPromise().then((data: any) => {
+      this.http.post(this.apiSAP + '/api/PurchaseDelivery', recepcionData).toPromise().then((data: any) => {
         console.log(data);
         this.presentToast('Recepcion Concluida', 'success');
         this.order = undefined;

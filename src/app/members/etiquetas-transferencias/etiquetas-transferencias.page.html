@@ -1,0 +1,72 @@
+<ion-header>
+  <ion-toolbar class="tool-bar">
+    <ion-buttons slot="start">
+      <ion-back-button routerLink="/members/home"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Impresion Etiquetas</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-row *ngIf="!data">
+    <ion-col>
+      <h6>Ingresa un numero de Solicitud</h6>
+      <form (ngSubmit)="getOrden()">
+        <ion-input class="input-recepcion" placeholder="Orden De Solicitud" type="number" [(ngModel)]="number"
+          name="number">
+        </ion-input>
+        <ion-button type="submit" class="search-order-button" expand="full">
+          Buscar
+        </ion-button>
+      </form>
+    </ion-col>
+  </ion-row>
+
+  <ion-row *ngIf="data">
+    <ion-col>
+      <h6>Datos de Solicitud</h6>
+      <ion-item lines="none" class="container-item">
+        Pedido: {{data.OWTQ.DocNum}}<br>
+        Almacen de Salida: {{data.OWTQ.Filler}}<br>
+        Almacen de Entrada: {{data.OWTQ.ToWhsCode}}
+      </ion-item>
+    </ion-col>
+  </ion-row>
+  <div *ngIf="data">
+    <h6>Transferencia &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Solicitud</h6>
+    <ion-row *ngFor="let transfers of data.Transfers; let index = index">
+      <ion-col>
+        <ion-item lines="none" class="container-item">
+          {{transfers.DocNum}}<br>
+          <!-- Almacen de Salida: {{data.OWTQ.Filler}}<br>
+        Almacen de Entrada: {{data.OWTQ.ToWhsCode}} -->
+          <ion-button color="primary" (click)="printLabel(index)" class="button-imprimir">
+            <ion-icon slot="icon-only" name="print"></ion-icon>
+          </ion-button>
+        </ion-item>
+      </ion-col>
+      <ion-col>
+        <div *ngIf="transfers.Request != undefined; then ifBlock else noBlock"></div>
+          <ng-template #ifBlock>
+            <ion-item lines="none" class="container-item">
+              {{transfers.Request.DocNum}}<br>
+            </ion-item>
+          </ng-template>
+          <ng-template #noBlock>
+            <ion-item lines="none" class="container-item">
+              <h6>Sin Crear</h6>
+            </ion-item>
+          </ng-template> 
+      </ion-col>
+    </ion-row>
+    <!-- <ion-row>
+      <ion-col>
+        <ion-button class="search-order-button" shape="round" expand="block" (click)="printLabel()">
+          Imprimir
+        </ion-button>
+      </ion-col>
+    </ion-row> -->
+  </div>
+
+
+</ion-content>

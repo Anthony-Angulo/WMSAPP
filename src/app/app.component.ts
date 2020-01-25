@@ -1,7 +1,7 @@
 import { Router } from '@angular/router';
 import { AuthenticationService } from './services/authentication.service';
 import { Component } from '@angular/core';
-
+import { SettingsService } from './services/settings.service';
 import { Platform } from '@ionic/angular';
 import { SplashScreen } from '@ionic-native/splash-screen/ngx';
 import { StatusBar } from '@ionic-native/status-bar/ngx';
@@ -57,13 +57,17 @@ export class AppComponent {
     private splashScreen: SplashScreen,
     private statusBar: StatusBar,
     private authenticationService: AuthenticationService,
-    private router: Router
+    private router: Router,
+    private settings: SettingsService
   ) {
     this.initializeApp();
   }
 
   initializeApp() {
+
+  
     this.platform.ready().then(() => {
+      this.settings.validateFile()
       this.statusBar.styleDefault();
       this.splashScreen.hide();
 

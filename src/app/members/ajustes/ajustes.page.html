@@ -1,0 +1,32 @@
+<ion-header>
+  <ion-toolbar class="tool-bar">
+    <ion-buttons slot="start">
+      <ion-back-button routerLink="/members/home"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Ajustes</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-row>
+    <ion-col>
+      <h6>Api SAP</h6>
+      <ion-input [(ngModel)]="apiSAP" name="apiSAP" class="input-recepcion"></ion-input>
+    </ion-col>
+  </ion-row>
+  <ion-row>
+    <ion-col>
+      <h6>Porcentaje de Recepcion</h6>
+      <ion-input [(ngModel)]="porcentaje" name="porcentaje" class="input-recepcion">
+      </ion-input>
+    </ion-col>
+  </ion-row>
+
+  <ion-row>
+    <ion-col>
+      <ion-button class="search-order-button" shape="round" expand="block" (click)="guardarAjustes()">
+        Guardar Ajustes
+      </ion-button>
+    </ion-col>
+  </ion-row>
+</ion-content>

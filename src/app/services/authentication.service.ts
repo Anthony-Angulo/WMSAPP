@@ -10,6 +10,7 @@ import { Router } from '@angular/router';
 const TOKEN_KEY = 'auth-token';
 const SUCURSAL_KEY = '0';
 const USER_ID = '1';
+const WAREHOUSE = '2';
 
 @Injectable({
   providedIn: 'root'
@@ -44,10 +45,12 @@ export class AuthenticationService {
     await this.presentLoading('Inciando Session.....')
 
     this.http.post(environment.apiCRM + '/login', value).toPromise().then((data: any) => {
+      console.log(data)
       if (!data.status) {
         this.presentToast('User y/o password incorrectos.', 'warning')
       } else {
         this.storage.set(SUCURSAL_KEY, data.sucursal);
+        this.storage.set(WAREHOUSE, data.warehouseCode)
         this.storage.set(USER_ID, data.id);
         this.authenticationState.next(true);
         return this.storage.set(TOKEN_KEY, data.token)

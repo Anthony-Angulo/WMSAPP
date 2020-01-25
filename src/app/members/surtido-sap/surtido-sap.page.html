@@ -33,18 +33,53 @@
   </ion-row>
   <div *ngIf="order">
     <h6>Productos</h6>
-    <ion-row>
+    
+    <ion-item lines="none">
+      <ion-label>Modo de busqueda</ion-label>
+      <ion-toggle [(ngModel)]="searchType"></ion-toggle>
+    </ion-item>
+
+    <ion-row *ngIf="!searchType">
+      <!-- <ion-col size="2.5">
+        <div class="search-order-product">
+          <ion-input class="input-recepcion" placeholder="Ctd" [(ngModel)]="ctd" name="ctd">
+          </ion-input>
+        </div>
+      </ion-col> -->
       <ion-col>
-        <div  class="search-order-product">
-            <ion-input class="input-recepcion" placeholder="Buscar en la lista"  [(ngModel)]="search"
-            name="search">
-            </ion-input>
-            <ion-button   class="search-order-button" (click) = "searchProduct()">
-              Buscar
-            </ion-button>
+        <div class="search-order-product">
+          <ion-input class="input-recepcion" placeholder="Codigo de Producto" [(ngModel)]="search" name="search">
+          </ion-input>
+          <ion-button class="search-order-button"  (click)="searchProductByCode()">
+            Buscar
+          </ion-button>
         </div>
       </ion-col>
     </ion-row>
+
+    <ion-row *ngIf="searchType">
+      <ion-col>
+        <div class="search-order-product">
+          <ion-input class="input-recepcion" placeholder="Tarima" [(ngModel)]="tarima" name="tarima">
+          </ion-input>
+        </div>
+      </ion-col>
+    </ion-row>
+
+    <ion-row *ngIf="searchType">
+      <ion-col size="2">
+        <div class="search-order-product">
+          <ion-input class="input-recepcion" placeholder="Ctd" [(ngModel)]="ctd" name="ctd">
+          </ion-input>
+        </div>
+      </ion-col>
+      <ion-col>
+        <ion-input id="input-codigo" class="input-recepcion" placeholder="Codigo de Barra"
+          (ionChange)="searchProductByCb()" [(ngModel)]="search" debounce="200" name="search">
+        </ion-input>
+      </ion-col>
+    </ion-row>
+    
     <ion-row class="table">
       <ion-col size="3">
         ItemCode

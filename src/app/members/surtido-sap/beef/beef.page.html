@@ -3,7 +3,7 @@
     <ion-buttons slot="start">
       <ion-back-button routerLink="/members/surtido-sap"></ion-back-button>
     </ion-buttons>
-    <ion-buttons  slot="end">
+    <ion-buttons slot="end">
       <ion-button class="aceptar" (click)="submit()">Aceptar</ion-button>
     </ion-buttons>
     <ion-title>Surtido</ion-title>
@@ -22,14 +22,13 @@
     </ion-col>
   </ion-row>
 
-  <!-- <ion-row *ngIf="this.productData.NumPerMsr != 1">
+  <h6>Ingresa Tarima</h6>
+  <ion-row>
     <ion-col>
-      <h6>Ingresa Lote</h6>
-      <ion-input class="product-scann"  placeholder="Lote" [(ngModel)]="lote"
-      name="lote">
-    </ion-input>
+      <ion-input class="product-scann" [(ngModel)]="tarima" name="tarima" placeholder="Ingresa Tarima"></ion-input>
     </ion-col>
-  </ion-row> -->
+  </ion-row>
+
   <ion-row>
     <ion-col>
       <h6>Escanea codigo de barra de producto.</h6>
@@ -46,8 +45,9 @@
     <ion-col>
       <ion-item lines="none" class="container-item">
         Name: {{prod.display}}<br>
-        fecha: {{prod.expirationDate}}<br>
-        peso: {{prod.quantity}}
+        Fecha: {{prod.expirationDate}}<br>
+        Peso: {{prod.quantity}}<br>
+        Tarima: {{prod.pallet}}
         <ion-button color="danger" (click)="eliminar(index)" class="button-eliminar">
           <ion-icon slot="icon-only" name="close-circle"></ion-icon>
         </ion-button>

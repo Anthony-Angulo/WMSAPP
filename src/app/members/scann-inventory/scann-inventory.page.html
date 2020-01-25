@@ -8,10 +8,20 @@
 </ion-header>
 
 <ion-content>
+
   <ion-row *ngIf="!order">
     <ion-col>
+      <ion-item lines="none">
+        <ion-label>Modo de busqueda</ion-label>
+        <ion-toggle [(ngModel)]="searchType"></ion-toggle>
+      </ion-item>
+    </ion-col>
+  </ion-row>
+
+  <ion-row *ngIf="!order && !searchType">
+    <ion-col>
       <h6>Ingresa codigo de producto.</h6>
-      <form (ngSubmit)="getOrden()">
+      <form (ngSubmit)="getOrdenByCode()">
         <ion-input class="input-recepcion" placeholder="Codigo de Producto" [(ngModel)]="number" name="number">
         </ion-input>
         <ion-button type="submit" class="search-order-button" expand="full">
@@ -20,12 +30,21 @@
       </form>
     </ion-col>
   </ion-row>
+
+  <ion-row *ngIf="!order && searchType">
+    <ion-col>
+      <h6>Escanea codigo de barra.</h6>
+      <ion-input (ionChange)="searchProductByCb()" [(ngModel)]="search" debounce="200" name="search" class="input-recepcion" placeholder="Codigo de Barra">
+      </ion-input>
+    </ion-col>
+  </ion-row>
+
   <ion-row *ngIf="order">
     <ion-col>
       <h6>Datos de Producto</h6>
       <ion-item lines="none" class="container-item">
-        Codigo: {{order[0].codigo_sap}}<br>
-        Nombre: {{order[0].descripcion_producto}}
+        Codigo: {{order.detail.ItemCode}}<br>
+        Nombre: {{order.detail.ItemName}}
       </ion-item>
     </ion-col>
   </ion-row>
@@ -38,15 +57,19 @@
     </ion-col>
   </ion-row>
 
-  <ion-row *ngIf="order">
+  <!-- <ion-row *ngIf="order">
     <ion-col>
       <h6>Lote</h6>
       <ion-input class="input-recepcion" placeholder="Lote" [(ngModel)]="lote" name="lote">
       </ion-input>
-    </ion-col>
-  </ion-row>
+    </ion-col>cdEntry": "75474",
+      "BcdCode": "0301016",
+      "BcdName": null,
+      "ItemCode": "A0301016",
+      "UomEnt
+  </ion-row> -->
 
-  <ion-row *ngIf="order && order[0].grupo != 'AVES'">
+  <ion-row *ngIf="order && order.detail.U_IL_TipPes == 'V'">
     <ion-col>
       <h6>Codigo de Barra</h6>
       <ion-input class="input-recepcion" id="input-codigo" placeholder="Codigo de Barra" [(ngModel)]="codigoBarra"
@@ -55,18 +78,20 @@
     </ion-col>
   </ion-row>
 
-  <ion-row *ngIf="order && order[0].grupo == 'AVES'">
+  <ion-row *ngIf="order && order.detail.U_IL_TipPes == 'F'">
     <ion-col>
       <h6>Cantidad de Cajas</h6>
-      <ion-input class="input-recepcion" type="number" placeholder="Cantidad de Cajas" [(ngModel)]="cantidad" name="cantidad">
+      <ion-input class="input-recepcion" type="number" placeholder="Cantidad de Cajas" [(ngModel)]="cantidad"
+        name="cantidad">
       </ion-input>
     </ion-col>
   </ion-row>
 
-  <h6 *ngIf="order && order[0].grupo != 'AVES'">Cajas Contadas: {{cajasEscaneadas}}</h6>
-  <h6  *ngIf="order && order[0].grupo == 'AVES'">Factor De Conversion De Caja a KG: {{order[0].b1_conv}}</h6>
+  <h6 *ngIf="order && order.detail.U_IL_TipPes == 'V'">Cajas Contadas: {{cajasEscaneadas}}</h6>
+  <h6 *ngIf="order && order.detail.U_IL_TipPes == 'F'">1 Caja Equivale aprox : {{order.detail.NumInSale | number}} en
+    Unidad Base</h6>
 
-  <ion-row *ngIf="order && order[0].grupo == 'AVES'">
+  <ion-row *ngIf="order && order.detail.U_IL_TipPes == 'F'">
     <ion-col>
       <ion-button class="search-order-button" shape="round" expand="block" (click)="sendPesoFijo()">
         Enviar
@@ -75,7 +100,7 @@
   </ion-row>
 
 
-  
+
   <ion-row *ngFor="let prod of detail">
     <ion-col>
       <ion-item lines="none" class="container-item">

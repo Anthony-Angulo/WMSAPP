@@ -17,6 +17,7 @@ export class ProductsSapPage implements OnInit {
   sucursales: any
   sucursal: any
   productInfo
+
   constructor(
     private http: HttpClient,
     private toastController: ToastController,
@@ -27,15 +28,23 @@ export class ProductsSapPage implements OnInit {
   ngOnInit() {
   }
 
-  getProducto(){
-    this.presentLoading('Buscando...')
+  async getProducto(){
+
+    await this.presentLoading('Buscando...')
 
     return Promise.all([
       this.http.get(environment.apiSAP + '/api/products/crm/' + this.number.toUpperCase()).toPromise(),
-      this.http.get(environment.apiSAP + '/api/warehouse/list').toPromise(),
+      this.http.get(environment.apiSAP + '/api/warehouse').toPromise(),
     ]).then(([resp, sucursales]: any []) => {
       this.inventory = resp
       this.sucursales = sucursales
+
+      this.inventory.stock.map(product => {
+        product.WhsName = this.sucursales.find(x => x.WhsCode == product.WhsCode).WhsName
+        product.PuM = Number(product.OnHand / Number(this.inventory.uom.find(x => x.UomEntry == '14').BaseQty))
+      })
+
+      console.log(this.inventory)
     }).catch((error) => {
       this.presentToast(error.error.error,'danger')
     }).finally(() => {

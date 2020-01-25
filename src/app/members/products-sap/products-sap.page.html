@@ -32,39 +32,47 @@
     </ion-col>
   </ion-row>
 
-  <ion-row *ngIf="inventory">
-    <ion-col>
-      <ion-select (ionChange)="selectSucursal()" class="product-scann" placeholder="Selecciona Sucursal"
-        [(ngModel)]="sucursal">
-        <ion-select-option *ngFor="let sucursal of sucursales" value="{{sucursal.WhsCode}}">{{sucursal.WhsName}}
-        </ion-select-option>
-      </ion-select>
-    </ion-col>
-  </ion-row>
+  <div *ngIf="inventory">
+    <ion-row *ngIf="inventory" class="table">
+      <ion-col size="3">
+        Sucursal
+      </ion-col>
+      <!-- <ion-col size="5.5">
+        Description
+      </ion-col> -->
+      <ion-col size="2">
+        Cantidad PU
+      </ion-col>
+      <ion-col size="2">
+        Primera Unidad
+      </ion-col>
+      <ion-col size="2">
+        Cantidad SU
+      </ion-col>
+      <ion-col size="3">
+        Segunda Unidad
+      </ion-col>
+    </ion-row>
 
-  <ion-row class="table">
-    <ion-col size="3">
-      Sucursal
-    </ion-col>
-    <ion-col size="5.5">
-      Description
-    </ion-col>
-    <ion-col size="2">
-      Qty
-    </ion-col>
-    <ion-col size="1.5">
-      UM
-    </ion-col>
-  </ion-row>
-
-  <div *ngIf="productInfo">
-    <ion-row *ngFor="let prod of productInfo.stocks">
-      <ion-col>
-        <ion-item lines="none" class="container-item">
-          Stock: {{prod.quantity | number}} - {{prod.Uom}}<br>
-        </ion-item>
+    <ion-row class="text-content" *ngFor="let products of inventory.stock; let index = index">
+      <ion-col size="3">
+        {{products.WhsName}}
+      </ion-col>
+      <!-- <ion-col size="5.5">
+        {{inventory.products.ItemName}}
+      </ion-col> -->
+      <ion-col size="2">
+        {{products.OnHand | number}}
+      </ion-col>
+      <ion-col size="2">
+        {{inventory.uom[0].UomCode}}
+      </ion-col>
+      <ion-col size="2">
+        {{products.PuM | number}}
+      </ion-col>
+      <ion-col size="2">
+        {{inventory.uom[1].UomCode}}
       </ion-col>
     </ion-row>
   </div>
-
-</ion-content>93
+</ion-content>

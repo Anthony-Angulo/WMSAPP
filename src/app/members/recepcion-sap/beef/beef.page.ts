@@ -3,9 +3,10 @@ import { Router } from '@angular/router';
 import { RecepcionDataService } from 'src/app/services/recepcion-data.service';
 import { environment } from 'src/environments/environment';
 import { HttpClient } from '@angular/common/http';
+import { SettingsService } from '../../../services/settings.service';
+import { Platform } from '@ionic/angular';
 import { AlertController, ToastController, LoadingController } from '@ionic/angular';
 import * as moment from 'moment';
-import { Interface } from 'readline';
 
 @Component({
   selector: 'app-beef',
@@ -22,17 +23,22 @@ export class BeefPage implements OnInit {
   detail = []
   cantidadEscaneada: number = 0
   lote: any
+  load
+  data
+  porcentaje: any;
 
   constructor(
     private http: HttpClient,
     private toastController: ToastController,
     private receptionService: RecepcionDataService,
     private router: Router,
+    private platform: Platform,
+    private settings: SettingsService,
     private loading: LoadingController,
     private alert: AlertController
   ) { }
 
-  ngOnInit() {
+  async ngOnInit() {
     this.productData = this.receptionService.getOrderData()
     this.lotesRegistrados = this.receptionService.getReceptionData()
 
@@ -50,18 +56,33 @@ export class BeefPage implements OnInit {
       this.cantidadEscaneada = this.productData.cajasEscaneadas
     }
 
+    await this.presentLoading('Buscando Lotes de producto...')
+
     this.http.get(environment.apiSAP +  '/api/batch/' + this.productData.WhsCode + '/' +  this.productData.ItemCode).toPromise().then((data) => {
       this.productData.batchs = data
       console.log(data)
     }).catch((error) => {
       console.log(error)
       this.presentToast(error.error.error,'danger')
+    }).finally(() => {
+      this.hideLoading()
     })
+
+
+    if (this.platform.is("cordova")) {
+      this.data = this.settings.fileData
+      this.porcentaje = this.data.porcentaje
+    } else {
+      this.porcentaje = "10"
+    }
+  
 
     
 
     console.log(this.productData)
   }
+
+  
 
   submit() {
     this.productData.cajasEscaneadas = this.cantidadEscaneada
@@ -78,10 +99,23 @@ export class BeefPage implements OnInit {
       this.receptionService.setReceptionData(this.productData)
       this.router.navigate(['/members/recepcion-sap'])
     } else {
+      
       this.productData.count = this.detail.map(lote => lote.quantity).reduce((a, b) => a + b, 0)
-      this.productData.detalle = this.detail
-      this.receptionService.setReceptionData(this.productData)
-      this.router.navigate(['/members/recepcion-sap'])
+
+      let validPercent = (Number(this.porcentaje) / 100) * Number(this.productData.OpenInvQty)
+      let validQuantity = Number(validPercent) + Number(this.productData.OpenInvQty)
+
+      console.log('Porcentaje: ' + validPercent)
+      console.log('Cantidad con Porcentaje:  ' + validQuantity)
+      console.log('Escaneado: ' + this.productData.count)
+
+      if(this.productData.count > Number(validQuantity)){
+        this.presentToast('Cantidad Excede a la cantidad solicitada','warning')
+      } else {
+        this.productData.detalle = this.detail
+        this.receptionService.setReceptionData(this.productData)
+        this.router.navigate(['/members/recepcion-sap'])
+      }
     }
     
   }
@@ -103,8 +137,166 @@ export class BeefPage implements OnInit {
       if (this.codigoBarra == '') {
 
       } else {
+        if(this.productData.Detail.ItemCode == 'A0202088'){
+          let codFound = this.productData.detalle_codigo.findIndex(y => y.length == this.codigoBarra.trim().length)
+      
+        if (codFound < 0) {
 
-        let codFound = this.productData.detalle_codigo.findIndex(y => y.length == this.codigoBarra.trim().length)
+          this.presentToast('El codigo de barra no coincide con la informacion de etiqueta de proveedor.', 'warning')
+
+        } else {
+          
+          let peso = this.codigoBarra.substr(this.productData.detalle_codigo[codFound].peso_pos - 1, this.productData.detalle_codigo[codFound].peso_length)
+          let fecha_prod = this.codigoBarra.substr(this.productData.detalle_codigo[codFound].fecha_prod_pos - 1, this.productData.detalle_codigo[codFound].fecha_prod_length)
+
+          console.log('peso: ' + peso + ' fecha_prod: ' + fecha_prod)
+
+          if(this.productData.detalle_codigo[codFound].maneja_decimal == 1){
+            if (this.productData.detalle_codigo[codFound].UOM_id != 3) {
+              this.peso = Number((Number(peso) / 2.2046).toFixed(2))
+            } else {
+              this.peso = peso
+            }
+          } else {
+            let contCero: number = 0
+          for(var i = 0; i < peso.length; i ++){
+            if(peso[i] == '0'){
+              contCero++
+            } else {
+              break
+            }
+          }
+          console.log(contCero)
+          if (this.productData.detalle_codigo[codFound].UOM_id != 3) {
+            if(contCero == 3){
+              peso = peso.substring(0, peso.length - 1) + '.' + peso.substring(peso.length - 1, peso.length + 1)
+            } else if(contCero == 4){
+              peso = peso.substring(peso.length - 2)
+            } else {
+              peso = peso.substring(0, peso.length - 2) + '.' + peso.substring(peso.length - 2, peso.length + 1)
+            }
+  
+            console.log(peso)
+            if (peso != '.') {
+  
+              this.peso = Number((Number(peso) / 2.2046).toFixed(2))
+              console.log(this.peso)
+            } else {
+  
+              peso = 0
+            }
+          } else {
+            peso = peso.substring(0, peso.length - 2) + '.' + peso.substring(peso.length - 2, peso.length + 1)
+            console.log(peso)
+            if (peso != '.') {
+  
+              this.peso = Number(Number(peso).toFixed(2))
+  
+            } else {
+  
+              peso = 0
+  
+            }
+          }
+          }
+
+          let fechaExp
+          let date = moment(fecha_prod, this.productData.detalle_codigo[codFound].fecha_prod_orden).toString()
+          this.fechaProd = new Date(date)
+          fechaExp = (this.fechaProd.getMonth() + 1) + '-' + this.fechaProd.getDay() + '-' + this.fechaProd.getFullYear()
+
+
+          // if (this.productData.Detail.QryGroup41 == 'Y') {
+          //   let ind = this.detail.findIndex(product => product.code == this.codigoBarra.trim())
+          //   let codFoundInBatchs = this.productData.batchs.findIndex(y => y.U_IL_CodBar == this.codigoBarra.trim())
+          //   if (ind < 0 && codFoundInBatchs < 0) {
+          //     this.detail.push({
+          //       name: this.codigoBarra.substr(this.codigoBarra.length - 36),
+          //       code: this.codigoBarra.trim(),
+          //       attr1: this.lote,
+          //       expirationDate: '11-12-2019',
+          //       quantity: 18.14
+          //     })
+          //     this.cantidadEscaneada++
+
+          //     this.presentToast('Se agrego a la lista', 'success')
+          //   } else {
+          //     this.presentToast('El codigo de barra ya fue escaneado', 'warning')
+          //   }
+          // } else {
+
+            let pesProm
+
+            if(Number(this.productData.Detail.U_IL_PesMin) == 0 && Number(this.productData.Detail.U_IL_PesMax) == 0){
+              pesProm = 100
+              if(Number(this.peso) <= pesProm){
+                  console.log(this.codigoBarra.trim())
+    
+                  let ind = this.detail.findIndex(product => product.name == this.codigoBarra.substr(25,this.codigoBarra.length).trim())
+                  let codFoundInBatchs = this.productData.batchs.findIndex(y => y.BatchNum == this.codigoBarra.substr(25,this.codigoBarra.length).trim())
+    
+                  console.log('codigo mide mas de 36 caracteres')
+    
+                  if (ind < 0 && codFoundInBatchs < 0) {
+                    this.detail.push({
+                      name: this.codigoBarra.substr(25,this.codigoBarra.length).trim(),
+                      code: this.codigoBarra.trim(),
+                      attr1: this.lote,
+                      expirationDate: '11-12-2019',
+                      quantity: this.peso
+                    })
+                    this.cantidadEscaneada++
+    
+                    this.presentToast('Se agrego a la lista', 'success')
+    
+                  } else {
+    
+                    this.presentToast('El codigo de barra ya fue escaneado', 'warning')
+    
+                  }
+                
+              } else {
+                this.presentToast('El peso sobre pasa del promedio. Contactar a departamento de sistemas','warning')
+              }
+            } else {
+              if(Number(this.peso) >= Number(this.productData.Detail.U_IL_PesMin) && Number(this.peso) <= Number(this.productData.Detail.U_IL_PesMax)){
+                console.log('Cumple peso promedio')
+    
+                  console.log(this.codigoBarra.trim())
+    
+                  let ind = this.detail.findIndex(product => product.code == this.codigoBarra.trim())
+                  let codFoundInBatchs = this.productData.batchs.findIndex(y => y.U_IL_CodBar == this.codigoBarra.trim())
+    
+                  console.log('codigo mide mas de 36 caracteres')
+    
+                  if (ind < 0 && codFoundInBatchs < 0) {
+                    this.detail.push({
+                      name: this.codigoBarra.substr(25,this.codigoBarra.length).trim(),
+                      code: this.codigoBarra.trim(),
+                      attr1: this.lote,
+                      expirationDate: '11-12-2019',
+                      quantity: this.peso
+                    })
+                    this.cantidadEscaneada++
+    
+                    this.presentToast('Se agrego a la lista', 'success')
+    
+                  } else {
+    
+                    this.presentToast('El codigo de barra ya fue escaneado', 'warning')
+    
+                  }
+                
+              } else {
+                this.presentToast('El peso no cumple con el peso promedio. Contactar a departamento de sistemas','warning')
+              }
+            } 
+          // }
+          this.fechaProd = null
+          this.peso = 0
+        }
+        } else {
+          let codFound = this.productData.detalle_codigo.findIndex(y => y.length == this.codigoBarra.trim().length)
       
         if (codFound < 0) {
 
@@ -312,6 +504,9 @@ export class BeefPage implements OnInit {
           this.fechaProd = null
           this.peso = 0
         }
+        }
+
+        
       }
     }
     
@@ -328,6 +523,20 @@ export class BeefPage implements OnInit {
       duration: 2000
     });
     toast.present();
+  }
+
+  async presentLoading(msg) {
+    this.load = await this.loading.create({
+      message: msg,
+      // duration: 3000
+    });
+
+    await this.load.present()
+  }
+
+  hideLoading() {
+    // console.log('loading')
+    this.load.dismiss()
   }
 
 }

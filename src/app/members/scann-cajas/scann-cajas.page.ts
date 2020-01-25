@@ -14,15 +14,12 @@ const SUCURSAL_KEY = '0';
 })
 export class ScannCajasPage implements OnInit {
 
-  barcode: string;
-  boxCodeBar: string;
-  barcodeProd: string;
-  exibision: string;
-  product: any;
-  codProt: string;
-  showInputs: boolean = true;
-  load: any;
-
+  
+  load: any
+  number: any
+  product: any
+  uomentry
+  Cb
   constructor(
     private http: HttpClient,
     private toastController: ToastController,
@@ -33,104 +30,46 @@ export class ScannCajasPage implements OnInit {
   ngOnInit() {
   }
 
-  getProduct() {
+  async getProducto() {
 
-    this.presentLoading('Buscando product..')
+    await this.presentLoading('Buscando...')
 
-    if(this.barcode != undefined){
-      this.storage.get(SUCURSAL_KEY).then(value => {
-        return this.http.get(environment.apiWMS + '/getProduct/' + this.barcode+  '/' + value).toPromise()
-      }).then((data: any) => {
-        if (!data.product) {
-          this.http.get(environment.apiProtevs + '/api/getProductByCodeBar/' + this.barcode).toPromise().then((datos: any) => {
-            if (datos.codigoBarraSLK != null) {
-              this.product = datos.codigoBarraSLK
-              this.showInputs = false
-            } else {
-              this.showInputs = false
-              this.product = datos.codigoBarraSB1
-            }
-          })
-        } else {
-          this.showInputs = false
-          this.product = data.product
-        }
-      }).catch(error => {
-        console.log(error)
-      }).finally(() => {
-        this.hideLoading()
-      })
-    }else{
-      this.storage.get(SUCURSAL_KEY).then(sucursalId => {
-        return this.http.get(environment.apiWMS +'/getProductByCodeProt/' + this.codProt +'/' + sucursalId).toPromise()
-      }).then((data: any) => {
-        this.showInputs = false
-        this.product = data
-      }).catch(() => {
-        this.presentToast('Hubo un error al buscar producto','danger')
-      })
-    }
-  }
-
-  registerBox() {
-
-    this.presentLoading('Guardando codigo..')
-
-    if (this.boxCodeBar == undefined) {
-      this.presentToast('Debe ingresar un codigo de caja.', 'danger')
+    this.http.get(environment.apiSAP + '/api/products/crm/' + this.number.toUpperCase()).toPromise().then((resp:any) => {
+      this.product = resp
+      console.log(this.product)
+    }).catch((error) => {
+      console.log(error)
+      this.presentToast('Error al obtener producto','danger')
+    }).finally(() => {
       this.hideLoading()
-    } else {
-      let body = {
-        um: this.product.UM_mayoreo,
-        codeprotevs: this.product.codigoProtevs,
-        codebox: this.boxCodeBar,
-        exibision: this.exibision
-      }
-
-      this.http.post(environment.apiWMS + '/registerbox', body).toPromise().then((data: any) => {
-        this.product = undefined
-        this.barcode = ''
-        this.boxCodeBar = ''
-        this.exibision = ''
-
-        this.presentToast('Se registro codigo de caja.', 'success')
-        this.router.navigate(['/members/home']);
-      }, error => {
-        this.presentToast('Hubo un error. Intentar de nuevo', 'danger')
-      }).finally(() => {
-        this.hideLoading()
-      })
-    }
-  }
-
-  registerSingleItemCodeBar(){
-
-    this.presentLoading('Guardando codigo..')
-
-    if(this.barcodeProd == undefined || this.barcodeProd == ''){
-      this.presentToast('Debe ingresar un codigo de barra.','warning')
-    }else{
-      let body = {
-        um: '',
-        exibision: '',
-        codeprotevs: this.product.codigoProtevs,
-        codebox: this.barcodeProd
-      }
-
-      this.http.post(environment.apiWMS + '/registerbox', body).toPromise().then((data: any) => {
-        if(data.success){
-          this.presentToast('Se guardo correctamente','success')
-          this.router.navigate(['/members/home']);
-        }
-      }).catch((error) => {
-        this.presentToast('Error al guardar. Intentalo de nuevo','danger')
-        console.log(error)
-      }).finally(() => {
-        this.hideLoading()
-      })
-    }
+    })
     
   }
+
+  async registerBox() {
+
+    await this.presentLoading('Guardando codigo..')
+
+    let data = {
+      itemcode: this.product.products.ItemCode,
+      barcode: this.Cb,
+      uomentry: this.uomentry
+    }
+
+    this.http.post(environment.apiSAP + '/api/codebar', data).toPromise().then((resp) => {
+      if(resp){
+        this.router.navigate(['/members/home'])
+        this.presentToast('Se guardo exitosamente','success')
+      } 
+    }).catch((error) => {
+      console.log(error)
+      this.presentToast(error.error.error,'danger')
+    }).finally(() => {
+      this.hideLoading()
+    })
+    
+  }
+
 
   async presentToast(msg: string, color: string) {
     const toast = await this.toastController.create({
