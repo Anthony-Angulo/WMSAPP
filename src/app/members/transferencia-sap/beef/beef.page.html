@@ -33,12 +33,13 @@
     <ion-col>
       <h6>Escanea codigo de barra de producto.</h6>
       <ion-input class="product-scann" id="input-codigo" placeholder="Codigo de Barra" [(ngModel)]="codigoBarra"
-        name="codigoBarra" (ionChange)="getData()" clearInput debounce="200">
+        name="codigoBarra" (ionChange)="getDataFromCodeBar()" clearInput debounce="200">
       </ion-input>
     </ion-col>
   </ion-row>
 
   <h6>Cajas Escaneadas: {{cantidadEscaneada}}</h6>
+  <h6>Peso Escaneado: {{cantidadPeso}}</h6>
 
   <h6>Lotes</h6>
   <ion-row *ngFor="let prod of detail; let index = index">
@@ -70,8 +71,8 @@
       </ion-button>
     </ion-buttons>
     <ion-buttons slot="end">
-      <ion-button>
-        <ion-icon slot="icon-only" name="chatbubbles"></ion-icon>
+      <ion-button (click)="promptCodeDesc()">
+        <ion-icon slot="icon-only" name="barcode"></ion-icon>
       </ion-button>
     </ion-buttons>
   </ion-toolbar>

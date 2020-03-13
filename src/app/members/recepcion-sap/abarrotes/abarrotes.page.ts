@@ -32,29 +32,29 @@ export class AbarrotesPage implements OnInit {
     } else {
       this.porcentaje = "10"
     }
-    
-    this.productData= this.receptionService.getOrderData()
-    if(this.productData.count){
+
+    this.productData = this.receptionService.getOrderData()
+    if (this.productData.count) {
       this.cantidad = this.productData.count
     }
   }
 
-  acceptRecepton(){
+  acceptRecepton() {
 
-    let validPercent = Number(this.productData.OpenQty) / Number(this.porcentaje)
-    let validQuantity = Number(validPercent) + Number(this.productData.OpenQty) 
-    
-    if(Number(this.cantidad) > Number(validQuantity)){
-      this.presentToast('Cantidad ingresada excede de la cantidad solicitada','warning')
+    let validPercent = (Number(this.porcentaje) / 100) * Number(this.productData.OpenInvQty)
+    let validQuantity = Number(validPercent) + Number(this.productData.OpenInvQty)
+
+    if (Number(this.cantidad) > Number(validQuantity)) {
+      this.presentToast('Cantidad ingresada excede de la cantidad solicitada', 'warning')
     } else {
-      if(this.productData.count != 0 && this.cantidad == 0){
+      if (this.productData.count != 0 && this.cantidad == 0) {
         console.log(1)
         this.productData.count = this.cantidad
         this.receptionService.setReceptionData(this.productData)
         this.router.navigate(['/members/recepcion-sap'])
         return
-      } else if (this.cantidad <= 0){
-        this.presentToast('Debe igresar una cantidad valida','warning')
+      } else if (this.cantidad <= 0) {
+        this.presentToast('Debe igresar una cantidad valida', 'warning')
         return
       } else {
         this.productData.count = this.cantidad
@@ -62,7 +62,7 @@ export class AbarrotesPage implements OnInit {
         this.router.navigate(['/members/recepcion-sap'])
       }
     }
-    
+
   }
 
   async presentToast(msg: string, color: string) {

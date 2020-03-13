@@ -124,27 +124,31 @@ export class AbarrotesBatchPage implements OnInit {
   }
 
   acceptRecepton(){
-    
-    if(this.productData.count != 0 && this.cantidad == 0){
-      this.productData.count = this.cantidad
-      this.productData.pallet = this.tarima
-      this.receptionService.setReceptionData(this.productData)
-      this.router.navigate(['/members/surtido-sap'])
-    } else if(this.cantidad <= 0){
-      this.presentToast('Debe igresar una cantidad valida','warning')
-      return
-    } else if(this.productData.Detail.QryGroup42 == 'Y'){
-      this.productData.count = this.cantidad
-      this.productData.detalle = this.lotes
-      this.productData.pallet = this.tarima
-      this.receptionService.setReceptionData(this.productData)
-      this.router.navigate(['/members/surtido-sap'])
+
+    if(this.lotes.length == 0){
+      this.presentToast('Falta agregar lote','warning')
     } else {
-      this.productData.count = this.lotes.map(lote => lote.quantity).reduce((a,b) => a + b, 0)
-      this.productData.detalle = this.lotes
-      this.productData.pallet = this.tarima
-      this.receptionService.setReceptionData(this.productData)
-      this.router.navigate(['/members/surtido-sap'])
+      if(this.productData.count != 0 && this.cantidad == 0){
+        this.productData.count = this.cantidad
+        this.productData.pallet = this.tarima
+        this.receptionService.setReceptionData(this.productData)
+        this.router.navigate(['/members/surtido-sap'])
+      } else if(this.cantidad <= 0){
+        this.presentToast('Debe igresar una cantidad valida','warning')
+        return
+      } else if(this.productData.Detail.QryGroup42 == 'Y'){
+        this.productData.count = this.cantidad
+        this.productData.detalle = this.lotes
+        this.productData.pallet = this.tarima
+        this.receptionService.setReceptionData(this.productData)
+        this.router.navigate(['/members/surtido-sap'])
+      } else {
+        this.productData.count = this.lotes.map(lote => lote.quantity).reduce((a,b) => a + b, 0)
+        this.productData.detalle = this.lotes
+        this.productData.pallet = this.tarima
+        this.receptionService.setReceptionData(this.productData)
+        this.router.navigate(['/members/surtido-sap'])
+      }
     }
 
   }

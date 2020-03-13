@@ -1,0 +1,28 @@
+<ion-header>
+  <ion-toolbar class="tool-bar">
+    <ion-buttons slot="start">
+      <ion-back-button routerLink="/members/partial-inventory"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Inventario</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+
+  <div *ngIf="products">
+    <ion-row *ngFor="let product of products; let index = index">
+      <ion-col>
+        <ion-card> 
+          <ion-card-content>
+            Item Code: {{product.ItemCode}} <br>
+            Item Name: {{product.ItemName}} <br>
+            <ion-button color="primary" class="button-eliminar" (click)="goToProduct(index)">
+              Ir
+            </ion-button>
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+    </ion-row>
+  </div>
+
+</ion-content>

@@ -14,7 +14,8 @@
       <h6>Datos de Producto</h6>
       <ion-item lines="none" class="container-item">
         Item Code: {{productData.Detail.ItemCode}}<br>
-        Descripcion: {{productData.Detail.ItemName}}
+        Descripcion: {{productData.Detail.ItemName}}<br>
+        Stock: {{stock | number}}
       </ion-item>
     </ion-col>
   </ion-row>
@@ -27,7 +28,7 @@
       </ion-col>
     </ion-row>
   
-  <h6>Ingresar cantidad a recibir.</h6>
+  <h6>Ingresar cantidad a surtir.</h6>
   <ion-row>
     <ion-col>
       <ion-input class="product-scann" [(ngModel)]="cantidad" name="cantidad" type="number"

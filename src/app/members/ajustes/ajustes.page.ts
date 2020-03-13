@@ -1,7 +1,6 @@
 import { Component, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
 import { SettingsService } from './../../services/settings.service';
-import { ToastController, LoadingController } from '@ionic/angular';
+import { ToastController } from '@ionic/angular';
 
 @Component({
   selector: 'app-ajustes',
@@ -13,12 +12,11 @@ export class AjustesPage implements OnInit {
   data
   apiSAP
   porcentaje
+  sucursal
   blob: Blob
 
   constructor(
     private toastController: ToastController,
-    private loadingController: LoadingController,
-    private router: Router,
     private settings: SettingsService
   ) { }
 
@@ -26,6 +24,7 @@ export class AjustesPage implements OnInit {
     this.data = this.settings.fileData
     this.apiSAP = this.data.apiSAP
     this.porcentaje = this.data.porcentaje
+    this.sucursal = this.data.sucursal
   }
 
   async guardarAjustes() {
@@ -33,8 +32,10 @@ export class AjustesPage implements OnInit {
       this.presentToast('Debes ingresar una direccion', 'warning')
     } else if (this.porcentaje == '' || this.porcentaje == undefined) {
       this.presentToast('Debes ingresar un porcentaje', 'warning')
+    } else if(this.sucursal == '' || this.sucursal == undefined){
+      this.presentToast('Debes ingresar una sucursal', 'warning')
     } else {
-      this.settings.saveFile(this.apiSAP, this.porcentaje)
+      this.settings.saveFile(this.apiSAP, this.porcentaje, this.sucursal)
     }
   }
 

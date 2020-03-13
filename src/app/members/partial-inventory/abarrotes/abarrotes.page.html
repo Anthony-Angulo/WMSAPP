@@ -1,0 +1,62 @@
+<ion-header>
+  <ion-toolbar class="tool-bar">
+    <ion-buttons slot="start">
+      <ion-back-button routerLink="/members/partial-inventory-detail"></ion-back-button>
+    </ion-buttons>
+    <ion-buttons slot="end">
+        <ion-button class="aceptar" (click)="promptCloseProduct()">Cerrar</ion-button>
+    </ion-buttons>
+    <ion-title>Abarrotes</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-row *ngIf="productInfo">
+    <ion-col>
+      <h6>Datos de Producto</h6>
+      <ion-item lines="none" class="container-item">
+        Codigo: {{productInfo.ItemCode}}<br>
+        Nombre: {{productInfo.ItemName}}
+      </ion-item>
+    </ion-col>
+  </ion-row>
+
+  <ion-row *ngIf="productInfo">
+    <ion-col>
+      <h6>Unidad de Medida</h6>
+      <ion-select class="product-scann" [(ngModel)]="uom" name="uom">
+        <ion-select-option *ngFor="let um of productInfo.uom" [value]="um">{{um.UomCode}}</ion-select-option>
+      </ion-select>
+    </ion-col>
+  </ion-row>
+
+
+  <ion-row *ngIf="productInfo">
+    <ion-col size="2">
+      <h6>Qty</h6>
+      <ion-input class="input-recepcion" type="number" [(ngModel)]="cantidad" name="cantidad"
+        (ionChange)="calculateTotal()" debounce="200">
+      </ion-input>
+    </ion-col>
+    <ion-col size="1">
+      <h6>X</h6>
+    </ion-col>
+    <ion-col size="3">
+      <h6>UB</h6>
+      <ion-input class="input-recepcion" [ngModel]="uom?.BaseQty" disabled></ion-input>
+    </ion-col>
+    <ion-col size="1">
+      <h6>=</h6>
+    </ion-col>
+    <ion-col size="5">
+      <h6>Total</h6>
+      <ion-input type="number" [(ngModel)]="total" name="total" class="input-recepcion" disabled></ion-input>
+    </ion-col>
+  </ion-row>
+
+  <ion-row *ngIf="productInfo">
+    <ion-col>
+      <ion-button class="search-order-button" expand="full" (click)="saveProduct()">Enviar </ion-button>
+    </ion-col>
+  </ion-row>
+</ion-content>

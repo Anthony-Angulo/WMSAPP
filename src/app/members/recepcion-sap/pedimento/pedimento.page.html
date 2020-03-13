@@ -1,0 +1,39 @@
+<ion-header>
+  <ion-toolbar class="tool-bar">
+    <ion-buttons slot="start">
+      <ion-back-button routerLink="/members/recepcion-sap"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Pedimento</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+
+  <ion-row>
+    <ion-col>
+      <h6>Ingresa Aduana</h6>
+      <ion-input class="input-recepcion" [(ngModel)] = "aduana" name="aduana"></ion-input>
+    </ion-col>
+  </ion-row>
+
+  <ion-row>
+    <ion-col>
+      <h6>Selecciona año</h6>
+        <ion-datetime [(ngModel)] ="year" name="year" class="product-scann" displayFormat="YYYY"></ion-datetime>
+    </ion-col>
+  </ion-row>
+
+  <ion-row>
+    <ion-col>
+      <h6>Pedimento</h6>
+      <ion-input class="input-recepcion" [(ngModel)] = "pedimento" name="aduana" (ionChange)="agregarPedimento()" debounce="200"></ion-input>
+    </ion-col>
+  </ion-row>
+
+  <!-- <ion-row>
+    <ion-col>
+      <ion-button>Agregar Pedimento</ion-button>
+    </ion-col>
+  </ion-row> -->
+
+</ion-content>

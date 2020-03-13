@@ -1,11 +1,36 @@
-<ion-header>
-  <ion-toolbar class="tool-bar">
-    <ion-title text-color="white">WMS CCFN</ion-title>
-  </ion-toolbar>
-</ion-header>
+<ion-content padding class="auth-page">
 
-<ion-content>
-  <form #form="ngForm" (ngSubmit)="login(form)">
+  <div class="login-content">
+
+    <div padding-horizontal text-center>
+      <div class="logo-ico"></div>
+    </div>
+
+    <form class="list-form" #form="ngForm" (ngSubmit)="login(form)">
+          <ion-item>
+            <ion-label floating>
+              <ion-icon name="mail" item-start class="text-primary"></ion-icon>
+              Correo
+            </ion-label>
+            <ion-input name="email" type="email" ngModel required></ion-input>
+          </ion-item>
+
+          <ion-item>
+            <ion-label floating>
+              <ion-icon name="lock" item-start class="text-primary"></ion-icon>
+              Contraseña
+            </ion-label>
+            <ion-input name="password" type="password" ngModel required></ion-input>
+          </ion-item>
+
+        <ion-button expand="block" color="secondary" type="submit" [disabled]="form.invalid">
+          <ion-icon slot="start" name="log-in"></ion-icon>
+          INICIAR SESION
+        </ion-button>
+      </form>
+  </div>
+
+  <!-- <form #form="ngForm" (ngSubmit)="login(form)">
     <ion-grid>
       <ion-row color="primary" justify-content-center>
         <ion-col align-self-center size-md="6" size-lg="5" size-xs="12">
@@ -22,5 +47,5 @@
         </ion-col>
       </ion-row>
     </ion-grid>
-  </form>
+  </form> -->
 </ion-content>

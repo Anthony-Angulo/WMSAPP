@@ -1,0 +1,32 @@
+<ion-header>
+  <ion-toolbar class="tool-bar">
+    <ion-buttons slot="start">
+      <ion-back-button routerLink="/members/home"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Inventario</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  
+  <div *ngIf="inventory_orders">
+    <ion-row *ngFor="let inventory of inventory_orders; let index = index">
+      <ion-col>
+        <ion-card>
+          <ion-card-header>
+            <ion-card-subtitle>Status: Abierto - Fecha: {{inventory.created_at}}</ion-card-subtitle>
+            <ion-card-title>{{inventory.EmployeeName}}</ion-card-title>
+          </ion-card-header>
+          <ion-card-content>
+            Tipo de Inventario: Parcial <br>
+            Almacen: {{inventory.WarehouseCode}} <br>
+            <ion-button color="primary" class="button-eliminar" (click)="goToInventory(index)">
+              <ion-icon slot="icon-only" name="arrow-round-forward"></ion-icon>
+            </ion-button>
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+    </ion-row>
+  </div>
+
+</ion-content>

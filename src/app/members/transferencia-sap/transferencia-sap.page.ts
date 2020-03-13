@@ -92,7 +92,7 @@ export class TransferenciaSapPage implements OnInit {
 
       if (codebarDescription) {
         this.order.WTQ1.map(item => {
-          item.detalle_codigo = codebarDescription.filter(y => y.codigo_sap == item.ItemCode)
+          item.cBDetail = codebarDescription.filter(y => y.codigo_sap == item.ItemCode)
         })
       }
     }).catch(error => {
@@ -210,6 +210,7 @@ export class TransferenciaSapPage implements OnInit {
       return {
         ItemCode: product.ItemCode,
         UoMEntry: product.UomEntry,
+        UseBaseUnits: (product.UseBaseUn == "Y")  ? 1 : 0,
         WarehouseCode: product.WhsCode,
         Line: product.LineNum,
         Count: product.count,

@@ -224,7 +224,7 @@ export class SurtidoSapPage implements OnInit {
       };
       this.http.post(this.apiSAP + '/api/Delivery', recepcionData).toPromise().then((data: any) => {
         console.log(data);
-        this.presentToast('Recepcion Concluida', 'success');
+        this.presentToast('Surtido Concluido', 'success');
         this.order = undefined;
         this.number = undefined;
       }).catch(error => {

@@ -1,0 +1,61 @@
+<ion-header>
+  <ion-toolbar class="tool-bar">
+    <ion-buttons slot="start">
+      <ion-back-button routerLink="/members/partial-inventory-detail"></ion-back-button>
+    </ion-buttons>
+    <ion-buttons slot="end">
+        <ion-button class="aceptar" (click)="promptCloseProduct()">Cerrar</ion-button>
+    </ion-buttons>
+    <ion-title>Carnes</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+
+  <ion-row *ngIf="productInfo">
+    <ion-col>
+      <h6>Datos de Producto</h6>
+      <ion-item lines="none" class="container-item">
+        Codigo: {{productInfo.ItemCode}}<br>
+        Nombre: {{productInfo.ItemName}}
+      </ion-item>
+    </ion-col>
+  </ion-row>
+
+  <ion-row>
+    <ion-col>
+      <h6>Ingresa USDA</h6>
+      <ion-input class="input-recepcion"  placeholder="USDA" [(ngModel)]="lote"
+        name="lote">
+      </ion-input>
+    </ion-col>
+  </ion-row>
+  <ion-row>
+    <ion-col>
+      <h6>Escanea Codigo de Barra</h6>
+      <ion-input class="input-recepcion" id="input-codigo" placeholder="Codigo de Barra" [(ngModel)]="codigoBarra"
+        name="codigoBarra" (ionChange)="getDataFromEtiqueta()" debounce="400">
+      </ion-input>
+    </ion-col>
+  </ion-row>
+
+  <div *ngIf="productInfo">
+    <h6>Cajas Escaneadas: {{cajasEscaneadas}}</h6>
+    <h6>Peso Escaneado: {{pesoEscaneado}}</h6>
+    <ion-row>
+      <ion-col>
+        <ion-button class="search-order-button" expand="full" (click)="saveInventory()">Enviar</ion-button>
+      </ion-col>
+    </ion-row>
+    <h6>Lista  de Escaneado</h6>
+    <ion-row *ngFor="let prod of codeBarDetails">
+      <ion-col>
+        <ion-item lines="none" class="container-item">
+          USDA: {{prod.Lote}}<br>
+          Codigo: {{prod.visual}}<br>
+          Peso: {{prod.Quantity}}
+        </ion-item>
+      </ion-col>
+    </ion-row>
+  </div>
+</ion-content>

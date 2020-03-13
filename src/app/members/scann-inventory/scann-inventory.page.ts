@@ -2,6 +2,8 @@ import { HttpClient } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
 import { environment } from 'src/environments/environment';
 import { Router } from '@angular/router';
+import { SettingsService } from '../../services/settings.service';
+import { Platform } from '@ionic/angular';
 import { ToastController, LoadingController } from '@ionic/angular';
 import * as moment from 'moment';
 
@@ -25,22 +27,38 @@ export class ScannInventoryPage implements OnInit {
   fechaProd: Date
   searchType
   search
+  total
+  uom
+  data
+  apiSAP: string;
+
 
   constructor(private http: HttpClient,
     private toastController: ToastController,
     private router: Router,
-    private loading: LoadingController) { }
+    private loading: LoadingController,
+    private platform: Platform,
+    private settings: SettingsService) { }
 
   ngOnInit() {
+
+    if (this.platform.is("cordova")) {
+      this.data = this.settings.fileData
+      this.sucursal = this.data.sucursal
+      this.apiSAP = this.data.apiSAP
+    } else {
+      this.apiSAP = environment.apiSAP
+      this.sucursal = "S01"
+    }
   }
 
   async getOrdenByCode() {
 
     await this.presentLoading('Buscando....')
 
-    this.http.get(environment.apiSAP + '/api/products/detail/' + this.number.toUpperCase()).toPromise().then((prod: any) => {
+    this.http.get(this.apiSAP + '/api/products/detail/' + this.number.toUpperCase()).toPromise().then((prod: any) => {
       this.order = prod
-      this.http.get('http://crm.ccfnweb.com.mx/apiwms/public/api' + '/codebardescriptionsVariants/' + this.order.detail.ItemCode).toPromise().then((codeBars: any) => {
+      this.http.get(environment.apiWMS + '/codebardescriptionsVariants/' + this.order.detail.ItemCode).toPromise().then((codeBars: any) => {
         if (codeBars.length != 0) {
           this.order.cbDetail = codeBars
         } else {
@@ -50,31 +68,43 @@ export class ScannInventoryPage implements OnInit {
       console.log(this.order)
     }).catch((error) => {
       console.log(error)
-      this.presentToast('Error al buscar producto','danger')
+      this.presentToast('Error al buscar producto', 'danger')
     }).finally(() => {
       this.hideLoading()
     })
   }
 
-  async searchProductByCb() {
-    await this.presentLoading('Buscando....')
 
-    this.http.get(environment.apiSAP + '/api/codebar/' + this.search).toPromise().then((prod: any) => {
-      this.order = prod
-      this.http.get('http://crm.ccfnweb.com.mx/apiwms/public/api' + '/codebardescriptionsVariants/' + this.order.detail.ItemCode).toPromise().then((codeBars: any) => {
-        if (codeBars.length != 0) {
-          this.order.cbDetail = codeBars
-        } else {
-          this.order.cbDetail = []
-        }
+  calculateTotal() {
+    this.total = Number(this.uom.BaseQty * this.cantidad)
+  }
+
+  async searchProductByCb() {
+
+    if (this.search == '' || this.search == undefined) {
+
+    } else {
+
+      await this.presentLoading('Buscando....')
+
+      this.http.get(this.apiSAP + '/api/codebar/' + this.search).toPromise().then((prod: any) => {
+        this.order = prod
+        this.http.get(environment.apiWMS + '/codebardescriptionsVariants/' + this.order.detail.ItemCode).toPromise().then((codeBars: any) => {
+          if (codeBars.length != 0) {
+            this.order.cbDetail = codeBars
+          } else {
+            this.order.cbDetail = []
+          }
+        })
+        console.log(this.order)
+      }).catch((error) => {
+        this.presentToast('Error al buscar producto', 'danger')
+        console.log(error)
+      }).finally(() => {
+        this.hideLoading()
       })
-      console.log(this.order)
-    }).catch((error) => {
-      this.presentToast('Error al buscar producto','danger')
-      console.log(error)
-    }).finally(() => {
-      this.hideLoading()
-    })
+    }
+
 
     this.search = ''
   }
@@ -84,18 +114,23 @@ export class ScannInventoryPage implements OnInit {
     if (this.sucursal == undefined || this.sucursal == '') {
       this.presentToast('Faltan llenar campos', 'warning')
     } else {
+
       let scanned = {
         ItemCode: this.order.detail.ItemCode,
         Sucursal: this.sucursal,
+        Product: this.order.detail.ItemName,
         Name: 'SI',
         visual: '',
         codigoBarra: '',
-        Peso: this.cantidad * Number(this.order.detail.NumInSale),
+        Cantidad: this.cantidad,
+        UM: this.uom.UomCode,
+        CantidadBase: Number(this.uom.BaseQty * this.cantidad),
+        UMBase: this.uom.BASEUOM,
         Fecha: '',
         Attr1: 'SI'
       }
 
-      this.http.post('http://crm.ccfnweb.com.mx/apiwms/public/api' + '/Inventory/SAP', scanned).toPromise().then((resp: any) => {
+      this.http.post(environment.apiWMS + '/Inventory/SAP', scanned).toPromise().then((resp: any) => {
         console.log(resp)
         this.presentToast('Guardado Correctamente', 'success')
         this.router.navigate(['/members/home'])
@@ -119,7 +154,7 @@ export class ScannInventoryPage implements OnInit {
           let datos = {
             codigo: this.codigoBarra.trim()
           }
-          this.http.post('http://crm.ccfnweb.com.mx/apiwms/public/api' + '/validateCodeBarInventorySAP2', datos).toPromise().then((data) => {
+          this.http.post(environment.apiWMS + '/validateCodeBarInventorySAP2', datos).toPromise().then((data) => {
             if (data) {
               this.presentToast('Ya existe este codigo. Intenta de nuevo.', 'warning')
             } else {
@@ -129,7 +164,7 @@ export class ScannInventoryPage implements OnInit {
               } else {
 
                 let peso = this.codigoBarra.substr(this.order.cbDetail[codFound].peso_pos - 1, this.order.cbDetail[codFound].peso_length)
-               
+
 
                 if (this.order.cbDetail[codFound].maneja_decimal == 1) {
                   if (this.order.cbDetail[codFound].UOM_id != 3) {
@@ -191,24 +226,32 @@ export class ScannInventoryPage implements OnInit {
 
                 if (this.codigoBarra.trim().length <= 36) {
                   scanned = {
-                    ItemCode: this.order.cbDetail.ItemCode,
+                    ItemCode: this.order.detail.ItemCode,
                     Sucursal: this.sucursal,
+                    Product: this.order.detail.ItemName,
                     Name: this.codigoBarra.trim(),
                     visual: this.codigoBarra.substr(this.codigoBarra.length - 14).trim(),
                     codigoBarra: this.codigoBarra.trim(),
-                    Peso: this.peso,
+                    Cantidad: 1,
+                    UM: "CAJA",
+                    CantidadBase: this.peso,
+                    UMBase: this.order.uom[0].BASEUOM,
                     Fecha: '',
                     Attr1: 'SI'
                   }
                   this.cajasEscaneadas++
                 } else {
                   scanned = {
-                    ItemCode: this.order.cbDetail.ItemCode,
+                    ItemCode: this.order.detail.ItemCode,
                     Sucursal: this.sucursal,
+                    Product: this.order.detail.ItemName,
                     Name: this.codigoBarra.substr(this.codigoBarra.length - 36).trim(),
                     visual: this.codigoBarra.substr(this.codigoBarra.length - 14).trim(),
                     codigoBarra: this.codigoBarra.trim(),
-                    Peso: this.peso,
+                    Cantidad: 1,
+                    UM: "CAJA",
+                    CantidadBase: this.peso,
+                    UMBase: this.order.uom[0].BASEUOM,
                     Fecha: '',
                     Attr1: 'SI'
                   }
@@ -219,10 +262,9 @@ export class ScannInventoryPage implements OnInit {
 
 
                 console.log(scanned)
-                this.http.post('http://crm.ccfnweb.com.mx/apiwms/public/api' + '/Inventory/SAP', scanned).toPromise().then((resp: any) => {
+                this.http.post(environment.apiWMS + '/Inventory/SAP', scanned).toPromise().then((resp: any) => {
                   console.log(resp)
                   this.presentToast('Guardado Correctamente', 'success')
-                  this.router.navigate(['/members/home'])
                 }).catch(error => {
                   console.log(error)
                   this.presentToast('Error al guardar. Intenta de Nuevo', 'danger')
@@ -232,7 +274,7 @@ export class ScannInventoryPage implements OnInit {
             }
           })
         } else {
-          this.http.get('http://crm.ccfnweb.com.mx/apiwms/public/api' + '/validateCodeBarInventorySAP/' + this.codigoBarra.trim()).toPromise().then((data) => {
+          this.http.get(environment.apiWMS + '/validateCodeBarInventorySAP/' + this.codigoBarra.trim()).toPromise().then((data) => {
             if (data) {
               this.presentToast('Ya existe este codigo. Intenta de nuevo.', 'warning')
             } else {
@@ -242,7 +284,7 @@ export class ScannInventoryPage implements OnInit {
               } else {
 
                 let peso = this.codigoBarra.substr(this.order.cbDetail[codFound].peso_pos - 1, this.order.cbDetail[codFound].peso_length)
-               
+
 
                 if (this.order.cbDetail[codFound].maneja_decimal == 1) {
                   if (this.order.cbDetail[codFound].UOM_id != 3) {
@@ -306,10 +348,14 @@ export class ScannInventoryPage implements OnInit {
                   scanned = {
                     ItemCode: this.order.detail.ItemCode,
                     Sucursal: this.sucursal,
+                    Product: this.order.detail.ItemName,
                     Name: this.codigoBarra.trim(),
                     visual: this.codigoBarra.substr(this.codigoBarra.length - 14).trim(),
                     codigoBarra: this.codigoBarra.trim(),
-                    Peso: this.peso,
+                    Cantidad: 1,
+                    UM: "CAJA",
+                    CantidadBase: this.peso,
+                    UMBase: this.order.uom[0].BASEUOM,
                     Fecha: '',
                     Attr1: 'SI'
                   }
@@ -318,10 +364,14 @@ export class ScannInventoryPage implements OnInit {
                   scanned = {
                     ItemCode: this.order.detail.ItemCode,
                     Sucursal: this.sucursal,
+                    Product: this.order.detail.ItemName,
                     Name: this.codigoBarra.substr(this.codigoBarra.length - 36).trim(),
                     visual: this.codigoBarra.substr(this.codigoBarra.length - 14).trim(),
                     codigoBarra: this.codigoBarra.trim(),
-                    Peso: this.peso,
+                    Cantidad: 1,
+                    UM: "CAJA",
+                    CantidadBase: this.peso,
+                    UMBase: this.order.uom[0].BASEUOM,
                     Fecha: '',
                     Attr1: 'SI'
                   }
@@ -332,10 +382,9 @@ export class ScannInventoryPage implements OnInit {
 
 
                 console.log(scanned)
-                this.http.post('http://crm.ccfnweb.com.mx/apiwms/public/api' + '/Inventory/SAP', scanned).toPromise().then((resp: any) => {
+                this.http.post(environment.apiWMS + '/Inventory/SAP', scanned).toPromise().then((resp: any) => {
                   console.log(resp)
                   this.presentToast('Guardado Correctamente', 'success')
-                  this.router.navigate(['/members/home'])
                 }).catch(error => {
                   console.log(error)
                   this.presentToast('Error al guardar. Intenta de Nuevo', 'danger')

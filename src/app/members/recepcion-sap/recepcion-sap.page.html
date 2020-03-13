@@ -3,7 +3,12 @@
     <ion-buttons slot="start">
       <ion-back-button routerLink="/members/home"></ion-back-button>
     </ion-buttons>
-    <ion-title>Recepcion de Mercancia</ion-title>
+    <ion-buttons slot="end">
+      <div *ngIf="order">
+        <ion-button class="aceptar" routerLink="/members/pedimento">PEDIMENTO</ion-button>
+      </div>
+    </ion-buttons>
+    <ion-title>Recepcion</ion-title>
   </ion-toolbar>
 </ion-header>
 

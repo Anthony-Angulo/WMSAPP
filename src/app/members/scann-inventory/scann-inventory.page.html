@@ -49,25 +49,15 @@
     </ion-col>
   </ion-row>
 
-  <ion-row *ngIf="order">
+  <ion-row *ngIf="order && order.detail.U_IL_TipPes == 'F'">
     <ion-col>
-      <h6>Sucursal</h6>
-      <ion-input class="input-recepcion" placeholder="Sucursal" [(ngModel)]="sucursal" name="sucursal">
-      </ion-input>
+      <h6>Unidad de Medida</h6>
+      <ion-select class="product-scann" [(ngModel)]="uom" name="uom" >
+        <ion-select-option *ngFor="let um of order.uom"  [value]="um">{{um.UomCode}}</ion-select-option>
+      </ion-select>
     </ion-col>
   </ion-row>
 
-  <!-- <ion-row *ngIf="order">
-    <ion-col>
-      <h6>Lote</h6>
-      <ion-input class="input-recepcion" placeholder="Lote" [(ngModel)]="lote" name="lote">
-      </ion-input>
-    </ion-col>cdEntry": "75474",
-      "BcdCode": "0301016",
-      "BcdName": null,
-      "ItemCode": "A0301016",
-      "UomEnt
-  </ion-row> -->
 
   <ion-row *ngIf="order && order.detail.U_IL_TipPes == 'V'">
     <ion-col>
@@ -79,17 +69,30 @@
   </ion-row>
 
   <ion-row *ngIf="order && order.detail.U_IL_TipPes == 'F'">
-    <ion-col>
-      <h6>Cantidad de Cajas</h6>
-      <ion-input class="input-recepcion" type="number" placeholder="Cantidad de Cajas" [(ngModel)]="cantidad"
-        name="cantidad">
+    <ion-col size="2">
+      <h6>Cajas</h6>
+      <ion-input class="input-recepcion" type="number" [(ngModel)]="cantidad"
+        name="cantidad" (ionChange)="calculateTotal()" debounce="200">
       </ion-input>
+    </ion-col>
+    <ion-col size="1">
+      <h6>X</h6> 
+    </ion-col>
+    <ion-col size="3">
+      <h6>UB</h6>
+      <ion-input class="input-recepcion" [ngModel]="uom?.BaseQty" disabled></ion-input>
+    </ion-col>
+    <ion-col size="1">
+      <h6>=</h6>
+    </ion-col>
+    <ion-col size="5">
+      <h6>Total</h6>
+      <ion-input type="number" [(ngModel)]="total"
+      name="total" class="input-recepcion" disabled></ion-input>
     </ion-col>
   </ion-row>
 
   <h6 *ngIf="order && order.detail.U_IL_TipPes == 'V'">Cajas Contadas: {{cajasEscaneadas}}</h6>
-  <h6 *ngIf="order && order.detail.U_IL_TipPes == 'F'">1 Caja Equivale aprox : {{order.detail.NumInSale | number}} en
-    Unidad Base</h6>
 
   <ion-row *ngIf="order && order.detail.U_IL_TipPes == 'F'">
     <ion-col>
@@ -105,7 +108,7 @@
     <ion-col>
       <ion-item lines="none" class="container-item">
         Name: {{prod.visual}}<br>
-        peso: {{prod.Peso}}
+        peso: {{prod.CantidadBase}}
       </ion-item>
     </ion-col>
   </ion-row>

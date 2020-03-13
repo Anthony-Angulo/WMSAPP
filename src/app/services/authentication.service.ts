@@ -8,9 +8,11 @@ import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 
 const TOKEN_KEY = 'auth-token';
-const SUCURSAL_KEY = '0';
-const USER_ID = '1';
-const WAREHOUSE = '2';
+const SUCURSAL_KEY = 'SUCURSAL';
+const USER_ID = 'USER_ID';
+const WAREHOUSE = 'WAREHOUSE_ID';
+const NAME = 'USER_NAME';
+const ROL = 'USER_ROL';
 
 @Injectable({
   providedIn: 'root'
@@ -29,7 +31,7 @@ export class AuthenticationService {
     this.plt.ready().then(() => {
       this.checkToken();
     });
-  }
+  } 
 
   checkToken() {
     this.storage.get(TOKEN_KEY).then(res => {
@@ -51,7 +53,9 @@ export class AuthenticationService {
       } else {
         this.storage.set(SUCURSAL_KEY, data.sucursal);
         this.storage.set(WAREHOUSE, data.warehouseCode)
-        this.storage.set(USER_ID, data.id);
+        this.storage.set(USER_ID, data.SAPID);
+        this.storage.set(NAME, data.name);
+        this.storage.set(ROL,data.roles);
         this.authenticationState.next(true);
         return this.storage.set(TOKEN_KEY, data.token)
       }

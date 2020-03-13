@@ -2,6 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
 import { SettingsService } from './../../services/settings.service';
 import { RecepcionDataService } from 'src/app/services/recepcion-data.service';
+import { NavExtrasService } from 'src/app/services/nav-extras.service';
 import { environment } from 'src/environments/environment';
 import { Router } from '@angular/router';
 import { Platform } from '@ionic/angular';
@@ -27,6 +28,7 @@ export class RecepcionSapPage implements OnInit {
   constructor(
     private http: HttpClient,
     private settings: SettingsService,
+    private navExtras: NavExtrasService,
     private receptionService: RecepcionDataService,
     private toastController: ToastController,
     private router: Router,
@@ -78,7 +80,7 @@ export class RecepcionSapPage implements OnInit {
     }).then((codebarDescription: any[]) => {
       console.log(codebarDescription)
       this.order.POR1.map(item => {
-        item.detalle_codigo = codebarDescription.filter(y => y.codigo_sap == item.ItemCode)
+        item.cBDetail = codebarDescription.filter(y => y.codigo_sap == item.ItemCode)
       })
     }).catch(error => {
       console.log(error)
@@ -182,6 +184,8 @@ export class RecepcionSapPage implements OnInit {
 
     await this.presentLoading('Enviando....')
 
+
+
     const products = this.order.POR1.filter(product => product.count).map(product => {
       return {
         ItemCode: product.ItemCode,
@@ -194,16 +198,20 @@ export class RecepcionSapPage implements OnInit {
       }
     })
 
+
     if (products.length != 0) {
       const recepcionData = {
         order: this.order.OPOR.DocEntry,
         products
       }
+
+      console.log(recepcionData)
       this.http.post(this.apiSAP + '/api/PurchaseDelivery', recepcionData).toPromise().then((data: any) => {
         console.log(data);
         this.presentToast('Recepcion Concluida', 'success');
         this.order = undefined;
         this.number = undefined;
+        this.navExtras.setPedimento(null)
       }).catch(error => {
         console.log(error)
         this.presentToast(error.error.error, 'danger')
@@ -240,6 +248,5 @@ export class RecepcionSapPage implements OnInit {
     // console.log('loading')
     this.load.dismiss()
   }
+
 }
-
-

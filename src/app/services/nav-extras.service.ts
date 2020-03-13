@@ -18,6 +18,8 @@ export class NavExtrasService {
   surtidoProduct: any
   movId: any;
 
+  pedimento: any;
+
   constructor() { }
 
   public setOrderData(data: any) {
@@ -98,5 +100,13 @@ export class NavExtrasService {
 
   public getMovInv(){
     return this.movId
+  }
+
+  public setPedimento(data: any){
+    this.pedimento = data;
+  }
+
+  public getPedimento(){
+    return this.pedimento;
   }
 }

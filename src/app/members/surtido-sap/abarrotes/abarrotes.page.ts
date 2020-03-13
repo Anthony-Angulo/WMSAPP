@@ -2,6 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { ToastController } from '@ionic/angular';
 import { SettingsService } from '../../../services/settings.service';
+import { HttpClient } from '@angular/common/http';
+import { environment } from 'src/environments/environment';
 import { Platform } from '@ionic/angular';
 import { RecepcionDataService } from 'src/app/services/recepcion-data.service';
 
@@ -17,9 +19,11 @@ export class AbarrotesPage implements OnInit {
   tarima
   data
   porcentaje: any;
-
+  sucursal: any;
+  stock: any;
 
   constructor(
+    private http: HttpClient,
     private toastController: ToastController,
     private router: Router,
     private platform: Platform,
@@ -35,18 +39,28 @@ export class AbarrotesPage implements OnInit {
     if (this.platform.is("cordova")) {
       this.data = this.settings.fileData
       this.porcentaje = this.data.porcentaje
+      this.sucursal = this.data.sucursal
     } else {
       this.porcentaje = "10"
+      this.sucursal = "S01"
     }
+
+    this.http.get(environment.apiSAP + '/api/batch/' + this.sucursal + '/' + this.productData.ItemCode).toPromise().then((val: any) => {
+      this.stock = val.stock
+      console.log(this.stock)
+    }).catch((error) => {
+      console.log(error)
+      this.presentToast('Error al traer stock de producto','danger')
+    })
   }
 
   acceptRecepton() {
 
-    let validPercent = Number(this.productData.OpenQty) / Number(this.porcentaje)
-    let validQuantity = Number(validPercent) + Number(this.productData.OpenQty)
+    let validPercent = (Number(this.porcentaje) / 100) * Number(this.productData.OpenInvQty)
+    let validQuantity = Number(validPercent) + Number(this.productData.OpenInvQty)
 
-    if(Number(this.cantidad) > Number(validQuantity)){
-      this.presentToast('Cantidad ingresada excede de la cantidad solicitada','warning')
+    if (Number(this.cantidad) > Number(validQuantity)) {
+      this.presentToast('Cantidad ingresada excede de la cantidad solicitada', 'warning')
     } else {
       if (this.productData.count != 0 && this.cantidad == 0) {
         this.productData.count = this.cantidad
@@ -64,7 +78,7 @@ export class AbarrotesPage implements OnInit {
         this.router.navigate(['/members/surtido-sap'])
       }
     }
-    
+
   }
 
   async presentToast(msg: string, color: string) {

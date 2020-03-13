@@ -19,14 +19,18 @@ export class SettingsService {
 
   public async validateFile() {
 
-    this.file.checkFile(this.file.dataDirectory, 'settings.txt').then(async val => {
+    this.file.checkFile(this.file.dataDirectory, 'settings.txt').then(async (val: any) => {
       console.log(val)
-      if (!val) {
+      this.readFile()
+    }).catch(async err => {
+      console.log(err)
+      if(err.code == 1){
         this.file.createFile(this.file.dataDirectory, 'settings.txt', true)
 
         let url = {
           apiSAP: environment.apiSAP,
-          porcentaje: '10'
+          porcentaje: '10',
+          sucursal: 'S01'
         };
 
         let environmentToString = JSON.stringify(url)
@@ -35,14 +39,11 @@ export class SettingsService {
 
         let writePromise = this.file.writeFile(this.file.dataDirectory, 'settings.txt', this.blob, { replace: true, append: false });
 
-        await writePromise.catch(err => {
+        await writePromise.then(() => { this.validateFile() }).catch(err => {
           console.log(err)
         })
-
+        
       }
-      this.readFile()
-    }).catch(err => {
-      console.log(err)
     })
 
   }
@@ -53,14 +54,16 @@ export class SettingsService {
     await promise.then(value => {
       this.fileData = JSON.parse(value)
     }).catch(err => {
+      console.log(err)
       this.presentToast('Error al leer archivo','danger')
     })
   }
 
-  public async saveFile(apiSAP: string, porcentaje: string){
+  public async saveFile(apiSAP: string, porcentaje: string, sucursal: string){
     let uri = {
       apiSAP: apiSAP,
-      porcentaje: porcentaje
+      porcentaje: porcentaje,
+      sucursal: sucursal
     };
 
     let environmentToString = JSON.stringify(uri)
