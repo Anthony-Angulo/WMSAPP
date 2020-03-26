@@ -73,6 +73,9 @@ export class RecepcionSapPage implements OnInit {
     this.http.get(this.apiSAP + '/api/purchaseorder/Reception/' + this.number).toPromise().then((data: any) => {
       this.order = data;
       console.log(this.order)
+      if(this.order.OPOR.U_IL_Pedimento != null){
+        this.navExtras.setPedimento(this.order.OPOR.U_IL_Pedimento)
+      }
       return this.order.POR1.map(x => x.ItemCode)
     }).then((codes) => {
       console.log(codes)
@@ -194,14 +197,23 @@ export class RecepcionSapPage implements OnInit {
         Line: product.LineNum,
         Count: product.count,
         ItemType: product.Detail.U_IL_TipPes,
+        Group: (product.Detail.QryGroup43 == "Y") ? 43 : 0,
         Batch: (product.detalle) ? product.detalle : []
       }
     })
 
+    let pedimento
+
+    if(this.navExtras.getPedimento() == undefined || this.navExtras.getPedimento() == null){
+      pedimento = ''
+    } else {
+      pedimento = this.navExtras.getPedimento()
+    }
 
     if (products.length != 0) {
       const recepcionData = {
         order: this.order.OPOR.DocEntry,
+        pedimento: pedimento,
         products
       }
 

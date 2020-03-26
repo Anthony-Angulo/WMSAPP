@@ -30,6 +30,11 @@ const routes: Routes = [
   { path: 'scann-inventory',  canActivate: [AuthGuard], loadChildren: './scann-inventory/scann-inventory.module#ScannInventoryPageModule' },
   { path: 'products-sap',  canActivate: [AuthGuard], loadChildren: './products-sap/products-sap.module#ProductsSapPageModule' },
   { path: 'scann-cajas', loadChildren: './scann-cajas/scann-cajas.module#ScannCajasPageModule' },
+  { path: 'purchase-return', loadChildren: './purchase-return/purchase-return.module#PurchaseReturnPageModule' },
+  { path: 'purchase-return-detail', loadChildren: './purchase-return/purchase-return-detail/purchase-return-detail.module#PurchaseReturnDetailPageModule' },
+  { path: 'purchase-return-abarrotes', loadChildren: './purchase-return/abarrotes/abarrotes.module#AbarrotesPageModule' },
+  { path: 'purchase-return-abarrotes-batch', loadChildren: './purchase-return/abarrotes-batch/abarrotes-batch.module#AbarrotesBatchPageModule' },
+  { path: 'purchase-return-beef', loadChildren: './purchase-return/beef/beef.module#BeefPageModule' },
 
 
 ];

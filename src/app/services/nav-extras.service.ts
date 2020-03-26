@@ -18,6 +18,8 @@ export class NavExtrasService {
   surtidoProduct: any
   movId: any;
 
+  Entry: any;
+
   pedimento: any;
 
   constructor() { }
@@ -26,11 +28,19 @@ export class NavExtrasService {
     this.orderData = data
   }
 
+  public setEntry(data: any){
+    this.Entry = data
+  }
+
+  public getEntry(){
+    return this.Entry
+  }
+
   public getOrderData() {
     return this.orderData
   }
 
-  public setProductToGetScanned(data: any) {
+  public setProducts(data: any) {
     this.products = data
   }
 
@@ -109,4 +119,5 @@ export class NavExtrasService {
   public getPedimento(){
     return this.pedimento;
   }
+
 }

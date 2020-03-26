@@ -30,6 +30,13 @@
     </ion-col>
   </ion-row>
 
+  <ion-row *ngIf="productInfo.detail.ManBtchNum == 'Y'">
+    <ion-col>
+      <h6>Lote</h6>
+        <ion-input class="input-recepcion" [(ngModel)]="lote" name="lote"></ion-input>
+    </ion-col>
+  </ion-row>
+
 
   <ion-row *ngIf="productInfo">
     <ion-col size="2">

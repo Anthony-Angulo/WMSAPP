@@ -35,6 +35,7 @@ export class BeefPage implements OnInit {
   public location: string;
   public pesoEscaneado: number = 0;
   public load: any;
+  public rows = [];
 
   constructor(private navExtras: NavExtrasService,
     private http: HttpClient,
@@ -183,21 +184,28 @@ export class BeefPage implements OnInit {
       const codeBars = this.codeBarDetails
 
       this.storage.get(NAME).then(userLogedIn => {
-        let detail = [{
-          SapHeaderId: this.productInfo.headerId,
+
+        this.rows.push({
           ItemCode: this.productInfo.detail.ItemCode,
           ItemName: this.productInfo.detail.ItemName,
           Location: this.productInfo.location,
           InvQuantity: this.pesoEscaneado,
           EmployeeName: userLogedIn
-        }]
+        })
+
 
         let datos = {
-          detail,
+          SapHeaderId: this.productInfo.headerId,
+          ItemCode: this.productInfo.detail.ItemCode,
+          ItemName: this.productInfo.detail.ItemName,
+          UOM: this.productInfo.uom[0].BASEUOM,
+          ManejaLote: this.productInfo.detail.ManBtchNum,
+          TipoPeso: this.productInfo.detail.U_IL_TipPes,
+          rows: this.rows,
           codeBars
         }
 
-        this.http.post(environment.apiWMS + '/addPartialDetail', datos)
+        this.http.post(environment.apiWMS + '/saveOrUpdateInventoryRequestRow', datos)
           .toPromise()
           .then(() => {
             this.presentToast("Guardado Correctamente", "success")

@@ -1,0 +1,67 @@
+<ion-header>
+  <ion-toolbar class="tool-bar">
+    <ion-buttons slot="start">
+      <ion-back-button routerLink="/members/purchase-return"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Devoluciones Compras</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+
+<ion-content>
+
+  <ion-row *ngIf="Entry">
+    <ion-col>
+      <h6>Datos de Entrada</h6>
+      <ion-item lines="none" class="container-item">
+        Pedido: {{Entry.DocNum}}<br>
+        Codigo: {{Entry.CardCode}}<br>
+        Nombre: {{Entry.CardName}}
+      </ion-item>
+    </ion-col>
+  </ion-row>
+
+  <h6>Productos</h6>
+
+<div *ngIf="Entry">
+  <ion-row class="table">
+    <ion-col size="3">
+      ItemCode
+    </ion-col>
+    <ion-col size="5.5">
+      Description
+    </ion-col>
+    <ion-col size="2">
+      Qty
+    </ion-col>
+    <ion-col size="1.5">
+      UM
+    </ion-col>
+  </ion-row>
+
+  <ion-row class="text-content" *ngFor="let products of Entry.PDN1; let index = index"
+  (click)=" products.LineStatus == 'O' && goToProduct(index)"
+  [ngStyle]="{ 'color': products.LineStatus === 'C' ? 'green': 'black' }">
+    <ion-col size="3">
+      {{products.ItemCode}}
+    </ion-col>
+    <ion-col size="5.5">
+      {{products.Dscription}}
+    </ion-col>
+    <ion-col size="2">
+      {{products.OpenQty | number}} / {{products.count | number}}
+    </ion-col>
+    <ion-col size="1.5">
+      {{products.UomCode}}
+    </ion-col>
+  </ion-row>
+
+  <ion-row>
+    <ion-col>
+      <ion-button class="search-order-button" shape="round" expand="block" (click)="sendProducts()">
+        Devolver
+      </ion-button>
+    </ion-col>
+  </ion-row>
+</div>
+</ion-content>

@@ -1,9 +1,9 @@
-<ion-header>
+<!-- <ion-header>
   <ion-toolbar class="tool-bar">
     <ion-buttons slot="start">
-      <ion-back-button routerLink="/members/recepcion-sap"></ion-back-button>
+      <ion-back-button routerLink="/members/purchase-return-detail"></ion-back-button>
     </ion-buttons>
-    <ion-title>Recepcion de Mercancia</ion-title>
+    <ion-title>Devoluciones</ion-title>
   </ion-toolbar>
 </ion-header>
 
@@ -15,23 +15,17 @@
       <ion-item lines="none" class="container-item">
         Item Code: {{productData.Detail.ItemCode}}<br>
         Descripcion: {{productData.Detail.ItemName}}<br>
-        Peso Promedio: {{productData.Detail.U_IL_PesProm}}
       </ion-item>
     </ion-col>
   </ion-row>
 
-  <h6>Informacion de Lote</h6>
+  <h6>Seleccionar Lote</h6>
   <ion-row>
     <ion-col>
-      <ion-input class="product-scann" [(ngModel)] = "lote" name="lote" placeholder = "Ingresa lote"></ion-input>
+      <ion-select class="product-scann" [(ngModel)]="lote">
+        <ion-select-option  *ngFor="let lote of batch" value= "{{lote.BatchNum}}">{{lote.BatchNum.substr(lote.BatchNum.length - 5)}} - {{lote.Quantity | number}}</ion-select-option>
+      </ion-select>
     </ion-col>
-  </ion-row>
-
-  <ion-row>
-      <ion-col>
-          <ion-datetime class="product-scann" placeholder="Fecha de Caducidad" [(ngModel)]="fechaCad" name="fechaCad" max="2030">
-          </ion-datetime>
-      </ion-col>
   </ion-row>
 
   <h6>Ingresar cantidad a recibir.</h6>
@@ -89,4 +83,4 @@
       </ion-button>
     </ion-buttons>
   </ion-toolbar>
-</ion-footer>
+</ion-footer> -->

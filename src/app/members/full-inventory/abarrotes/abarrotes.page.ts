@@ -32,6 +32,7 @@ export class AbarrotesPage implements OnInit {
   public location: string;
   public load: any;
   public rows = [];
+  public lote: string;
 
   constructor(private navExtras: NavExtrasService,
     private http: HttpClient,
@@ -139,8 +140,19 @@ export class AbarrotesPage implements OnInit {
 
   async saveProduct() {
 
-    const codeBars = []
+    let codeBars = []
+  
+    if(this.productInfo.detail.ManBtchNum == 'Y'){
+       codeBars = [{
+        ItemCode: this.productInfo.detail.ItemCode,
+        ItemName: this.productInfo.detail.ItemName,
+        codebar: '',
+        Lote: this.lote,
+        Quantity: this.total
+      }]
+    }
 
+    console.log(codeBars)
     if (this.total == undefined) {
       this.presentToast("Debes ingresar una cantidad", "warning")
     } else {

@@ -1,0 +1,65 @@
+ion-content{
+    --background: #e6eced;
+  }
+
+  ion-item.item-display{
+       display: inline-block;
+       width: 100%;
+  }
+
+  ion-item.container-item{
+       border: 2px solid #000000;
+       border-radius: 4px;
+       border-color: #86c1d1;
+       font-family: 'Franklin Gothic Medium';
+  }
+
+  ion-input.input-recepcion{
+       border: 2px solid #000000;
+     //   border-radius: 5pc;
+       margin-bottom: 5px;
+       border-color: #86c1d1;
+       --background: #ffffff;
+  }
+
+  div.search-order-product{
+     display: flex;
+}
+
+  ion-button.search-order-button{
+       --background: #160ff2;
+  }
+
+  ion-toolbar.tool-bar{
+       --background: #160ff2;
+       --color: #ffffff;
+  }
+
+  ion-input.product-scann{
+       border: 2px solid #000000;
+       border-radius: 5pc;
+       margin-bottom: 5px;
+       border-color: #86c1d1;
+       --background: #ffffff;
+  }
+
+
+  ion-button.aceptar{
+     border: 1px solid #ffffff;
+     border-radius: 2px;
+ }
+
+  ion-row.table{
+       background:  #160ff2;
+       color: #ffffff;
+       font-family: 'Franklin Gothic Medium';
+  }
+
+  ion-row.text-content{
+       font-family: 'Franklin Gothic Medium';
+  }
+
+
+  h6{
+       font-family: 'Franklin Gothic Medium';
+  }

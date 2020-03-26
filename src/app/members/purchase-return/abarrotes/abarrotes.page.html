@@ -1,9 +1,9 @@
 <ion-header>
   <ion-toolbar class="tool-bar">
     <ion-buttons slot="start">
-      <ion-back-button routerLink="/members/recepcion-sap"></ion-back-button>
+      <ion-back-button routerLink="/members/purchase-return-detail"></ion-back-button>
     </ion-buttons>
-    <ion-title>Recepcion de Mercancia</ion-title>
+    <ion-title>Devoluciones</ion-title>
   </ion-toolbar>
 </ion-header>
 
@@ -19,7 +19,7 @@
     </ion-col>
   </ion-row>
 
-  <h6>Ingresar cantidad a recibir.</h6>
+  <h6>Ingresa cantidad a devolver.</h6>
   <ion-row>
     <ion-col>
       <ion-input class="product-scann" [(ngModel)]="cantidad" name="cantidad" type="number"
@@ -29,12 +29,12 @@
 
   <ion-row>
     <ion-col>
-      <ion-button shape="round" color="danger" routerLink="/members/recepcion-sap" expand="block">
+      <ion-button shape="round" color="danger" routerLink="/members/purchase-return-detail" expand="block">
         Cancelar
       </ion-button>
     </ion-col>
     <ion-col>
-      <ion-button shape="round" expand="block" (click)="acceptRecepton()">
+      <ion-button shape="round" expand="block" (click)="acceptReturn()">
         Aceptar
       </ion-button>
     </ion-col>

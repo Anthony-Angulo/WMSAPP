@@ -1,0 +1,54 @@
+<ion-header>
+  <ion-toolbar class="tool-bar">
+    <ion-buttons slot="start">
+      <ion-back-button routerLink="/members/home"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Devoluciones Compras</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-row *ngIf="!entries">
+    <ion-col>
+      <h6>Ingresa un numero de orden de compra.</h6>
+      <form (ngSubmit)="getOrden()">
+        <ion-input class="input-recepcion" placeholder="Orden De Compra" type="number" [(ngModel)]="number"
+          name="number">
+        </ion-input>
+        <ion-button type="submit" class="search-order-button" expand="full">
+          Buscar
+        </ion-button>
+      </form>
+    </ion-col>
+  </ion-row>
+
+  <ion-row *ngIf="entries">
+    <ion-col>
+      <h6>Datos de Orden de Compra</h6>
+      <ion-item lines="none" class="container-item">
+        Pedido: {{entries.DocNum}}<br>
+        Codigo Proveedor: {{entries.CardCode}}<br>
+        Proveedor: {{entries.CardName}}
+      </ion-item>
+    </ion-col>
+  </ion-row>
+
+  <div *ngIf="entries">
+    <h6>Entradas de Mercancia</h6>
+    <ion-row *ngFor="let entrada of entries.PurchaseDelivery; let index = index">
+      <ion-col>
+        <ion-card>
+          <ion-card-header>
+            <ion-card-subtitle>Fecha: {{entrada.DocDate}}</ion-card-subtitle>
+            <ion-card-title>Entrada: {{entrada.DocNum}}</ion-card-title>
+          </ion-card-header>
+          <ion-card-content>
+            <ion-button color="primary" expand="block" (click)="getPurchaseDetail(index)">
+              Detalle
+            </ion-button>
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+    </ion-row>
+  </div>
+</ion-content>

@@ -8,71 +8,76 @@
 </ion-header>
 
 <ion-content>
+
   <ion-row *ngIf="!inventory">
     <ion-col>
-      <h6>Ingresa codigo de producto.</h6>
-      <form (ngSubmit)="getProducto()">
-        <ion-input class="input-recepcion" placeholder="Codigo de Producto" [(ngModel)]="number" name="number">
-        </ion-input>
-        <ion-button type="submit" class="search-order-button" expand="full">
-          Buscar
-        </ion-button>
-      </form>
+      <ion-item lines="none">
+        <ion-label>Modo de busqueda</ion-label>
+        <ion-toggle [(ngModel)]="searchType"></ion-toggle>
+      </ion-item>
     </ion-col>
   </ion-row>
+
+  <ion-row *ngIf="!inventory && !searchType">
+    <ion-col>
+      <h6>Escanea Codigo de Barra de Abarrote</h6>
+        <ion-input class="input-recepcion"
+        placeholder="Codigo de Producto"
+        [(ngModel)]="CbAbarrote" name="CbAbarrote"
+        (ionChange)="searchProductByCb()"
+        debounce="200">
+        </ion-input>
+    </ion-col>
+  </ion-row>
+
+  <ion-row *ngIf="!inventory && searchType">
+    <ion-col>
+      <h6>Escanea Codigo de Barra de Carne</h6>
+      <ion-input class="input-recepcion"
+      placeholder="Codigo de Producto"
+      [(ngModel)]="CbCarne" name="CbCarne"
+      (ionChange)="searchProductByCbBeef()"
+      debounce="200">
+      </ion-input>
+    </ion-col>
+  </ion-row>
+
   <ion-row *ngIf="inventory">
     <ion-col>
       <h6>Datos de Producto</h6>
       <ion-item lines="none" class="container-item">
-        Nombre: {{inventory.products.ItemName}}<br>
-        codigo: {{inventory.products.ItemCode}}<br>
-        Peso Promedio: {{inventory.products.U_IL_PesProm}}
+        Codigo SAP: {{inventory.ItemCode}}<br>
+        Nombre: {{inventory.ItemName}}<br>
       </ion-item>
-      -----------------------------------------------------------------
     </ion-col>
   </ion-row>
 
-  <div *ngIf="inventory">
-    <ion-row *ngIf="inventory" class="table">
-      <ion-col size="3">
-        Sucursal
-      </ion-col>
-      <!-- <ion-col size="5.5">
-        Description
-      </ion-col> -->
-      <ion-col size="2">
-        Cantidad PU
-      </ion-col>
-      <ion-col size="2">
-        Primera Unidad
-      </ion-col>
-      <ion-col size="2">
-        Cantidad SU
-      </ion-col>
-      <ion-col size="3">
-        Segunda Unidad
-      </ion-col>
-    </ion-row>
+  <ion-row *ngIf="inventory">
+    <ion-col>
+      <h6>Seleccionar Lista de Precio</h6>
+      <ion-select value="1" class="product-scann" [(ngModel)]="priceId" (ionChange) = "updatePrice()">
+        <ion-select-option  *ngFor="let list of priceList" value= "{{list.ListNum}}">{{list.ListName}}</ion-select-option>
+      </ion-select>
+    </ion-col>
+  </ion-row>
 
-    <ion-row class="text-content" *ngFor="let products of inventory.stock; let index = index">
-      <ion-col size="3">
-        {{products.WhsName}}
-      </ion-col>
-      <!-- <ion-col size="5.5">
-        {{inventory.products.ItemName}}
-      </ion-col> -->
-      <ion-col size="2">
-        {{products.OnHand | number}}
-      </ion-col>
-      <ion-col size="2">
-        {{inventory.uom[0].UomCode}}
-      </ion-col>
-      <ion-col size="2">
-        {{products.PuM | number}}
-      </ion-col>
-      <ion-col size="2">
-        {{inventory.uom[1].UomCode}}
-      </ion-col>
-    </ion-row>
-  </div>
+  <ion-row *ngIf="inventory">
+    <ion-col>
+      <h6>Seleccionar Unidad de Medida</h6>
+      <ion-select class="product-scann" [(ngModel)]="uom" name="uom">
+        <ion-select-option  *ngFor="let uom of inventory.uom" [value]="uom">{{uom.UomCode}}</ion-select-option>
+      </ion-select>
+    </ion-col>
+  </ion-row>
+
+  <ion-row *ngIf="inventory">
+    <ion-col>
+      <ion-item lines="none" class="container-item">
+        SUCURSAL: {{inventory.WhsCode}} <br>
+        STOCK: {{inventory.OnHand / uom?.BaseQty | number}} {{uom?.UomCode}}<br>
+        PRECIO: {{inventory.Price}} {{inventory.Currency}}<br>
+      </ion-item>
+    </ion-col>
+  </ion-row>
+
 </ion-content>
