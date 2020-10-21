@@ -6,6 +6,7 @@ import { Platform } from '@ionic/angular';
 import { HttpClient } from '@angular/common/http';
 import { RecepcionDataService } from 'src/app/services/recepcion-data.service';
 import { environment } from 'src/environments/environment';
+import { getSettingsFileData, getValidPercentage } from '../../commons';
 
 @Component({
   selector: 'app-abarrotes',
@@ -14,13 +15,11 @@ import { environment } from 'src/environments/environment';
 })
 export class AbarrotesPage implements OnInit {
 
-  productData: any
-  cantidad: number
-  tarima
-  data
-  porcentaje: any;
-  sucursal: any;
-  stock: any;
+  public productData: any;
+  public cantidad: number;
+  public tarima: string;
+  public appSettings: any;
+  public stock: string;
 
   constructor(
     private http: HttpClient,
@@ -30,59 +29,45 @@ export class AbarrotesPage implements OnInit {
     private settings: SettingsService,
     private receptionService: RecepcionDataService) { }
 
+  /* Al inciiar el modulo buscara los settings del app y traera la informacion del producto. Tambien hara un get a SAP para el stock del producto */
   ngOnInit() {
-    this.productData = this.receptionService.getOrderData()
+
+    this.productData = this.receptionService.getOrderData();
+    this.appSettings = getSettingsFileData(this.platform, this.settings);
+
     if (this.productData.count) {
-      this.cantidad = this.productData.count
+      this.cantidad = this.productData.count;
     }
 
     if (!this.productData.pallet) {
-      this.productData.pallet = ''
+      this.productData.pallet = '';
     }
 
-    if (this.platform.is("cordova")) {
-      this.data = this.settings.fileData
-      this.porcentaje = this.data.porcentaje
-      this.sucursal = this.data.sucursal
-    } else {
-      this.porcentaje = "10"
-      this.sucursal = "S01"
-    }
-
-    this.http.get(environment.apiSAP + '/api/batch/' + this.sucursal + '/' + this.productData.ItemCode).toPromise().then((val: any) => {
-      this.stock = val.stock
-      console.log(this.stock)
+    this.http.get(this.appSettings.apiSAP + '/api/batch/' + this.appSettings.sucursal + '/' + this.productData.ItemCode).toPromise().then((val: any) => {
+      this.stock = val.stock;
     }).catch((error) => {
-      console.log(error)
-    })
+      this.presentToast(error.error, "danger");
+    });
+
   }
 
-  acceptRecepton() {
+  /* Metodo para agregar producto a la lista a transferir, validara que no exceda de la cantidad permitida agergando el porcentaje configurada en la aplicacion */
+  public transferAbarrotes() {
 
-    let validPercent = (Number(this.porcentaje) / 100) * Number(this.productData.OpenInvQty)
-    let validQuantity = Number(validPercent) + Number(this.productData.OpenInvQty)
-
-    if (Number(this.cantidad) > Number(validQuantity)) {
-      this.presentToast('Cantidad ingresada excede de la cantidad solicitada', 'warning')
-    } else {
-      if (this.productData.count != 0 && this.cantidad == 0) {
-        this.productData.count = this.cantidad
-        this.productData.pallet = this.tarima
-        this.receptionService.setReceptionData(this.productData)
-        this.router.navigate(['/members/transferencia-sap'])
-        return
-      } else if (this.cantidad <= 0) {
-        this.presentToast('Debe igresar una cantidad valida', 'warning')
-        return
-      } else {
-        this.productData.count = this.cantidad
-        this.productData.pallet = this.tarima
-        this.receptionService.setReceptionData(this.productData)
-        this.router.navigate(['/members/transferencia-sap'])
-      }
+    if (this.cantidad > getValidPercentage(this.productData, this.appSettings.porcentaje)) {
+      this.presentToast("Cantidad Ingresada Excede De La Cantidad Solicitada", "warning");
+      return;
     }
 
+    if (this.tarima == undefined || this.tarima == '') {
+      this.presentToast("Debes Ingresar Numero De Tarima", "warning");
+      return;
+    }
 
+    this.productData.count = this.cantidad
+    this.productData.pallet = this.tarima
+    this.receptionService.setReceptionData(this.productData)
+    this.router.navigate(['/members/transferencia-sap'])
   }
 
   async presentToast(msg: string, color: string) {

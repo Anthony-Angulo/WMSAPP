@@ -39,7 +39,7 @@ export class AbarrotesBatchPage implements OnInit {
       this.lotes = this.productData.detalle
     }
 
-    this.http.get(environment.apiSAP +  '/api/batch/' + this.productData.WhsCod
+    this.http.get(environment.apiSAP +  '/api/batch/' + this.productData.WhsCode
     + '/' +  this.productData.Detail.ItemCode).toPromise().then((data) => {
       console.log(data)
       this.batch = data
@@ -51,6 +51,52 @@ export class AbarrotesBatchPage implements OnInit {
 
   eliminar(index) {
     this.lotes.splice(index, 1)
+  }
+
+  public addLote(): void{
+    if (this.cantidad <= 0 || this.lote == undefined || this.lote == '') {
+      this.presentToast('Datos faltantes', 'warning')
+      return
+    } else {
+      this.lotes.push({
+        name: this.lote,
+        expirationDate: '11-22-2019',
+        quantity: Number(Number(this.cantidad * this.productData.Detail.NumInSale).toFixedNoRounding(4)),
+        code: '',
+        att1: '',
+        pedimento: ''
+      })
+    }
+  }
+
+  public acceptDevolucion(): void {
+
+    if (this.lotes.length == 0) {
+      this.presentToast('Falta agregar lote', 'warning')
+    } else {
+      if (this.productData.count != 0 && this.cantidad == 0) {
+        this.productData.count = this.cantidad
+        console.log(this.productData.count)
+        this.navExtras.setScannedProducts(this.productData)
+        this.router.navigate(['/members/purchase-return-detail'])
+      } else if (this.cantidad <= 0) {
+        this.presentToast('Debe igresar una cantidad valida', 'warning')
+        return
+      } else if (this.productData.Detail.QryGroup41 == 'Y') {
+        this.productData.count = this.cantidad
+        console.log(this.productData.count)
+        this.productData.detalle = this.lotes
+        this.navExtras.setScannedProducts(this.productData)
+        this.router.navigate(['/members/purchase-return-detail'])
+      } else {
+        this.productData.count = this.lotes.map(lote => lote.quantity).reduce((a, b) => a + b, 0)
+        console.log(this.productData.count)
+        this.productData.detalle = this.lotes
+        this.navExtras.setScannedProducts(this.productData)
+        this.router.navigate(['/members/purchase-return-detail'])
+      }
+    }
+
   }
 
   async presentToast(msg: string, color: string) {

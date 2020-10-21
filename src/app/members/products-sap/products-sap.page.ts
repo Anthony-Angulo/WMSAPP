@@ -87,10 +87,10 @@ export class ProductsSapPage implements OnInit {
         this.http.get(this.apiSAP + '/api/pricelist').toPromise()
       ]).then(([product, priceList] : any) =>{
         this.http.get(this.apiSAP + '/api/products/crmtosell/' +
-        product.detail.ItemCode + '/' + 1 + '/' + this.sucursal).toPromise()
+        product.Detail.ItemCode + '/' + 1 + '/' + this.sucursal).toPromise()
         .then((prod: any) => {
           this.inventory = prod
-          this.uom = this.inventory.uom.find(x => x.UomEntry == this.inventory.UomEntry)
+          this.uom = this.inventory.UOMList.find(x => x.UomEntry == this.inventory.UomEntry)
         })
         this.priceList = priceList.filter(y => y.ListNum == 1 || y.ListNum == 13
           || y.ListNum == 16 || y.ListNum == 15 || y.ListNum == 14)
@@ -123,7 +123,7 @@ export class ProductsSapPage implements OnInit {
         product.codigo_sap + '/' + 1 + '/' + this.sucursal).toPromise()
         .then((prod: any) => {
           this.inventory = prod
-          this.uom = this.inventory.uom.find(x => x.UomEntry == this.inventory.UomEntry)
+          this.uom = this.inventory.UOMList.find(x => x.UomEntry == this.inventory.UomEntry)
         })
         this.priceList = priceList.filter(y => y.ListNum == 1 || y.ListNum == 13
           || y.ListNum == 16 || y.ListNum == 15 || y.ListNum == 14)
@@ -137,25 +137,25 @@ export class ProductsSapPage implements OnInit {
     this.CbAbarrote = ''
   }
 
-  selectSucursal(){
-    console.log(this.sucursal)
-    this.productInfo = this.inventory.stock.filter(x => x.WhsCode == this.sucursal)
-    this.productInfo.stocks = []
-    this.inventory.uom.forEach(uom => {
-      this.productInfo.stocks.push({
-        Uom: uom.UomCode,
-        quantity: Number(this.productInfo[0].StockValue / uom.BaseQty )
-      })
-    })
-    console.log(this.productInfo)
-  }
+  // selectSucursal(){
+  //   console.log(this.sucursal)
+  //   this.productInfo = this.inventory.stock.filter(x => x.WhsCode == this.sucursal)
+  //   this.productInfo.stocks = []
+  //   this.inventory.UOMList.forEach(uom => {
+  //     this.productInfo.stocks.push({
+  //       Uom: uom.UomCode,
+  //       quantity: Number(this.productInfo[0].StockValue / uom.BaseQty )
+  //     })
+  //   })
+  //   console.log(this.productInfo)
+  // }
 
   updatePrice(){
     this.http.get(this.apiSAP + '/api/products/crmtosell/' +
     this.inventory.ItemCode + '/' + this.priceId + '/' + this.sucursal).toPromise()
     .then((prod: any) => {
       this.inventory = prod
-      this.uom = this.inventory.uom.find(x => x.UomEntry == this.inventory.UomEntry)
+      this.uom = this.inventory.UOMList.find(x => x.UomEntry == this.inventory.UomEntry)
     }).catch(err => {
       this.presentToast("Error al buscar precio","warning")
     })

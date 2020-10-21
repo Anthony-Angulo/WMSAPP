@@ -1,0 +1,49 @@
+<ion-header>
+  <ion-toolbar class="tool-bar">
+    <ion-title>Generar Tarima Master</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <form>
+
+    <ion-row>
+      <ion-col>
+        <h6>Ingresa codigo de barra de producto.</h6>
+        <ion-input class="form-tarima" [(ngModel)]="codeBar" name="codeBar">
+        </ion-input>
+      </ion-col>
+    </ion-row>
+
+    <ion-row>
+      <ion-col>
+        <h6>Datos de Producto</h6>
+        <ion-item lines="none" class="container-item">
+          Codigo Prothevs: {{product.codigo_prothevs}}<br>
+          Descripcion: {{product.descripcion}}
+        </ion-item>
+      </ion-col>
+    </ion-row>
+
+    <ion-row>
+      <ion-col>
+        <h6>Ingresa cantidad a tarimar.</h6>
+        <ion-input class="form-tarima" type="number" placeholder="Cantidad" [(ngModel)]="cantidad" name="cantidad">
+        </ion-input>
+      </ion-col>
+    </ion-row>
+
+    <ion-row>
+      <ion-col>
+        <ion-button shape="round" expand="full" color="danger" (click)="closeModalCancel()">
+          Cancelar
+        </ion-button>
+      </ion-col>
+      <ion-col>
+        <ion-button shape="round" expand="full" class="registrar-button" (click)="armarTarima()">
+          Armar Tarima
+        </ion-button>
+      </ion-col>
+    </ion-row>
+  </form>
+</ion-content>

@@ -13,8 +13,8 @@
     <ion-col>
       <h6>Datos de Producto</h6>
       <ion-item lines="none" class="container-item">
-        Item Code: {{productData.Detail.ItemCode}}<br>
-        Descripcion: {{productData.Detail.ItemName}}<br>
+        Codigo: {{productData.ItemCode}}<br>
+        Nombre: {{productData.ItemName}}<br>
         Stock: {{stock | number}}
       </ion-item>
     </ion-col>
@@ -44,7 +44,7 @@
         </ion-button>
       </ion-col>
       <ion-col>
-        <ion-button shape="round" expand="block" (click)="acceptRecepton()">
+        <ion-button shape="round" expand="block" (click)="transferAbarrotes()">
           Aceptar
         </ion-button>
       </ion-col>

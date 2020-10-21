@@ -3,7 +3,7 @@
     <ion-buttons slot="start">
       <ion-back-button routerLink="/members/home"></ion-back-button>
     </ion-buttons>
-    <ion-buttons *ngIf="order" slot="end">
+    <ion-buttons *ngIf="transferData" slot="end">
       <ion-button class="aceptar" (click)="sendProducts()">Aceptar</ion-button>
     </ion-buttons>
     <ion-title>Transfer</ion-title>
@@ -11,12 +11,12 @@
 </ion-header>
 
 <ion-content>
-  <ion-row *ngIf="!order">
+  <ion-row *ngIf="!transferData">
     <ion-col>
       <h6>Ingresa un numero de orden de transferencia.</h6>
       <form (ngSubmit)="getOrden()">
-        <ion-input class="input-recepcion" placeholder="Orden De Transferencia" type="number" [(ngModel)]="number"
-          name="number">
+        <ion-input class="input-recepcion" placeholder="Orden De Transferencia" type="number" [(ngModel)]="transferRequestDocNum"
+          name="transferRequestDocNum">
         </ion-input>
         <ion-button type="submit" class="search-order-button" expand="full">
           Buscar
@@ -25,25 +25,26 @@
     </ion-col>
   </ion-row>
 
-  <ion-row *ngIf="order">
+  <ion-row *ngIf="transferData">
     <ion-col>
       <h6>Datos de Almacen Receptor</h6>
       <ion-item lines="none" class="container-item">
-        Pedido: {{number}}<br>
-        <!-- Nombre: {{order.OPOR.CardName}} -->
+        Solicitud: {{transferData.DocNum}}<br>
+        Almacen de Salida: {{transferData.Filler}} <br>
+        Almacen Receptor: {{transferData.ToWhsCode}}
       </ion-item>
     </ion-col>
   </ion-row>
 
-  <div *ngIf="order">
+  <div *ngIf="transferData">
     <h6>Productos</h6>
 
-    <ion-item lines="none">
+    <!-- <ion-item lines="none">
       <ion-label>Modo de busqueda</ion-label>
       <ion-toggle [(ngModel)]="searchType"></ion-toggle>
-    </ion-item>
+    </ion-item> -->
 
-    <ion-row *ngIf="!searchType">
+    <ion-row>
       <!-- <ion-col size="2.5">
         <div class="search-order-product">
           <ion-input class="input-recepcion" placeholder="Ctd" [(ngModel)]="ctd" name="ctd">
@@ -61,16 +62,16 @@
       </ion-col>
     </ion-row>
 
-    <ion-row *ngIf="searchType">
+    <!-- <ion-row *ngIf="searchType">
       <ion-col>
         <div class="search-order-product">
           <ion-input class="input-recepcion" placeholder="Tarima" [(ngModel)]="tarima" name="tarima">
           </ion-input>
         </div>
       </ion-col>
-    </ion-row>
+    </ion-row> -->
 
-    <ion-row *ngIf="searchType">
+    <!-- <ion-row>
       <ion-col size="2">
         <div class="search-order-product">
           <ion-input class="input-recepcion" placeholder="Ctd" [(ngModel)]="ctd" name="ctd">
@@ -82,7 +83,7 @@
           (ionChange)="searchProductByCb()" [(ngModel)]="search" debounce="200" name="search">
         </ion-input>
       </ion-col>
-    </ion-row>
+    </ion-row> -->
 
     <ion-row class="table">
       <ion-col size="3">
@@ -99,14 +100,14 @@
       </ion-col>
     </ion-row>
 
-    <ion-row class="text-content" *ngFor="let products of order.WTQ1; let index = index"
-      (click)="products.LineStatus == 'O' && goToProduct(index)"
+    <ion-row class="text-content" *ngFor="let products of transferData.Lines; let index = index"
+      (click)="products.LineStatus == 'O' && goToProductPage(index)"
       [ngStyle]="{ 'color': products.LineStatus === 'C' ? 'green': 'black' }">
       <ion-col size="3">
         {{products.ItemCode}}
       </ion-col>
       <ion-col size="5.5">
-        {{products.Dscription}}
+        {{products.ItemName}}
       </ion-col>
       <ion-col size="2">
         {{products.OpenQty | number}} / {{products.count | number}}

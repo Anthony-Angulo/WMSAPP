@@ -1,7 +1,7 @@
 <ion-header>
   <ion-toolbar class="tool-bar">
     <ion-buttons slot="start">
-      <ion-back-button routerLink="/members/home"></ion-back-button>
+      <ion-back-button routerLink="/members/etiquetas"></ion-back-button>
     </ion-buttons>
     <ion-title>Impresion Etiquetas</ion-title>
   </ion-toolbar>
@@ -47,16 +47,16 @@
       </ion-col>
       <ion-col>
         <div *ngIf="transfers.Request != undefined; then ifBlock else noBlock"></div>
-          <ng-template #ifBlock>
-            <ion-item lines="none" class="container-item">
-              {{transfers.Request.DocNum}}<br>
-            </ion-item>
-          </ng-template>
-          <ng-template #noBlock>
-            <ion-item lines="none" class="container-item">
-              <h6>Sin Crear</h6>
-            </ion-item>
-          </ng-template> 
+        <ng-template #ifBlock>
+          <ion-item lines="none" class="container-item">
+            {{transfers.Request.DocNum}}<br>
+          </ion-item>
+        </ng-template>
+        <ng-template #noBlock>
+          <ion-item lines="none" class="container-item">
+            <h6>Sin Crear</h6>
+          </ion-item>
+        </ng-template>
       </ion-col>
     </ion-row>
     <!-- <ion-row>

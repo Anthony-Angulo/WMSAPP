@@ -34,7 +34,7 @@
     <ion-col>
       <h6>Escanea codigo de barra de producto.</h6>
       <ion-input class="product-scann" id="input-codigo" placeholder="Codigo de Barra" [(ngModel)]="codigoBarra"
-        name="codigoBarra" (ionChange)="getDataFromCodeBar()" clearInput debounce="500">
+        name="codigoBarra" (ionChange)="getDataFromCodeBar()" clearInput debounce="100">
       </ion-input>
     </ion-col>
   </ion-row>

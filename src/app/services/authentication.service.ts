@@ -8,11 +8,6 @@ import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 
 const TOKEN_KEY = 'auth-token';
-const SUCURSAL_KEY = 'SUCURSAL';
-const USER_ID = 'USER_ID';
-const WAREHOUSE = 'WAREHOUSE_ID';
-const NAME = 'USER_NAME';
-const ROL = 'USER_ROL';
 
 @Injectable({
   providedIn: 'root'
@@ -46,22 +41,15 @@ export class AuthenticationService {
 
     await this.presentLoading('Inciando Session.....')
 
-    this.http.post(environment.apiCRM + '/login', value).toPromise().then((data: any) => {
-      console.log(data)
-      if (!data.status) {
-        this.presentToast('User y/o password incorrectos.', 'warning')
-      } else {
-        this.storage.set(SUCURSAL_KEY, data.sucursal);
-        this.storage.set(WAREHOUSE, data.warehouseCode)
-        this.storage.set(USER_ID, data.SAPID);
-        this.storage.set(NAME, data.name);
-        this.storage.set(ROL,data.roles);
+    this.http.post(`${environment.apiSAP}/api/Account/Login`,value).toPromise().then((data: any) => {
         this.authenticationState.next(true);
         return this.storage.set(TOKEN_KEY, data.token)
-      }
     }).catch(error => {
-      console.log(error)
-      this.presentToast('Error de conexion','danger')
+      if(error.status == 400){
+        this.presentToast(error.error,"danger")
+      } else {
+        this.presentToast('Error de conexion','danger')
+      }
     }).finally(() => {
       this.hideLoading()
     })

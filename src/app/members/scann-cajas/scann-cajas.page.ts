@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { ToastController , LoadingController} from '@ionic/angular';
+import { ToastController , LoadingController, AlertController} from '@ionic/angular';
 import { Router } from '@angular/router';
 import { environment } from 'src/environments/environment';
 import { Storage } from '@ionic/storage';
@@ -25,7 +25,8 @@ export class ScannCajasPage implements OnInit {
     private toastController: ToastController,
     private router: Router,
     private loading: LoadingController,
-    private storage: Storage) { }
+    private storage: Storage,
+    private alertController: AlertController,) { }
 
   ngOnInit() {
   }
@@ -50,24 +51,50 @@ export class ScannCajasPage implements OnInit {
 
     await this.presentLoading('Guardando codigo..')
 
-    let data = {
-      itemcode: this.product.products.ItemCode,
-      barcode: this.Cb,
-      uomentry: this.uomentry
-    }
-
-    this.http.post(environment.apiSAP + '/api/codebar', data).toPromise().then((resp) => {
+    this.http.get(environment.apiSAP + '/api/codebar/' + this.Cb).toPromise().then((resp: any) => {
       if(resp){
-        this.router.navigate(['/members/home'])
-        this.presentToast('Se guardo exitosamente','success')
-      } 
-    }).catch((error) => {
-      console.log(error)
-      this.presentToast(error.error.error,'danger')
-    }).finally(() => {
-      this.hideLoading()
-    })
+        this.presentAlert(resp.Detail.ItemCode)
+      }
+    }).catch(error => {
+      if(error.status == 404){
+        let data = {
+          itemcode: this.product.products.ItemCode,
+          barcode: this.Cb,
+          uomentry: this.uomentry
+        }
     
+        this.http.post(environment.apiSAP + '/api/codebar', data).toPromise().then((resp) => {
+          if(resp){
+            this.router.navigate(['/members/home'])
+            this.presentToast('Se guardo exitosamente','success')
+          } 
+        }).catch((error) => {
+          if(error.status == 404){
+            this.presentToast("Este codigo de barra ya existe para este producto","warning")
+          } else {
+            this.presentToast(error.error,"danger")
+          }
+        }).finally(() => {
+          this.hideLoading()
+        })
+      } else {
+        this.presentToast(error.statusText,"danger")
+      }
+    }).finally(() => { this.hideLoading() })
+
+    
+    
+  }
+
+  async presentAlert(ItemCode: string) {
+    const alert = await this.alertController.create({
+      header: 'Codigo de barra Existente',
+      subHeader: '',
+      message: 'Este codigo de barra ya existe en el producto ' + ItemCode,
+      buttons: ['OK']
+    });
+
+    await alert.present();
   }
 
 

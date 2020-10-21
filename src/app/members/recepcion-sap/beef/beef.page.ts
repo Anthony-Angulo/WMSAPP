@@ -29,6 +29,7 @@ export class BeefPage implements OnInit {
   load
   data
   porcentaje: any;
+  apiSAP: string;
   codebarDescription: any;
   inputs = [];
   selectedDesc: any;
@@ -48,6 +49,15 @@ export class BeefPage implements OnInit {
   async ngOnInit() {
     this.productData = this.receptionService.getOrderData()
     this.lotesRegistrados = this.receptionService.getReceptionData()
+
+    if (this.platform.is("cordova")) {
+      this.data = this.settings.fileData
+      this.porcentaje = this.data.porcentaje
+      this.apiSAP = this.data.apiSAP;
+    } else {
+      this.apiSAP = environment.apiSAP;
+      this.porcentaje = "10"
+    }
 
     if (!this.productData.detalle) {
       this.productData.detalle = []
@@ -74,7 +84,7 @@ export class BeefPage implements OnInit {
 
     await this.presentLoading('Buscando Lotes de producto...')
 
-    this.http.get(environment.apiSAP + '/api/batch/' + this.productData.WhsCode + '/' + this.productData.ItemCode).toPromise().then((data) => {
+    this.http.get(this.apiSAP + '/api/batch/' + this.productData.WhsCode + '/' + this.productData.ItemCode).toPromise().then((data) => {
       this.productData.batchs = data
       console.log(data)
     }).catch((error) => {
@@ -83,15 +93,7 @@ export class BeefPage implements OnInit {
     }).finally(() => {
       this.hideLoading()
     })
-
-
-    if (this.platform.is("cordova")) {
-      this.data = this.settings.fileData
-      this.porcentaje = this.data.porcentaje
-    } else {
-      this.porcentaje = "10"
-    }
-
+    
     if (this.productData.Detail.QryGroup45 == "Y") {
       this.codebarDescription = this.productData.cBDetail.filter(x => x.proveedor != null)
       this.codebarDescription.forEach(y => {
@@ -184,7 +186,7 @@ export class BeefPage implements OnInit {
       if (this.codigoBarra == '') {}
       else {
         if (this.productData.Detail.QryGroup44 == 'Y') {
-
+          console.log(44)
           let codFound = this.productData.cBDetail.findIndex(y =>
             y.length == this.codigoBarra.trim().length)
 
@@ -261,7 +263,7 @@ export class BeefPage implements OnInit {
             this.peso = 0
           }
         } else if (this.productData.Detail.QryGroup45 == "Y") {
-
+          console.log(45)
           let codFound = this.productData.cBDetail.findIndex(y =>
             y.proveedor == this.selectedDesc)
             console.log(codFound)
@@ -382,6 +384,8 @@ export class BeefPage implements OnInit {
             this.peso = 0
           }
         } else {
+          console.log("normal")
+          console.log(this.codigoBarra)
           let codFound = this.productData.cBDetail.findIndex(y =>
             y.length == this.codigoBarra.trim().length)
 
@@ -393,7 +397,7 @@ export class BeefPage implements OnInit {
             let pesoDeEtiqueta = this.codigoBarra.substr(
               this.productData.cBDetail[codFound].peso_pos - 1,
               this.productData.cBDetail[codFound].peso_length)
-
+              
 
             if (this.productData.cBDetail[codFound].maneja_decimal == 1) {
               if (this.productData.cBDetail[codFound].UOM_id != 3) {
@@ -407,6 +411,7 @@ export class BeefPage implements OnInit {
                 codFound);
             }
 
+            console.log(this.peso)
             if (Number(this.peso) >= Number(this.productData.Detail.U_IL_PesMin)
               && Number(this.peso) <= Number(this.productData.Detail.U_IL_PesMax)) {
               if (this.codigoBarra.trim().length <= 36) {
@@ -502,7 +507,6 @@ export class BeefPage implements OnInit {
         }
       }
     }
-
 
     document.getElementById('input-codigo').setAttribute('value', '')
     document.getElementById('input-codigo').focus()

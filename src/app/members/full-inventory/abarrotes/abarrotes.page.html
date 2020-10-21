@@ -15,8 +15,8 @@
     <ion-col>
       <h6>Datos de Producto</h6>
       <ion-item lines="none" class="container-item">
-        Codigo: {{productInfo.detail.ItemCode}}<br>
-        Nombre: {{productInfo.detail.ItemName}}
+        Codigo: {{productInfo.Detail.ItemCode}}<br>
+        Nombre: {{productInfo.Detail.ItemName}}
       </ion-item>
     </ion-col>
   </ion-row>
@@ -30,7 +30,7 @@
     </ion-col>
   </ion-row>
 
-  <ion-row *ngIf="productInfo.detail.ManBtchNum == 'Y'">
+  <ion-row *ngIf="productInfo.Detail.ManBtchNum == 'Y'">
     <ion-col>
       <h6>Lote</h6>
         <ion-input class="input-recepcion" [(ngModel)]="lote" name="lote"></ion-input>

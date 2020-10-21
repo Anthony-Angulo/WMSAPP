@@ -28,6 +28,23 @@
       </ion-input>
     </ion-col>
   </ion-row>
+  
+    <ion-row>
+      <ion-col>
+        <h6>Seleccionar Impresora de Etiquetas</h6>
+        <ion-select class="product-scann" [(ngModel)]="IP">
+          <ion-select-option  *ngFor="let ips of impresoras" value= "{{ips.Name}}">{{ips.Name}}</ion-select-option>
+        </ion-select> 
+      </ion-col>
+    </ion-row>
+
+  <ion-row>
+    <ion-col>
+      <a href="http://crm.ccfnweb.com.mx/wmsprod/appwms.apk" target="_blank">
+          Descargar Version
+      </a>
+    </ion-col>
+  </ion-row>
 
   <ion-row>
     <ion-col>

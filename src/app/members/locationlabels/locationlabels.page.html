@@ -1,0 +1,70 @@
+<ion-header>
+  <ion-toolbar class="tool-bar">
+    <ion-buttons slot="start">
+      <ion-back-button routerLink="/members/etiquetas"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Etiquetas Ubicaciones</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-item lines="none">
+    <ion-label>Tipo de Etiqueta</ion-label>
+    <ion-toggle [(ngModel)]="searchType"></ion-toggle>
+  </ion-item>
+
+  <ion-row>
+    <ion-col>
+      <h6>Cuarto</h6>
+      <ion-input class="input-recepcion" placeholder="Cuarto" [(ngModel)]="cuarto" name="cuarto">
+      </ion-input>
+    </ion-col>
+  </ion-row>
+  <ion-row>
+    <ion-col>
+      <h6>Zona</h6>
+      <ion-input class="input-recepcion" placeholder="Zona" [(ngModel)]="zona" name="zona">
+      </ion-input>
+    </ion-col>
+  </ion-row>
+  <ion-row>
+    <ion-col>
+      <h6>Pasillo</h6>
+      <ion-input class="input-recepcion" placeholder="Pasillo" [(ngModel)]="pasillo" name="pasillo">
+      </ion-input>
+    </ion-col>
+  </ion-row>
+  <ion-row>
+    <ion-col>
+      <h6>Rack</h6>
+      <ion-input class="input-recepcion" placeholder="Rack" [(ngModel)]="rack" name="rack">
+      </ion-input>
+    </ion-col>
+  </ion-row>
+  <ion-row *ngIf="searchType">
+    <ion-col>
+      <h6>Seccion</h6>
+      <ion-input class="input-recepcion" placeholder="Seccion" [(ngModel)]="seccion" name="seccion">
+      </ion-input>
+    </ion-col>
+  </ion-row>
+  <ion-row *ngIf="searchType">
+    <ion-col>
+      <h6>Nivel</h6>
+      <ion-input class="input-recepcion" placeholder="Nivel" [(ngModel)]="nivel" name="nivel">
+      </ion-input>
+    </ion-col>
+  </ion-row>
+  <ion-row *ngIf="searchType">
+    <ion-col>
+      <h6>Posicion</h6>
+      <ion-input class="input-recepcion" placeholder="Posicion" [(ngModel)]="posicion" name="posicion">
+      </ion-input>
+    </ion-col>
+  </ion-row>
+  <ion-row>
+    <ion-col>
+      <ion-button expand="full" class="search-order-button" (click)="printLabel()">Imprimir Etiqueta</ion-button>
+    </ion-col>
+  </ion-row>
+</ion-content>

@@ -6,7 +6,7 @@ import { NavExtrasService } from 'src/app/services/nav-extras.service';
 import { environment } from 'src/environments/environment';
 import { Router } from '@angular/router';
 import { Platform } from '@ionic/angular';
-import { ToastController, LoadingController } from '@ionic/angular';
+import { ToastController, LoadingController, AlertController } from '@ionic/angular';
 
 @Component({
   selector: 'app-recepcion-sap',
@@ -33,6 +33,7 @@ export class RecepcionSapPage implements OnInit {
     private toastController: ToastController,
     private router: Router,
     private loading: LoadingController,
+    private alertController: AlertController,
     private platform: Platform,
   ) { }
 
@@ -73,7 +74,7 @@ export class RecepcionSapPage implements OnInit {
     this.http.get(this.apiSAP + '/api/purchaseorder/Reception/' + this.number).toPromise().then((data: any) => {
       this.order = data;
       console.log(this.order)
-      if(this.order.OPOR.U_IL_Pedimento != null){
+      if (this.order.OPOR.U_IL_Pedimento != null) {
         this.navExtras.setPedimento(this.order.OPOR.U_IL_Pedimento)
       }
       return this.order.POR1.map(x => x.ItemCode)
@@ -85,6 +86,7 @@ export class RecepcionSapPage implements OnInit {
       this.order.POR1.map(item => {
         item.cBDetail = codebarDescription.filter(y => y.codigo_sap == item.ItemCode)
       })
+      console.log(this.order)
     }).catch(error => {
       console.log(error)
       if (error.status == 404) {
@@ -183,6 +185,34 @@ export class RecepcionSapPage implements OnInit {
     }
   }
 
+  async presentAlertConfirm() {
+    const alert = await this.alertController.create({
+      cssClass: 'my-custom-class',
+      header: 'Confirmirmar salida',
+      message: 'Desea continuar o salir de la recepcion?',
+      buttons: [
+        {
+          text: 'Salir',
+          role: 'cancel',
+          cssClass: 'secondary',
+          handler: () => {
+            this.presentToast('Recepcion Concluida', 'success');
+            this.order = undefined;
+            this.number = undefined;
+            this.navExtras.setPedimento(null)
+          }
+        }, {
+          text: 'Continuar',
+          handler: () => {
+            this.getOrden();
+          }
+        }
+      ]
+    });
+
+    await alert.present();
+  }
+
   async sendProducts() {
 
     await this.presentLoading('Enviando....')
@@ -192,6 +222,7 @@ export class RecepcionSapPage implements OnInit {
     const products = this.order.POR1.filter(product => product.count).map(product => {
       return {
         ItemCode: product.ItemCode,
+        UoMCode: product.UomCode,
         UoMEntry: product.UomEntry,
         WarehouseCode: product.WhsCode,
         Line: product.LineNum,
@@ -204,7 +235,7 @@ export class RecepcionSapPage implements OnInit {
 
     let pedimento
 
-    if(this.navExtras.getPedimento() == undefined || this.navExtras.getPedimento() == null){
+    if (this.navExtras.getPedimento() == undefined || this.navExtras.getPedimento() == null) {
       pedimento = ''
     } else {
       pedimento = this.navExtras.getPedimento()
@@ -220,10 +251,7 @@ export class RecepcionSapPage implements OnInit {
       console.log(recepcionData)
       this.http.post(this.apiSAP + '/api/PurchaseDelivery', recepcionData).toPromise().then((data: any) => {
         console.log(data);
-        this.presentToast('Recepcion Concluida', 'success');
-        this.order = undefined;
-        this.number = undefined;
-        this.navExtras.setPedimento(null)
+        this.presentAlertConfirm();
       }).catch(error => {
         console.log(error)
         this.presentToast(error.error.error, 'danger')

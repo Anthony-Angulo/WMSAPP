@@ -31,10 +31,15 @@ ion-content{
   }
 
   ion-button.button-eliminar {
-    position: absolute;
-    right: 0;
-    bottom: 0;
+    height: 20px;
+    margin-top: auto;
   }
+
+  ion-row.table{
+    background:  #160ff2;
+    color: #ffffff;
+    font-family: 'Franklin Gothic Medium';
+}
   
   ion-input.product-scann{
        border: 2px solid #000000;

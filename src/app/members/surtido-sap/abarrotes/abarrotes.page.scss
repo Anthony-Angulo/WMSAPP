@@ -22,6 +22,14 @@ ion-content{
       min-width: -webkit-fill-available;
   }
   
+  ion-select.product-scann{
+    border: 2px solid #000000;
+    border-radius: 5pc;
+    margin-bottom: 5px;
+    border-color: #86c1d1;
+    --background: #ffffff;
+}
+  
   ion-datetime.product-scann{
       border: 2px solid #000000;
       border-radius: 5pc;
@@ -42,6 +50,12 @@ ion-content{
       --background: #160ff2;
   }
   
+  ion-row.table{
+    background:  #160ff2;
+    color: #ffffff;
+    font-family: 'Franklin Gothic Medium';
+}
+
   div.tarima-button{
       position: absolute;
       right:    0;
@@ -53,6 +67,11 @@ ion-content{
       --background: #000000;
       --padding-top: 5px;
       --padding-bottom: 5px;
+  }
+
+  ion-button.button-eliminar {
+    height: 20px;
+    margin-top: auto;
   }
   
   div span{

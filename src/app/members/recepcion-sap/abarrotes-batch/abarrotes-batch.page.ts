@@ -61,7 +61,7 @@ export class AbarrotesBatchPage implements OnInit {
       return
     }
 
-    if(this.productData.Detail.QryGroup2 == "Y"){
+    if (this.productData.Detail.QryGroup2 == "Y") {
       let pedimento = this.navExtras.getPedimento()
 
       if (pedimento == undefined) {
@@ -70,6 +70,65 @@ export class AbarrotesBatchPage implements OnInit {
         this.fechaCad = new Date(this.fechaCad)
         let fechaExp = this.fechaCad.getMonth() + '-' + this.fechaCad.getDay() + '-' + this.fechaCad.getFullYear()
 
+        if (Number.isInteger(Number(Number(this.cantidad * this.productData.Detail.NumInSale).toFixedNoRounding(4)))) {
+          this.lotes.push({
+            name: this.lote,
+            expirationDate: '11-22-2019',
+            quantity: Number(Number(this.cantidad * this.productData.Detail.NumInSale).toFixedNoRounding(4)),
+            code: '',
+            att1: '',
+            pedimento: pedimento
+          })
+        } else {
+          let dif = Math.abs(Number(Number(this.cantidad * this.productData.Detail.NumInSale).toFixedNoRounding(4)) - Number(this.productData.OpenInvQty))
+
+          console.log(dif)
+
+          if (dif < 2) {
+            this.lotes.push({
+              name: this.lote,
+              expirationDate: '11-22-2019',
+              quantity: Number(this.productData.OpenInvQty),
+              code: '',
+              att1: '',
+              pedimento: pedimento
+            })
+          } else {
+            let validPercent = (Number(this.porcentaje) / 100) * Number(this.productData.OpenInvQty)
+            let validQuantity = Number(validPercent) + Number(this.productData.OpenInvQty)
+
+            console.log(validPercent)
+            console.log(validQuantity)
+
+            if (Number(Number(this.cantidad * this.productData.Detail.NumInSale).toFixedNoRounding(4)) > Number(validQuantity)) {
+              this.presentToast('Cantidad ingresada excede de la cantidad solicitada', 'warning')
+            } else {
+              this.lotes.push({
+                name: this.lote,
+                expirationDate: '11-22-2019',
+                quantity: Number(Number(this.cantidad * this.productData.Detail.NumInSale).toFixedNoRounding(4)),
+                code: '',
+                att1: '',
+                pedimento: pedimento
+              })
+            }
+          }
+        }
+      }
+    } else {
+      this.fechaCad = new Date(this.fechaCad)
+      let fechaExp = this.fechaCad.getMonth() + '-' + this.fechaCad.getDay() + '-' + this.fechaCad.getFullYear()
+
+      if (Number.isInteger(Number(Number(this.cantidad * this.productData.Detail.NumInSale).toFixedNoRounding(4)))) {
+        this.lotes.push({
+          name: this.lote,
+          expirationDate: '11-22-2019',
+          quantity: Number(Number(this.cantidad * this.productData.Detail.NumInSale).toFixedNoRounding(4)),
+          code: '',
+          att1: '',
+          pedimento: ''
+        })
+      } else {
         let dif = Math.abs(Number(Number(this.cantidad * this.productData.Detail.NumInSale).toFixedNoRounding(4)) - Number(this.productData.OpenInvQty))
 
         console.log(dif)
@@ -81,7 +140,7 @@ export class AbarrotesBatchPage implements OnInit {
             quantity: Number(this.productData.OpenInvQty),
             code: '',
             att1: '',
-            pedimento: pedimento
+            pedimento: ''
           })
         } else {
           let validPercent = (Number(this.porcentaje) / 100) * Number(this.productData.OpenInvQty)
@@ -99,46 +158,9 @@ export class AbarrotesBatchPage implements OnInit {
               quantity: Number(Number(this.cantidad * this.productData.Detail.NumInSale).toFixedNoRounding(4)),
               code: '',
               att1: '',
-              pedimento: pedimento
+              pedimento: ''
             })
           }
-        }
-      }
-    } else {
-      this.fechaCad = new Date(this.fechaCad)
-      let fechaExp = this.fechaCad.getMonth() + '-' + this.fechaCad.getDay() + '-' + this.fechaCad.getFullYear()
-
-      let dif = Math.abs(Number(Number(this.cantidad * this.productData.Detail.NumInSale).toFixedNoRounding(4)) - Number(this.productData.OpenInvQty))
-
-      console.log(dif)
-
-      if (dif < 2) {
-        this.lotes.push({
-          name: this.lote,
-          expirationDate: '11-22-2019',
-          quantity: Number(this.productData.OpenInvQty),
-          code: '',
-          att1: '',
-          pedimento: ''
-        })
-      } else {
-        let validPercent = (Number(this.porcentaje) / 100) * Number(this.productData.OpenInvQty)
-        let validQuantity = Number(validPercent) + Number(this.productData.OpenInvQty)
-
-        console.log(validPercent)
-        console.log(validQuantity)
-
-        if (Number(Number(this.cantidad * this.productData.Detail.NumInSale).toFixedNoRounding(4)) > Number(validQuantity)) {
-          this.presentToast('Cantidad ingresada excede de la cantidad solicitada', 'warning')
-        } else {
-          this.lotes.push({
-            name: this.lote,
-            expirationDate: '11-22-2019',
-            quantity: Number(Number(this.cantidad * this.productData.Detail.NumInSale).toFixedNoRounding(4)),
-            code: '',
-            att1: '',
-            pedimento: ''
-          })
         }
       }
     }
@@ -154,9 +176,6 @@ export class AbarrotesBatchPage implements OnInit {
         console.log(this.productData.count)
         this.receptionService.setReceptionData(this.productData)
         this.router.navigate(['/members/recepcion-sap'])
-      } else if (this.cantidad <= 0) {
-        this.presentToast('Debe igresar una cantidad valida', 'warning')
-        return
       } else if (this.productData.Detail.QryGroup41 == 'Y') {
         this.productData.count = this.cantidad
         console.log(this.productData.count)

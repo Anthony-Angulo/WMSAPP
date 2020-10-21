@@ -65,7 +65,7 @@
     <ion-col>
       <h6>Seleccionar Unidad de Medida</h6>
       <ion-select class="product-scann" [(ngModel)]="uom" name="uom">
-        <ion-select-option  *ngFor="let uom of inventory.uom" [value]="uom">{{uom.UomCode}}</ion-select-option>
+        <ion-select-option  *ngFor="let uom of inventory.UOMList" [value]="uom">{{uom.UomCode}}</ion-select-option>
       </ion-select>
     </ion-col>
   </ion-row>

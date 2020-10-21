@@ -16,8 +16,8 @@
     <ion-col>
       <h6>Datos de Producto</h6>
       <ion-item lines="none" class="container-item">
-        Item Code: {{productData.Detail.ItemCode}}<br>
-        Descripcion: {{productData.Detail.ItemName}}
+        Codigo: {{productData.ItemCode}}<br>
+        Nombre: {{productData.ItemName}}
       </ion-item>
     </ion-col>
   </ion-row>
@@ -32,8 +32,8 @@
   <ion-row>
     <ion-col>
       <h6>Escanea codigo de barra de producto.</h6>
-      <ion-input class="product-scann" id="input-codigo" placeholder="Codigo de Barra" [(ngModel)]="codigoBarra"
-        name="codigoBarra" (ionChange)="getDataFromCodeBar()" clearInput debounce="200">
+      <ion-input class="product-scann" id="input-codigo" placeholder="Codigo de Barra" [(ngModel)]="codeBarInput"
+        name="codeBarInput" (ionChange)="getDataFromCodeBar()" clearInput debounce="200">
       </ion-input>
     </ion-col>
   </ion-row>
@@ -42,12 +42,11 @@
   <h6>Peso Escaneado: {{cantidadPeso}}</h6>
 
   <h6>Lotes</h6>
-  <ion-row *ngFor="let prod of detail; let index = index">
+  <ion-row *ngFor="let prod of batchDetail; let index = index">
     <ion-col>
       <ion-item lines="none" class="container-item">
-        Codigo de Barra: {{prod.display}}<br>
-        fecha: {{prod.expirationDate}}<br>
-        Peso: {{prod.quantity}}
+        Codigo de Barra: {{prod.Code}}<br>
+        Peso: {{prod.Quantity}}
         <ion-button color="danger" (click)="eliminar(index)" class="button-eliminar">
           <ion-icon slot="icon-only" name="close-circle"></ion-icon>
         </ion-button>

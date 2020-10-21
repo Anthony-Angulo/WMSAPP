@@ -15,7 +15,8 @@ export class PedimentoPage implements OnInit {
 
   public aduana: any;
   public year: any;
-  public pedimento: any;
+  public documento: any;
+  public patente: any;
 
   constructor(
     private http: HttpClient,
@@ -31,29 +32,31 @@ export class PedimentoPage implements OnInit {
 
   agregarPedimento() {
 
-    if(this.pedimento == ''){
-
-    } else {
       if (this.aduana == '' || this.aduana == undefined) {
         this.presentToast('Ingresa aduana', 'warning')
+        return
       } else if (this.year == '' || this.year == undefined) {
         this.presentToast('Ingresa un año', 'warning')
-      } else {
+        return
+      } else if(this.documento == '' || this.documento == undefined) { 
+        this.presentToast('Ingresa un documento', 'warning')
+        return
+      } else if (this.patente == '' || this.patente == undefined) {
+        this.presentToast('Ingresa un patente', 'warning')
+        return
+      }
   
-        let first = this.pedimento.substr(1 - 1, 4)
-        let second = this.pedimento.substr(5 - 1, 7)
+
         let year = this.year.substr(3 - 1, 2)
-        console.log(year + "  " + this.aduana + "  "  + first + "  " + second)
-        let pedimento = year + "  " + this.aduana + "  "  + first + "  " + second
+        console.log(year + "  " + this.aduana + "  "  + this.patente + "  " + this.documento)
+        let pedimento = year + "  " + this.aduana + "  "  + this.patente + "  " + this.documento
   
         this.navExtras.setPedimento(pedimento)
         this.presentToast("Se agrego pedimento correctamente",'success')
         this.router.navigate(['/members/recepcion-sap'])
-      }
+      
     }
-
-    this.pedimento = ''
-  }
+  
 
   async presentToast(msg: string, color: string) {
     const toast = await this.toastController.create({

@@ -1,38 +1,33 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { RecepcionDataService } from 'src/app/services/recepcion-data.service';
-import { environment } from 'src/environments/environment';
 import { HttpClient } from '@angular/common/http';
 import { SettingsService } from '../../../services/settings.service';
 import { Platform } from '@ionic/angular';
 import { AlertController, ToastController, LoadingController } from '@ionic/angular';
-import { getCerosFromEtiqueta } from '../../commons';
-
-
+import { getSettingsFileData, getCerosFromEtiqueta, getValidPercentage } from '../../commons';
 
 @Component({
   selector: 'app-beef',
   templateUrl: './beef.page.html',
   styleUrls: ['./beef.page.scss'],
 })
+
 export class BeefPage implements OnInit {
 
-  productData: any
-  codigoBarra: string
-  peso
-  detail = []
-  cantidadEscaneada: number = 0
-  cantidadPeso: number = 0
-  lote: any
-  batch: any
-  tarima: any
-  load
-  data
-  porcentaje: string
-  oldBatchList = []
-  codebarDescription: any;
-  inputs = [];
-  selectedDesc: any;
+  public productData: any;
+  public codeBarInput: string;
+  public peso: number;
+  public batchDetail: any = [];
+  public cantidadEscaneada: number = 0;
+  public cantidadPeso: number = 0;
+  public availableBatchs: any;
+  public tarima: string;
+  public loadController: any;
+  public appSettings: any;
+  public codeBarSetting: any;
+  public alertCodeBarinputs: any = [];
+  public selectedCodebarSetting: any;
 
   constructor(
     private http: HttpClient,
@@ -46,58 +41,52 @@ export class BeefPage implements OnInit {
   ) { }
 
   async ngOnInit() {
-    this.productData = this.receptionService.getOrderData()
+
+    this.productData = this.receptionService.getOrderData();
+    this.appSettings = getSettingsFileData(this.platform, this.settings);
 
     if (!this.productData.detalle) {
-      this.productData.detalle = []
+      this.productData.detalle = [];
     } else {
-      this.detail = this.productData.detalle
+      this.batchDetail = this.productData.detalle;
     }
 
     if (this.productData.cajasEscaneadas) {
-      this.cantidadEscaneada = Number(this.productData.cajasEscaneadas)
+      this.cantidadEscaneada = this.productData.cajasEscaneadas;
     } else {
-      this.cantidadEscaneada = 0
+      this.cantidadEscaneada = 0;
     }
 
     if (!this.productData.pesoContado) {
-      this.productData.pesoContado = 0
+      this.productData.pesoContado = 0;
     } else {
-      this.cantidadPeso = this.productData.pesoContado
+      this.cantidadPeso = this.productData.pesoContado;
     }
 
     if (!this.productData.pallet) {
-      this.productData.pallet = ''
+      this.productData.pallet = '';
     }
 
-    if (Number(this.productData.Detail.U_IL_PesMin) == 0 && Number(this.productData.Detail.U_IL_PesMax) == 0) {
-      this.productData.Detail.U_IL_PesMin = 0
-      this.productData.Detail.U_IL_PesMax = 100
+    if (Number(this.productData.U_IL_PesMin) == 0 && Number(this.productData.U_IL_PesMax) == 0) {
+      this.productData.U_IL_PesMin = 0;
+      this.productData.U_IL_PesMax = 100;
     }
 
     await this.presentLoading('Buscando Lotes de producto...')
 
-    this.http.get(environment.apiSAP + '/api/batch/' + this.productData.FromWhsCod + '/' + this.productData.ItemCode).toPromise().then((data) => {
-      console.log(data)
-      this.batch = data
-      this.oldBatchList = this.batch.filter(x => Number(x.CreateDate) < 20191218)
-    }).catch((error) => {
+    this.http.get(this.appSettings.apiSAP + '/api/batch/' + this.productData.FromWhsCod + '/' + this.productData.ItemCode).toPromise().then((data: any) => {
+      this.availableBatchs = data;
+    }).catch((error: any) => {
       this.presentToast(error.error.error, 'danger')
     }).finally(() => {
       this.hideLoading()
-    })
+    });
 
-    if (this.platform.is("cordova")) {
-      this.data = this.settings.fileData
-      this.porcentaje = this.data.porcentaje
-    } else {
-      this.porcentaje = "10"
-    }
 
-    if (this.productData.Detail.QryGroup45 == "Y") {
-      this.codebarDescription = this.productData.cBDetail.filter(x => x.proveedor != null)
-      this.codebarDescription.forEach(y => {
-        this.inputs.push({
+    if (this.productData.QryGroup45 == "Y") {
+      this.codeBarSetting = this.productData.cBDetail.filter((x: any) => x.proveedor != null)
+      this.codeBarSetting.forEach(y => {
+        this.alertCodeBarinputs.push({
           name: y.proveedor,
           type: "radio",
           label: y.proveedor,
@@ -106,7 +95,6 @@ export class BeefPage implements OnInit {
       })
 
       this.promptCodeDesc()
-      this.presentToast("Selecciona una configuracion", "warning")
     }
 
 
@@ -114,8 +102,8 @@ export class BeefPage implements OnInit {
 
   async promptCodeDesc() {
     const alert = await this.alert.create({
-      header: 'Configuracion',
-      inputs: this.inputs,
+      header: 'Configuracion De Codigo de Barra',
+      inputs: this.alertCodeBarinputs,
       buttons: [
         {
           text: 'Cancelar',
@@ -127,7 +115,7 @@ export class BeefPage implements OnInit {
         }, {
           text: 'Aceptar',
           handler: (data) => {
-            this.selectedDesc = data
+            this.selectedCodebarSetting = data;
           }
         }
       ]
@@ -136,366 +124,129 @@ export class BeefPage implements OnInit {
     await alert.present();
   }
 
-  submit() {
-
-    this.productData.cajasEscaneadas = this.cantidadEscaneada
-
-    if (this.productData.count != 0 && this.cantidadEscaneada <= 0) {
-      this.productData.count = this.cantidadEscaneada
-      this.productData.pallet = this.tarima
-      this.receptionService.setReceptionData(this.productData)
-      this.router.navigate(['/members/transferencia-sap'])
-    } else if (this.cantidadEscaneada <= 0) {
-      this.presentToast('Debe igresar una cantidad valida', 'warning')
-    } else if (this.productData.Detail.QryGroup42 == 'Y') {
-      this.productData.count = this.cantidadEscaneada
-      this.productData.pallet = this.tarima
-      this.productData.detalle = this.detail
-      this.receptionService.setReceptionData(this.productData)
-      this.router.navigate(['/members/transferencia-sap'])
-    } else {
-      this.productData.count = this.detail.map(lote => lote.quantity).reduce((a, b) => a + b, 0)
-
-      let validPercent = (Number(this.porcentaje) / 100) * Number(this.productData.OpenInvQty)
-      let validQuantity = Number(validPercent) + Number(this.productData.OpenInvQty)
-
-      if (this.productData.count > Number(validQuantity)) {
-        this.presentToast('Cantidad Excede a la cantidad solicitada', 'warning')
-      } else {
-        this.productData.detalle = this.detail
-        this.productData.pallet = this.tarima
-        this.receptionService.setReceptionData(this.productData)
-        this.router.navigate(['/members/transferencia-sap'])
-      }
-
-    }
-
-  }
-
-
-  eliminar(index) {
-    this.cantidadEscaneada--
-    this.cantidadPeso = this.cantidadPeso - Number(this.detail[index].quantity)
-    this.detail.splice(index, 1)
-  }
-
   public getDataFromCodeBar(): void {
 
-    if (this.codigoBarra == '') { }
-    else {
-      if (this.productData.Detail.QryGroup44 == 'Y') {
-        let codFound = this.productData.cBDetail.findIndex(y =>
-          y.length == this.codigoBarra.trim().length)
+    if (this.tarima == undefined || this.tarima == '') {
+      this.presentToast("Debes Ingresar Un Numero De Tarima", "warning");
+      return
+    }
 
-        if (codFound < 0) {
-          this.presentToast('El codigo de barra no coincide con la informacion' +
-            'de etiqueta de proveedor.', 'warning')
-        } else {
+    if (this.codeBarInput != '') {
 
-          let pesoDeEtiqueta = this.codigoBarra.substr(
-            this.productData.cBDetail[codFound].peso_pos - 1,
-            this.productData.cBDetail[codFound].peso_length)
+      let codeBarSettingInd;
 
-          if (this.productData.cBDetail[codFound].maneja_decimal == 1) {
-            if (this.productData.cBDetail[codFound].UOM_id != 3) {
-              this.peso = Number((Number(pesoDeEtiqueta) / 2.2046).toFixed(2))
-            } else {
-              this.peso = Number(pesoDeEtiqueta);
-            }
-          } else {
-            this.peso = getCerosFromEtiqueta(this.productData,
-              pesoDeEtiqueta,
-              codFound);
-          }
-          let ind = this.detail.findIndex(product =>
-            product.code == this.codigoBarra.trim()) //Verificar si el codigo de barra ya fue escaneado
-          if (ind < 0) {
-            if (Number(this.peso) >= Number(this.productData.Detail.U_IL_PesMin)
-              && Number(this.peso) <= Number(this.productData.Detail.U_IL_PesMax)) {
-
-              let findBatch = this.batch.findIndex(y => y.BatchNum
-                == this.codigoBarra.substr(25, this.codigoBarra.length).trim())
-              if (findBatch < 0) {
-                let fin_ind_batch = this.oldBatchList.findIndex(x =>
-                  Number(x.Quantity) == Number(this.peso))
-
-                if (fin_ind_batch >= 0) {//Si encuentra un peso que coincide entrara a esta condicion
-
-                  this.detail.push({
-                    name: this.oldBatchList[fin_ind_batch].BatchNum,
-                    display: this.oldBatchList[fin_ind_batch].BatchNum
-                      .substr(this.oldBatchList[fin_ind_batch].BatchNum.length - 6),
-                    code: this.codigoBarra,
-                    attr1: this.lote,
-                    expirationDate: '11-12-2019',
-                    quantity: Number(this.oldBatchList[fin_ind_batch].Quantity),
-                    pallet: this.tarima
-                  })
-
-                  this.oldBatchList.splice(fin_ind_batch, 1)
-                  this.cantidadEscaneada++
-                  this.cantidadPeso = this.cantidadPeso + Number(this.peso)
-                  this.presentToast('Se agrego a la lista', 'success')
-
-                } else { //Si no encuentra un peso coincidente escogera el lote SI
-                  let findLotes = this.batch.find(y => Number(y.Quantity) >= 50)
-                  if (findLotes != undefined) {
-                    this.detail.push({
-                      name: findLotes.BatchNum,
-                      display: findLotes.BatchNum,
-                      code: this.codigoBarra,
-                      attr1: this.lote,
-                      expirationDate: '11-12-2019',
-                      quantity: Number(this.peso),
-                      pallet: this.tarima
-                    })
-
-                    this.cantidadEscaneada++
-                    this.cantidadPeso = this.cantidadPeso + Number(this.peso)
-                    this.presentToast('Se agrego a la lista', 'success')
-                  } else { this.presentToast("El codigo de barra no se encontro", "warning") }
-                }
-              } else { //Si encuentra el lote en la lista original entrara en esta condicion
-
-                this.detail.push({
-                  name: this.batch[findBatch].BatchNum,
-                  display: this.batch[findBatch].BatchNum
-                    .substr(this.batch[findBatch].BatchNum.length - 6),
-                  code: this.codigoBarra,
-                  attr1: this.lote,
-                  expirationDate: '11-12-2019',
-                  quantity: Number(this.batch[findBatch].Quantity),
-                  pallet: this.tarima
-                })
-
-                this.cantidadEscaneada++
-                this.cantidadPeso = this.cantidadPeso + Number(this.peso)
-                this.presentToast('Se agrego a la lista', 'success')
-
-              }
-            } else {
-              this.presentToast('El peso sobrepasa el peso promedio. ' +
-                'Contactar al departamento de datos maestros.', 'warning')
-            }
-
-          } else {
-            this.presentToast('El codigo de barra ya fue escaneado', 'warning')
-          }
-        }
-      } else if (this.productData.Detail.QryGroup45 == "Y") {
-        let ind = this.detail.findIndex(product =>
-          product.code == this.codigoBarra.trim())
-        if(ind < 0){
-          let codFound = this.productData.cBDetail.findIndex(y =>
-            y.proveedor == this.selectedDesc)
-
-          if (codFound < 0) {
-            this.presentToast('El codigo de barra no coincide con la informacion' +
-              'de etiqueta de proveedor. Selecciona otra configuracion.', 'warning')
-          } else {
-           let pesoDeEtiqueta = this.codigoBarra.substr(
-             this.productData.cBDetail[codFound].peso_pos - 1,
-             this.productData.cBDetail[codFound].peso_length)
-
-           if (this.productData.cBDetail[codFound].maneja_decimal == 1) {
-             if (this.productData.cBDetail[codFound].UOM_id != 3) {
-               this.peso = Number((Number(pesoDeEtiqueta) / 2.2046).toFixed(2))
-             } else {
-               this.peso = Number(pesoDeEtiqueta);
-             }
-           } else {
-             this.peso = getCerosFromEtiqueta(this.productData,
-               pesoDeEtiqueta,
-               codFound);
-
-             let ind = this.detail.findIndex(product =>
-               product.code == this.codigoBarra.trim()) //Verificar si el codigo de barra ya fue escaneado
-             if (ind < 0) {
-               if (Number(this.peso) >= Number(this.productData.Detail.U_IL_PesMin)
-                 && Number(this.peso) <= Number(this.productData.Detail.U_IL_PesMax)) {
-
-                 let findBatch = this.batch.findIndex(y => y.U_IL_CodBar
-                   == this.codigoBarra.trim()) //buscar el lote en la lista de lotes
-                 if (findBatch < 0) { //Si no encuentra el lote en la lista de lotes entra en esta condicion
-                   let fin_ind_batch = this.oldBatchList.findIndex(x =>
-                     Number(x.Quantity) == Number(this.peso)) //Buscar en la lista de lotes filtrada un peso que coincida
-                   if (fin_ind_batch >= 0) {//Si encuentra un peso que coincide entrara a esta condicion
-                     this.detail.push({
-                       name: this.oldBatchList[fin_ind_batch].BatchNum,
-                       display: this.oldBatchList[fin_ind_batch].BatchNum
-                         .substr(this.oldBatchList[fin_ind_batch].BatchNum.length - 6),
-                       code: this.codigoBarra,
-                       attr1: this.lote,
-                       expirationDate: '11-12-2019',
-                       quantity: Number(this.oldBatchList[fin_ind_batch].Quantity),
-                       pallet: this.tarima
-                     })
-
-                     this.cantidadEscaneada++
-                     this.cantidadPeso = this.cantidadPeso + Number(this.peso)
-                     this.oldBatchList.splice(fin_ind_batch, 1)
-                     this.presentToast('Se agrego a la lista', 'success')
-
-                   } else { //Si no encuentra un peso coincidente escogera el lote SI
-                     let findLotes = this.batch.find(y => Number(y.Quantity) >= 50)
-                     if (findLotes != undefined) {
-                       this.detail.push({
-                         name: findLotes.BatchNum,
-                         display: findLotes.BatchNum,
-                         code: this.codigoBarra,
-                         attr1: this.lote,
-                         expirationDate: '11-12-2019',
-                         quantity: Number(this.peso),
-                         pallet: this.tarima
-                       })
-
-                       this.cantidadEscaneada++
-                       this.cantidadPeso = this.cantidadPeso + Number(this.peso)
-                       this.presentToast('Se agrego a la lista', 'success')
-                     } else { this.presentToast("El codigo de barra no se " +
-                     " encontro. Validar con auditoria.", "warning") }
-                   }
-                 } else { //Si encuentra el lote en la lista original entrara en esta condicion
-                   this.detail.push({
-                     name: this.batch[findBatch].BatchNum,
-                     display: this.batch[findBatch].BatchNum
-                     .substr(this.batch[findBatch].BatchNum.length - 6),
-                     code: this.codigoBarra,
-                     attr1: this.lote,
-                     expirationDate: '11-12-2019',
-                     quantity: Number(this.batch[findBatch].Quantity),
-                     pallet: this.tarima
-                   })
-
-                   this.cantidadEscaneada++
-                   this.cantidadPeso = this.cantidadPeso + Number(this.peso)
-                   this.presentToast('Se agrego a la lista', 'success')
-
-                 }
-               } else {
-                 this.presentToast('El peso sobrepasa el peso promedio. '+
-                 'Contactar al departamento de datos maestros.'+
-                 'O intente selccionando otra configuracion', 'warning')
-               }
-
-             } else {
-               this.presentToast('El codigo de barra ya fue escaneado', 'warning')
-             }
-           }
-         }
-        }
-
-
+      if (this.productData.QryGroup45 == 'Y') {
+        codeBarSettingInd = this.productData.cBDetail.findIndex((y: any) => y.proveedor == this.selectedCodebarSetting);
       } else {
-        let ind = this.detail.findIndex(product =>
-          product.code == this.codigoBarra.trim())
-        if(ind < 0){
-          let codFound = this.productData.cBDetail.findIndex(y =>
-            y.length == this.codigoBarra.trim().length)
-
-          if (codFound < 0) {
-            this.presentToast('El codigo de barra no coincide con la informacion' +
-              'de etiqueta de proveedor.', 'warning')
-          } else {
-           let pesoDeEtiqueta = this.codigoBarra.substr(
-             this.productData.cBDetail[codFound].peso_pos - 1,
-             this.productData.cBDetail[codFound].peso_length)
-
-           if (this.productData.cBDetail[codFound].maneja_decimal == 1) {
-             if (this.productData.cBDetail[codFound].UOM_id != 3) {
-               this.peso = Number((Number(pesoDeEtiqueta) / 2.2046).toFixed(2))
-             } else {
-               this.peso = Number(pesoDeEtiqueta);
-             }
-           } else {
-             this.peso = getCerosFromEtiqueta(this.productData,
-               pesoDeEtiqueta,
-               codFound);
-               console.log(this.peso)
-             let ind = this.detail.findIndex(product =>
-               product.code == this.codigoBarra.trim()) //Verificar si el codigo de barra ya fue escaneado
-             if (ind < 0) {
-               if (Number(this.peso) >= Number(this.productData.Detail.U_IL_PesMin)
-                 && Number(this.peso) <= Number(this.productData.Detail.U_IL_PesMax)) {
-                   console.log(this.codigoBarra.trim())
-                 let findBatch = this.batch.findIndex(y => y.U_IL_CodBar
-                   == this.codigoBarra.trim()) //buscar el lote en la lista de lotes
-                 if (findBatch < 0) { //Si no encuentra el lote en la lista de lotes entra en esta condicion
-                   let fin_ind_batch = this.oldBatchList.findIndex(x =>
-                     Number(x.Quantity) == Number(this.peso)) //Buscar en la lista de lotes filtrada un peso que coincida
-                   if (fin_ind_batch >= 0) {//Si encuentra un peso que coincide entrara a esta condicion
-                     this.detail.push({
-                       name: this.oldBatchList[fin_ind_batch].BatchNum,
-                       display: this.oldBatchList[fin_ind_batch].BatchNum
-                         .substr(this.oldBatchList[fin_ind_batch].BatchNum.length - 6),
-                       code: this.codigoBarra,
-                       attr1: this.lote,
-                       expirationDate: '11-12-2019',
-                       quantity: Number(this.oldBatchList[fin_ind_batch].Quantity),
-                       pallet: this.tarima
-                     })
-
-                     this.cantidadEscaneada++
-                     this.cantidadPeso = this.cantidadPeso + Number(this.peso)
-                     this.oldBatchList.splice(fin_ind_batch, 1)
-                     this.presentToast('Se agrego a la lista', 'success')
-
-                   } else { //Si no encuentra un peso coincidente escogera el lote SI
-                     let findLotes = this.batch.find(y => Number(y.Quantity) >= 50)
-                     if (findLotes != undefined) {
-                       this.detail.push({
-                         name: findLotes.BatchNum,
-                         display: findLotes.BatchNum,
-                         code: this.codigoBarra,
-                         attr1: this.lote,
-                         expirationDate: '11-12-2019',
-                         quantity: Number(this.peso),
-                         pallet: this.tarima
-                       })
-
-                       this.cantidadEscaneada++
-                       this.cantidadPeso = this.cantidadPeso + Number(this.peso)
-                       this.presentToast('Se agrego a la lista', 'success')
-                     } else { this.presentToast("El codigo de barra no se " +
-                     " encontro. Validar con auditoria.", "warning") }
-                   }
-                 } else { //Si encuentra el lote en la lista original entrara en esta condicion
-                   this.detail.push({
-                     name: this.batch[findBatch].BatchNum,
-                     display: this.batch[findBatch].BatchNum
-                     .substr(this.batch[findBatch].BatchNum.length - 6),
-                     code: this.codigoBarra,
-                     attr1: this.lote,
-                     expirationDate: '11-12-2019',
-                     quantity: Number(this.batch[findBatch].Quantity),
-                     pallet: this.tarima
-                   })
-
-                   this.cantidadEscaneada++
-                   this.cantidadPeso = this.cantidadPeso + Number(this.peso)
-                   this.presentToast('Se agrego a la lista', 'success')
-
-                 }
-               } else {
-                 this.presentToast('El peso sobrepasa el peso promedio. '+
-                 'Contactar al departamento de datos maestros.', 'warning')
-               }
-
-             } else {
-               this.presentToast('El codigo de barra ya fue escaneado', 'warning')
-             }
-           }
-         }
-        }
-
+        codeBarSettingInd = this.productData.cBDetail.findIndex((y: any) => y.length == this.codeBarInput.trim().length);
       }
 
-      this.peso = 0
+      if (codeBarSettingInd < 0) {
+        this.presentToast("El Codigo De Barra No Coincide Con la Configuracion Del Codigo De Barra Del Producto.", "warning");
+        this.peso = 0;
+        document.getElementById('input-codigo').setAttribute('value', '');
+        document.getElementById('input-codigo').focus();
+        return
+      }
+
+      let pesoDeEtiqueta = this.codeBarInput.substr(this.productData.cBDetail[codeBarSettingInd].peso_pos - 1, this.productData.cBDetail[codeBarSettingInd].peso_length);
+
+      if (this.productData.cBDetail[codeBarSettingInd].maneja_decimal == 1 && this.productData.cBDetail[codeBarSettingInd].UOM_id == 4) {
+        this.peso = Number((Number(pesoDeEtiqueta) / 2.2046).toFixed(2));
+      } else if (this.productData.cBDetail[codeBarSettingInd].maneja_decimal == 1 && this.productData.cBDetail[codeBarSettingInd].UOM_id == 3) {
+        this.peso = Number(pesoDeEtiqueta);
+      } else {
+        this.peso = getCerosFromEtiqueta(this.productData, pesoDeEtiqueta, codeBarSettingInd);
+      }
+
+      if (this.peso < this.productData.U_IL_PesMin && this.peso > this.productData.U_IL_PesMax) {
+        this.presentToast("El Peso Escaneado No Esta Dentro De Los Parametros De Peso Maximo y Peso Minimo.", "warning");
+        this.peso = 0
+        document.getElementById('input-codigo').setAttribute('value', '');
+        document.getElementById('input-codigo').focus();
+        return
+      }
+
+      let isScanned = this.batchDetail.findIndex((codeBar: any) => codeBar.CodeBar == this.codeBarInput.trim());
+      let isCodeBarExist = this.availableBatchs.findIndex((codeBar: any) => codeBar.U_IL_CodBar == this.codeBarInput.trim());
+
+      if (isScanned >= 0) {
+        this.presentToast("Este Codigo De Barra Ya Fue Escaneado", "warning");
+        this.peso = 0;
+        document.getElementById('input-codigo').setAttribute('value', '');
+        document.getElementById('input-codigo').focus();
+        return
+      }
+
+      if (isCodeBarExist >= 0) {
+
+        this.batchDetail.push({
+          Code: this.availableBatchs[isCodeBarExist].BatchNum,
+          Quantity: Number(this.availableBatchs[isCodeBarExist].Quantity),
+          CodeBar: this.codeBarInput.trim()
+        });
+
+        this.availableBatchs.splice(isCodeBarExist, 1);
+        this.presentToast("Se Escaneo Correctamente", "success");
+      } else {
+
+        let loteGenerico = this.availableBatchs.find((y: any) => Number(y.Quantity) > 50);
+
+        if (loteGenerico != undefined) {
+
+          this.batchDetail.push({
+            Code: loteGenerico.BatchNum,
+            Quantity: this.peso,
+            CodeBar: this.codeBarInput.trim()
+          });
+
+          this.presentToast("Se Escaneo Correctamente", "success");
+        } else {
+          this.presentToast("El Codigo de Barra No Fue Encontrado En Inventario O No Hay Cantidad Suficiente En Lote Generico. Revisar Con Auditoria.", "warning");
+        }
+      }
+
     }
-    document.getElementById('input-codigo').setAttribute('value', '')
-    document.getElementById('input-codigo').focus()
+
+    this.cantidadEscaneada = this.batchDetail.length
+    this.cantidadPeso = this.batchDetail.map((x: any) => x.Quantity).reduce((a, b) => a + b, 0);
+    document.getElementById('input-codigo').setAttribute('value', '');
+    document.getElementById('input-codigo').focus();
   }
 
+
+  public eliminar(index: number) {
+    this.batchDetail.splice(index, 1)
+    this.cantidadEscaneada = this.batchDetail.length
+    this.cantidadPeso = this.batchDetail.map((x: any) => x.Quantity).reduce((a, b) => a + b, 0);
+  }
+
+  public submit() {
+
+    this.productData.cajasEscaneadas = this.cantidadEscaneada;
+    this.productData.pesoContado = this.cantidadPeso;
+
+    if(this.cantidadEscaneada == 0) {
+      this.productData.count = this.cantidadEscaneada;
+      this.receptionService.setReceptionData(this.productData);
+      this.router.navigate(['/members/transferencia-sap']);
+      return
+    }
+
+    let madeByUom = this.productData.Uoms.findIndex((x: any) => x.UomEntry == this.productData.UomEntry);
+
+    if (this.productData.UomEntry == this.productData.Uoms[madeByUom].BaseEntry) {
+      this.productData.count = this.batchDetail.map((lote: any) => lote.Quantity).reduce((a, b) => a + b, 0);
+    } else {
+      this.productData.count = this.cantidadEscaneada;
+    }
+
+    this.productData.pallet = this.tarima;
+    this.productData.detalle = this.batchDetail;
+    this.receptionService.setReceptionData(this.productData)
+    this.router.navigate(['/members/transferencia-sap'])
+
+  }
 
 
   async presentToast(msg: string, color: string) {
@@ -509,15 +260,15 @@ export class BeefPage implements OnInit {
   }
 
   async presentLoading(msg) {
-    this.load = await this.loading.create({
+    this.loadController = await this.loading.create({
       message: msg,
     });
 
-    await this.load.present()
+    await this.loadController.present()
   }
 
   hideLoading() {
-    this.load.dismiss()
+    this.loadController.dismiss()
   }
 
 }

@@ -35,6 +35,9 @@ const routes: Routes = [
   { path: 'purchase-return-abarrotes', loadChildren: './purchase-return/abarrotes/abarrotes.module#AbarrotesPageModule' },
   { path: 'purchase-return-abarrotes-batch', loadChildren: './purchase-return/abarrotes-batch/abarrotes-batch.module#AbarrotesBatchPageModule' },
   { path: 'purchase-return-beef', loadChildren: './purchase-return/beef/beef.module#BeefPageModule' },
+  { path: 'etiquetas', loadChildren: './etiquetas/etiquetas.module#EtiquetasPageModule' },
+  { path: 'consumointerno', loadChildren: './consumointerno/consumointerno.module#ConsumointernoPageModule' },
+  { path: 'locationlabels', loadChildren: './locationlabels/locationlabels.module#LocationlabelsPageModule' },
 
 
 ];

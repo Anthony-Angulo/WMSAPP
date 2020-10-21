@@ -13,19 +13,21 @@
     <ion-col>
       <h6>Datos de Producto</h6>
       <ion-item lines="none" class="container-item">
-        Item Code: {{productData.Detail.ItemCode}}<br>
-        Descripcion: {{productData.Detail.ItemName}}
+        Item Code: {{productData.ItemCode}}<br>
+        Descripcion: {{productData.ItemName}}
       </ion-item>
     </ion-col>
   </ion-row>
-  
-  <!-- <h6>Informacion de Lote</h6>
+
   <ion-row>
     <ion-col>
-      <ion-input class="product-scann" [(ngModel)] = "lote" name="lote" placeholder = "Ingresa lote"></ion-input>
+      <h6>Selecciona Una Unidad de Medida</h6>
+      <ion-select class="product-scann" [(ngModel)]="uom" name="uom">
+        <ion-select-option *ngFor="let um of productData.Uoms" [value]="um">{{um.UomCode}}</ion-select-option>
+      </ion-select>
     </ion-col>
-  </ion-row> -->
-
+  </ion-row>
+  
   <h6>Seleccionar Lote</h6>
     <ion-row>
       <ion-col>
@@ -35,51 +37,70 @@
       </ion-col>
     </ion-row>
 
-    <h6>Ingresa Tarima</h6>
-    <ion-row>
-      <ion-col>
-        <ion-input class="product-scann" [(ngModel)]="tarima" name="tarima"
-          placeholder="Ingresa Tarima"></ion-input>
-      </ion-col>
-    </ion-row>
-
-  <!-- <ion-row>
-      <ion-col>
-          <ion-datetime class="product-scann" placeholder="Fecha de Caducidad" [(ngModel)]="fechaCad" name="fechaCad" max="2030"> 
-          </ion-datetime>
-      </ion-col>
-  </ion-row> -->
 
   <h6>Ingresar cantidad a surtir.</h6>
   <ion-row>
-    <ion-col size="9">
-      <ion-input class="product-scann" [(ngModel)]="cantidad" name="cantidad" type="number"
-        placeholder="Ingresa la cantidad"></ion-input>
-    </ion-col>
     <ion-col>
+      <ion-input class="product-scann" [(ngModel)]="cantidad" name="cantidad" type="number"
+        placeholder="Ingresa la cantidad" (ionChange)="addLote()" debounce="1000"></ion-input>
+    </ion-col>
+    <!-- <ion-col>
         <ion-button size="small" (click)="addLote()">
           <ion-icon slot="icon-only" name="add-circle"></ion-icon>
         </ion-button>
+    </ion-col> -->
+  </ion-row>
+
+  <h6>Surtiendo</h6> 
+  <ion-row class="table">
+    <ion-col size="3.5">
+      Lote
+    </ion-col>
+    <ion-col size="3">
+      Cantidad
+    </ion-col>
+    <ion-col size="3">
+      UoM
+    </ion-col>
+    <ion-col size="2">
+      --
     </ion-col>
   </ion-row>
 
-  <h6 *ngIf="lotes">Lotes</h6>
-  <ion-row *ngFor="let lote of lotes; let index = index">
+  <ion-row class="text-content" *ngFor="let delivery of productsToDeliver; let index of index">
+    <ion-col size="3.5">
+      {{delivery.lote}}
+    </ion-col>
+    <ion-col size="3">
+      {{delivery.Count | number }}
+    </ion-col>
+    <ion-col size="3">
+      {{delivery.uom}}
+    </ion-col>
+    <ion-col size="2">
+      <ion-button color="danger"  (click) ="eliminarProducto(index)" class="button-eliminar">
+        <ion-icon slot="icon-only" name="close-circle"></ion-icon>
+      </ion-button>
+    </ion-col>
+  </ion-row>
+
+  <ion-row *ngIf="uom">
+    <ion-col>
+      Total: {{totalUnitBase}} {{uom.BaseUom}}
+    </ion-col>
+  </ion-row>
+
+  <!-- <ion-row *ngFor="let prod of productsToDeliver; let index = index">
       <ion-col>
         <ion-item lines="none" class="container-item">
           Lote: {{lote.name}}<br>
           Cantidad: {{lote.quantity}}<br>
-          Fecha: {{lote.expirationDate}}
           <ion-button color="danger" (click)="eliminar(index)" class="button-eliminar">
             <ion-icon slot="icon-only" name="close-circle"></ion-icon>
           </ion-button>
         </ion-item>
       </ion-col>
-    </ion-row>
-
-    
-    
-
+    </ion-row> -->
 
   <ion-row>
     <ion-col>

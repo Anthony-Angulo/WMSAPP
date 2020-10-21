@@ -1,0 +1,62 @@
+<ion-header>
+  <ion-toolbar class="tool-bar">
+    <ion-buttons slot="start">
+      <ion-back-button routerLink="/members/surtido"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Surtido</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+    <ion-row *ngIf="productInfo">
+      <ion-col>
+        <h6>Datos de Producto</h6>
+        <ion-item lines="none" class="container-item">
+          Codigo Prothevs: {{productInfo.ItemCode}}<br>
+          Descripcion: {{productInfo.Dscription}}
+        </ion-item>
+      </ion-col>
+    </ion-row>
+
+    <ion-row>
+      <ion-col>
+        <h6>Ingresar cantidad a surtir.</h6>
+        <ion-input class="product-scann" [(ngModel)]="cantidad" name="cantidad" type="number"
+          placeholder="Ingresa la cantidad"></ion-input>
+      </ion-col>
+    </ion-row>
+
+    <ion-row>
+      <ion-col>
+        <ion-button shape="round" color="danger" routerLink="/members/surtido" expand="block">
+          Cancelar
+        </ion-button>
+      </ion-col>
+      <ion-col>
+        <ion-button shape="round" expand="block" (click)="surtirProducts()">
+          Aceptar
+        </ion-button>
+      </ion-col>
+    </ion-row>
+  <!-- </div> -->
+  <!-- <div class="alig" *ngIf="!codeExist">
+    <h6>El producto no tiene codigo de caja registrado.</h6>
+    <ion-button *ngIf="!codeExist" class="code-button" routerLink="/members/scann-cajas">
+      Registrar codigo caja</ion-button>
+  </div> -->
+</ion-content>
+
+<ion-footer>
+  <ion-toolbar color="dark">
+    <ion-buttons slot="start" routerLink="/members/home">
+      <ion-button>
+        <ion-icon slot="icon-only" name="home"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-buttons slot="end">
+      <ion-button>
+        <ion-icon slot="icon-only" name="chatbubbles"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-footer>

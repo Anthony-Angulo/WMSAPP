@@ -26,27 +26,27 @@
       <h6>Datos de Contacto</h6>
       <ion-item lines="none" class="container-item">
         Pedido: {{number}}<br>
-        Codigo: {{order.ORDR.CardCode}}<br>
-        Nombre: {{order.ORDR.CardName}}
+        Codigo: {{order.CardCode}}<br>
+        Nombre: {{order.CardName}}
       </ion-item>
     </ion-col>
   </ion-row>
   <div *ngIf="order">
     <h6>Productos</h6>
     
-    <ion-item lines="none">
+    <!-- <ion-item lines="none">
       <ion-label>Modo de busqueda</ion-label>
       <ion-toggle [(ngModel)]="searchType"></ion-toggle>
-    </ion-item>
+    </ion-item> -->
 
-    <ion-row *ngIf="!searchType">
+    <!-- <ion-row *ngIf="!searchType"> -->
       <!-- <ion-col size="2.5">
         <div class="search-order-product">
           <ion-input class="input-recepcion" placeholder="Ctd" [(ngModel)]="ctd" name="ctd">
           </ion-input>
         </div>
       </ion-col> -->
-      <ion-col>
+      <!-- <ion-col>
         <div class="search-order-product">
           <ion-input class="input-recepcion" placeholder="Codigo de Producto" [(ngModel)]="search" name="search">
           </ion-input>
@@ -78,7 +78,7 @@
           (ionChange)="searchProductByCb()" [(ngModel)]="search" debounce="200" name="search">
         </ion-input>
       </ion-col>
-    </ion-row>
+    </ion-row> -->
     
     <ion-row class="table">
       <ion-col size="3">
@@ -94,14 +94,14 @@
         UM
       </ion-col>
     </ion-row>
-    <ion-row class="text-content" *ngFor="let products of order.RDR1; let index = index" 
+    <ion-row class="text-content" *ngFor="let products of order.Lines; let index = index" 
     (click)="products.LineStatus == 'O' && goToProduct(index)" 
     [ngStyle]="{ 'color': products.LineStatus === 'C' ? 'green': 'black' }">
       <ion-col size="3">
         {{products.ItemCode}}
       </ion-col>
       <ion-col size="5.5">
-        {{products.Dscription}}
+        {{products.ItemName}}
       </ion-col>
       <ion-col size="2">
         {{products.count | number }} / {{products.OpenQty | number}} 

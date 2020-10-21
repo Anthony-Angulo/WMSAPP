@@ -1,0 +1,54 @@
+<ion-header>
+  <ion-toolbar class="tool-bar">
+    <ion-buttons slot="start">
+      <ion-back-button routerLink="/members/home"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Generacion de Etiquetas</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-row *ngIf="!order">
+    <ion-col>
+      <h6>Ingresa codigo de producto.</h6>
+      <form (ngSubmit)="getOrden()">
+        <ion-input class="input-recepcion" placeholder="Codigo de Producto" [(ngModel)]="number" name="number">
+        </ion-input>
+        <ion-button type="submit" class="search-order-button" expand="full">
+          Buscar
+        </ion-button>
+      </form>
+    </ion-col>
+  </ion-row>
+  <ion-row *ngIf="order">
+    <ion-col>
+      <h6>Datos de Producto</h6>
+      <ion-item lines="none" class="container-item">
+        Codigo: {{order[0].codigo_sap}}<br>
+        Nombre: {{order[0].descripcion_producto}}
+      </ion-item>
+    </ion-col>
+  </ion-row>
+
+  <ion-row *ngIf="order">
+      <ion-col>
+        <h6>Lote</h6>
+        <ion-input class="input-recepcion"  placeholder="Lote" [(ngModel)]="lote"
+          name="lote">
+        </ion-input>
+      </ion-col>
+    </ion-row>
+
+  <ion-row *ngIf="order">
+    <ion-col>
+      <h6>Codigo de Barra</h6>
+      <ion-input class="input-recepcion" id="input-codigo" placeholder="Codigo de Barra" [(ngModel)]="codigoBarra"
+        name="codigoBarra" (ionChange)="getData()" debounce=400>
+      </ion-input>
+    </ion-col>
+  </ion-row>
+
+  
+
+
+</ion-content>

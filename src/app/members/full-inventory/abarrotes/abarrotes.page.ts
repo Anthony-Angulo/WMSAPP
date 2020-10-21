@@ -60,34 +60,6 @@ export class AbarrotesPage implements OnInit {
 
   }
 
-  async promptLocation() {
-    const alert = await this.alertController.create({
-      header: 'Ubicacion ',
-      message: 'Ingresa ubicacion de producto.',
-      inputs: [
-        {
-          name: 'Ubicacion',
-          type: 'text',
-        },
-      ],
-      buttons: [
-        {
-          text: 'Aceptar',
-          handler: (data) => {
-            if (data.Ubicacion == '') {
-              this.presentToast('Debes ingresar una ubicacion', 'warning')
-              this.promptLocation()
-            } else {
-              this.location = data.Ubicacion
-            }
-
-          }
-        }
-      ]
-    });
-
-    await alert.present();
-  }
 
   public calculateTotal(): void {
     this.total = Number(this.uom.BaseQty * this.cantidad)
@@ -121,7 +93,7 @@ export class AbarrotesPage implements OnInit {
 
     let data = {
       SAPheader: this.productInfo.headerId,
-      ItemCode: this.productInfo.detail.ItemCode
+      ItemCode: this.productInfo.Detail.ItemCode
     }
 
     this.http.post(environment.apiWMS + '/closeProduct', data)
@@ -141,11 +113,11 @@ export class AbarrotesPage implements OnInit {
   async saveProduct() {
 
     let codeBars = []
-  
-    if(this.productInfo.detail.ManBtchNum == 'Y'){
+
+    if(this.productInfo.Detail.ManBtchNum == 'Y'){
        codeBars = [{
-        ItemCode: this.productInfo.detail.ItemCode,
-        ItemName: this.productInfo.detail.ItemName,
+        ItemCode: this.productInfo.Detail.ItemCode,
+        ItemName: this.productInfo.Detail.ItemName,
         codebar: '',
         Lote: this.lote,
         Quantity: this.total
@@ -159,8 +131,8 @@ export class AbarrotesPage implements OnInit {
       this.presentLoading('Guardando...')
       this.storage.get(NAME).then(nombre => {
         this.rows.push({
-          ItemCode: this.productInfo.detail.ItemCode,
-          ItemName: this.productInfo.detail.ItemName,
+          ItemCode: this.productInfo.Detail.ItemCode,
+          ItemName: this.productInfo.Detail.ItemName,
           Location: this.productInfo.location,
           InvQuantity: this.total,
           EmployeeName: nombre
@@ -168,11 +140,11 @@ export class AbarrotesPage implements OnInit {
 
         let datos = {
           SapHeaderId: this.productInfo.headerId,
-          ItemCode: this.productInfo.detail.ItemCode,
-          ItemName: this.productInfo.detail.ItemName,
+          ItemCode: this.productInfo.Detail.ItemCode,
+          ItemName: this.productInfo.Detail.ItemName,
           UOM: this.uom.BASEUOM,
-          ManejaLote: this.productInfo.detail.ManBtchNum,
-          TipoPeso: this.productInfo.detail.U_IL_TipPes,
+          ManejaLote: this.productInfo.Detail.ManBtchNum,
+          TipoPeso: this.productInfo.Detail.U_IL_TipPes,
           rows: this.rows,
           codeBars
         }
@@ -182,7 +154,6 @@ export class AbarrotesPage implements OnInit {
           this.cantidad = 0
           this.router.navigate(['/members/full-inventory'])
         }).catch(err => {
-          console.log(err)
           this.presentToast('Error al guardar', 'danger')
         }).finally(() => {
           this.hideLoading()

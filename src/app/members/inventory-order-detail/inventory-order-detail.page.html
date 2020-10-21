@@ -1,0 +1,68 @@
+<ion-header>
+  <ion-toolbar class="tool-bar">
+    <ion-buttons slot="start">
+      <ion-back-button routerLink="/members/inventario-ciclico"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Detalle de Inventario</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+
+  <ion-row *ngIf="inventoryStatus">
+    <ion-col>
+      <ion-button (click)="presentDialog()" color="danger" expand="full">Cerrar Inventario</ion-button>
+    </ion-col>
+  </ion-row>
+
+  <h6>Selecciona un codigo para inventariar.</h6>
+  <ion-row class="table">
+    <ion-col size="2">
+      SKU
+    </ion-col>
+    <ion-col size="5.5">
+      Description
+    </ion-col>
+    <ion-col size="2">
+      Qty
+    </ion-col>
+    <ion-col size=2>
+      Peso
+    </ion-col>
+  </ion-row>
+
+  <ion-row class="text-content" *ngFor="let products of inventoryDetail; let index = index"
+    (click)="goToProduct(index)">
+    <ion-col size="2">
+      {{products.codigo_prothevs}}
+    </ion-col>
+    <ion-col size="5.5">
+      {{products.descripcion}}
+    </ion-col>
+    <ion-col size="2">
+      {{products.cantidad_contada}}
+    </ion-col>
+    <ion-col size="2">
+      {{products.cantidad_contada_lbs }}
+    </ion-col>
+  </ion-row>
+
+  <ion-button *ngIf="inventoryStatus" class="send" expand="full" shape="round" (click)="sendProducts()">Registrar
+    Inventario</ion-button>
+
+</ion-content>
+
+<ion-footer>
+  <ion-toolbar color="dark">
+    <ion-buttons slot="start" routerLink="/members/home">
+      <ion-button>
+        <ion-icon slot="icon-only" name="home"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-buttons slot="end">
+      <ion-button>
+        <ion-icon slot="icon-only" name="chatbubbles"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-footer>

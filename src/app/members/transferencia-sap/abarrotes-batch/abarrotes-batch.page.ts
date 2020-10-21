@@ -2,9 +2,9 @@ import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { ToastController } from '@ionic/angular';
 import { RecepcionDataService } from 'src/app/services/recepcion-data.service';
-import { environment } from 'src/environments/environment';
 import { HttpClient } from '@angular/common/http';
 import { SettingsService } from '../../../services/settings.service';
+import { getSettingsFileData, getValidPercentage } from '../../commons';
 import { Platform } from '@ionic/angular';
 
 @Component({
@@ -14,15 +14,13 @@ import { Platform } from '@ionic/angular';
 })
 export class AbarrotesBatchPage implements OnInit {
 
-  productData: any
-  cantidad: number
-  lotes = []
-  lote: any
-  fechaCad: Date = new Date()
-  batch: any
-  tarima
-  data
-  porcentaje: any;
+  public productData: any;
+  public cantidad: number;
+  public loteAEnviar: any = [];
+  public batchNum: string;
+  public batchs: any;
+  public tarima: string;
+  public appSettings: any;
 
   constructor(
     private http: HttpClient,
@@ -33,122 +31,107 @@ export class AbarrotesBatchPage implements OnInit {
     private receptionService: RecepcionDataService
   ) { }
 
+  /* Al iniciar el componente buscara los lotes disponibles para el producto */
   ngOnInit() {
-    this.productData= this.receptionService.getOrderData()
-    if(this.productData.count){
-      this.cantidad = this.productData.count
+
+    this.productData = this.receptionService.getOrderData();
+    this.appSettings = getSettingsFileData(this.platform, this.settings);
+
+    if (this.productData.count) {
+      this.cantidad = this.productData.count;
     }
 
-    if(!this.productData.detalle){
-      this.productData.detalle = []
+    if (!this.productData.detalle) {
+      this.productData.detalle = [];
     } else {
-      this.lotes = this.productData.detalle
+      this.loteAEnviar = this.productData.detalle;
     }
 
-    if(!this.productData.pallet){
-      this.productData.pallet = ''
+    if (!this.productData.pallet) {
+      this.productData.pallet = '';
     } else {
-      this.tarima = this.productData.pallet
+      this.tarima = this.productData.pallet;
     }
 
-    this.http.get(environment.apiSAP +  '/api/batch/' + this.productData.FromWhsCod + '/' +  this.productData.ItemCode).toPromise().then((data) => {
-      console.log(data)
-      this.batch = data
+    this.http.get(this.appSettings.apiSAP + '/api/batch/' + this.productData.FromWhsCod + '/' + this.productData.ItemCode).toPromise().then((data: any) => {
+      this.batchs = data;
     }).catch(() => {
-      this.presentToast('Error al traer lotes de producto','danger')
-    })
-
-    if (this.platform.is("cordova")) {
-      this.data = this.settings.fileData
-      this.porcentaje = this.data.porcentaje
-    } else {
-      this.porcentaje = "10"
-    }
+      this.presentToast('Error al traer lotes de producto', 'danger')
+    });
 
   }
 
-  addLote(){
-    if(this.tarima == undefined || this.cantidad <= 0 || this.lote == undefined || this.lote == ''){
-      this.presentToast('Datos faltantes','warning')
-      return
+  /* Metodo que agrga el lote y cantidad automaticamente al ingresar una cantida en el campo de cantidad. 
+    Si la diferencia en unidad base es menor a 2 decimas, lo igualara a lo que espera SAP. */
+  public addLote() {
+
+    if (this.cantidad == undefined || this.cantidad == 0) return
+
+    if (this.tarima == undefined || this.tarima == '') {
+      this.presentToast('Debes Ingresar Un Numero De Tarima', 'warning');
+      return;
     }
-    this.fechaCad = new Date(this.fechaCad)
-    let fechaExp = this.fechaCad.getMonth() + '-' + this.fechaCad.getDay() + '-' + this.fechaCad.getFullYear()
 
-    let dif = Math.abs(Number(Number(this.cantidad * this.productData.Detail.NumInSale).toFixedNoRounding(4)) - Number(this.productData.OpenInvQty))
+    if (this.batchNum == undefined || this.batchNum == '') {
+      this.presentToast("Debes Elegir Un Lote A Transferir", "warning");
+      return;
+    }
 
-    console.log(dif)
-    if(dif < 2){
-      this.lotes.push({
-        name: this.lote,
-        expirationDate: '11-22-2019', 
-        quantity: Number(this.productData.OpenInvQty),
-        code: '',
-        att1: '',
-        pedimento: '',
-        contador: Number(this.cantidad),
-        pallet: this.tarima
-      })
+    let unitBase = this.productData.Uoms.findIndex((x: any) => x.UomEntry == this.productData.UomEntry)
+
+    let unitBaseValor
+
+    if (unitBase >= 0) {
+      unitBaseValor = this.cantidad * this.productData.Uoms[unitBase].BaseQty
+    }
+
+    let dif = Math.abs(unitBaseValor - this.productData.OpenInvQty)
+
+    if (dif < 2) {
+      this.loteAEnviar = [{
+        Code: this.batchNum,
+        Quantity: this.productData.OpenInvQty,
+      }];
     } else {
-      let validPercent = (Number(this.porcentaje) / 100) * Number(this.productData.OpenInvQty)
-      let validQuantity = Number(validPercent) + Number(this.productData.OpenInvQty)
 
-      console.log(validPercent)
-      console.log(validQuantity)
-
-      if(Number(Number(this.cantidad * this.productData.Detail.NumInSale).toFixedNoRounding(4)) > Number(validQuantity)){
-        this.presentToast('Cantidad ingresada excede de la cantidad solicitada','warning')
-      } else {
-        this.lotes.push({
-          name: this.lote,
-          expirationDate: '11-22-2019', 
-          quantity: Number(Number(this.cantidad * this.productData.Detail.NumInSale).toFixedNoRounding(4)),
-          code: '',
-          att1: '',
-          pedimento: '',
-          contador: Number(this.cantidad),
-          pallet: this.tarima
-        }) 
+      if (unitBaseValor > getValidPercentage(this.productData, this.appSettings.porcentaje)) {
+        this.presentToast("La Cantidad Ingresada Excede De La Cantidad Solicitada", "warning");
+        return;
       }
+
+      this.loteAEnviar = [{
+        Code: this.batchNum,
+        Quantity: unitBaseValor
+      }];
+    }
+  }
+
+  public eliminarLote(index: number) {
+    this.loteAEnviar.splice(index, 1);
+  }
+
+  public transferAbarrotes() {
+
+    if (this.loteAEnviar.length == 0) {
+      this.productData.count = 0;
+      this.receptionService.setReceptionData(this.productData);
+      this.router.navigate(['/members/transferencia-sap']);
+      return;
     }
 
+    let madeByUom = this.productData.Uoms.findIndex((x: any) => x.UomEntry == this.productData.UomEntry);
 
-    
-  }
-
-  eliminar(index){
-    this.lotes.splice(index,1)
-  }
-
-  acceptRecepton(){
-
-    if(this.lotes.length == 0){
-      this.presentToast('Falta agregar lote','warning')
+    if (this.productData.UomEntry == this.productData.Uoms[madeByUom].BaseEntry) {
+      this.productData.count = this.loteAEnviar.map((lote: any) => lote.Quantity).reduce((a, b) => a + b, 0);
     } else {
-      if(this.productData.count != 0 && this.cantidad == 0){
-        this.productData.count = this.cantidad
-        this.productData.pallet = this.tarima
-        this.receptionService.setReceptionData(this.productData)
-        this.router.navigate(['/members/transferencia-sap'])
-      } else if(this.cantidad <= 0){
-        this.presentToast('Debe igresar una cantidad valida','warning')
-        return
-      } else if(this.productData.Detail.QryGroup42 == 'Y'){
-        this.productData.count = this.lotes.map(lote => lote.contador).reduce((a,b) => a + b, 0)
-        this.productData.pallet = this.tarima
-        this.productData.detalle = this.lotes
-        this.receptionService.setReceptionData(this.productData)
-        this.router.navigate(['/members/transferencia-sap'])
-      } else {
-        this.productData.count = this.lotes.map(lote => lote.quantity).reduce((a,b) => a + b, 0)
-        this.productData.detalle = this.lotes
-        this.productData.pallet = this.tarima
-        this.receptionService.setReceptionData(this.productData)
-        this.router.navigate(['/members/transferencia-sap'])
-      }
+      this.productData.count = this.cantidad;
     }
-    
-    
+
+    this.productData.detalle = this.loteAEnviar;
+    this.productData.pallet = this.tarima;
+    this.receptionService.setReceptionData(this.productData)
+    this.router.navigate(['/members/transferencia-sap'])
+
   }
 
   async presentToast(msg: string, color: string) {

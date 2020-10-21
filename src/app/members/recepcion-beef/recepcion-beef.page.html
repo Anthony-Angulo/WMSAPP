@@ -1,0 +1,199 @@
+<ion-header>
+  <ion-toolbar class="tool-bar">
+    <ion-buttons slot="start">
+      <ion-back-button routerLink="/members/recepcion"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Recepcion de Mercancia</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-row>
+    <ion-col>
+      <ion-button class="tarima-button" *ngIf="start" shape="round" expand="full" (click)="startTarima()">
+        Empezar Tarima Master
+      </ion-button>
+      <ion-button class="tarima-button" color="danger" *ngIf="!start" (click)="endTarima()" shape="round" expand="full">
+        Terminar Tarima Master
+      </ion-button>
+    </ion-col>
+  </ion-row>
+  <ion-row>
+    <ion-col>
+      <h6>Escanea codigo de barra de producto.</h6>
+      <ion-input class="product-scann" id="input-codigo" placeholder="Codigo de Barra" [(ngModel)]="codigoBarra" name="codigoBarra"
+        (ionChange)="getData()" clearInput>
+      </ion-input>
+    </ion-col>
+  </ion-row>
+  <ion-row>
+    <ion-col>
+      <ion-datetime class="product-scann" placeholder="Fecha de Produccion" [(ngModel)]="fechaProd" name="fechaProd">
+      </ion-datetime>
+    </ion-col>
+  </ion-row>
+  <ion-row>
+    <ion-col>
+      <h6>Ingresa lote de producto.</h6>
+      <ion-input class="product-scann" placeholder="Lote" [(ngModel)]="lote" name="lote"></ion-input>
+    </ion-col>
+    <ion-col>
+      <h6>Ingresa peso de producto.</h6>
+      <ion-input class="product-scann" placeholder="Peso" [(ngModel)]="peso" name="peso" type="number"></ion-input>
+    </ion-col>
+  </ion-row>
+
+  <ion-row *ngIf="productData.detalle != ''">
+    <ion-col>
+      <h6>Producto Escaneado</h6>
+    </ion-col>
+  </ion-row>
+  <ion-row>
+    <ion-col>
+      <h6>Cantidad En Tarima: {{index.length}}</h6>
+    </ion-col>
+  </ion-row>
+  <ion-row>
+    <ion-col>
+      <h6>Cantidad Escaneada: {{productData.detalle.length}}</h6>
+    </ion-col>
+  </ion-row>
+
+  <ion-list>
+    <ion-item lines="none">
+      <ion-button class="toggle-button-ST" size="small" color="dark" (click)="toggleGroupST(1)"
+        [ngClass]=" {active: isGroupShownST(1)}">
+        <ion-icon slot="icon-only" [name]="isGroupShownST(1) ? 'arrow-dropdown-circle' : 'arrow-dropright-circle'">
+        </ion-icon>
+      </ion-button>
+      <div class="ion-text-wrap">
+        <h6>Productos Sin Tarima</h6>
+        <ion-list *ngIf="isGroupShownST(1)">
+          <ion-item lines="none" class="item-format" *ngFor="let st of productsSinTarima; let index = index">
+            <div class="text-format">Codigo de Barra
+              <br>
+              <span>{{st.codigobarras}}</span>
+              Peso
+              <br>
+              <span>{{st.peso}}</span>
+              Lote
+              <br>
+              <span>{{st.lote}}</span>
+            </div>
+            <div class="delete-button">
+              <ion-button size="small" color="danger" (click)="presentDialog(index)">
+                <ion-icon slot="icon-only" name="trash"></ion-icon>
+              </ion-button>
+            </div>
+          </ion-item>
+        </ion-list>
+      </div>
+    </ion-item>
+  </ion-list>
+
+  <ion-list *ngIf="productData.tarimas.length != ''">
+    <ion-item *ngFor="let scanned of productData.tarimas;let index = index" lines="none">
+      <ion-button class="toggle-button" color="dark" size="small" (click)="toggleGroup(index)"
+        [ngClass]="{active: isGroupShown(index)}">
+        <ion-icon slot="icon-only" [name]="isGroupShownST(index) ? 'arrow-dropdown-circle' : 'arrow-dropright-circle'">
+        </ion-icon>
+      </ion-button>
+      <ion-button *ngIf="adButton" class="add-button" size="small" color="primary" (click)="addProductTarima(index)">
+        <ion-icon slot="icon-only" name="add-circle-outline"></ion-icon>
+      </ion-button>
+      <ion-button *ngIf="!adButton" class="add-button" size="small" color="danger" (click)="endProductTarima()">
+        <ion-icon slot="icon-only" name="remove-circle-outline"></ion-icon>
+      </ion-button>
+      <div class="ion-text-wrap">
+        <h6>{{scanned.codigo_master}}</h6>
+        <ion-list *ngIf="isGroupShown(index)">
+          <ion-item lines="none" class="item-format" *ngFor="let filter of tarimasFiltradas; let index = index">
+            <div class="text-format">Codigo de Barra
+              <br>
+              <span>{{filter.codigobarras}}</span>
+              Peso
+              <br>
+              <span>{{filter.peso}}</span>
+              Lote
+              <br>
+              <span>{{filter.lote}}</span>
+            </div>
+            <div class="delete-button">
+              <ion-button size="small" color="danger" (click)="presentDialog(index)">
+                <ion-icon slot="icon-only" name="trash"></ion-icon>
+              </ion-button>
+            </div>
+          </ion-item>
+        </ion-list>
+      </div>
+    </ion-item>
+  </ion-list>
+
+
+
+  <!-- <ion-row *ngFor="let scanned of productData.detalle;let index = index">
+    <ion-col>
+      <ion-item lines="none" class="item-format">
+        <div class="text-format">Codigo de Barra
+          <br>
+          <span>{{scanned.codigobarras}}</span>
+          Peso
+          <br>
+          <span>{{scanned.peso}}</span>
+          Lote
+          <br>
+          <span>{{scanned.lote}}</span>
+        </div>
+        <div class="delete-button">
+          <ion-button size="small" color="danger" (click)="presentDialog(index)">
+            <ion-icon slot="icon-only" name="trash"></ion-icon>
+          </ion-button>
+        </div>
+      </ion-item>
+    </ion-col>
+  </ion-row> -->
+
+  <!-- <ion-row *ngIf="productData.tarimas != ''">
+    <ion-col>
+      <h6>Tarimas Creadas</h6>
+    </ion-col>
+  </ion-row>
+
+  <ion-row *ngFor="let tarima of productData.tarimas; let index = index">
+    <ion-item lines="none" class="item-format">
+      <div class="text-format">Codigo master
+        <br>
+        <span>{{tarima.codigo_master}}</span>
+        Cantidad
+        <br>
+        <span>{{tarima.cantidad}}</span>
+      </div>
+      <div class="add-button">
+        <ion-button size="small" color="primary" (click)="addProductTarima(index)">
+          <ion-icon slot="icon-only" name="add-circle-outline"></ion-icon>
+        </ion-button>
+      </div>
+    </ion-item>
+  </ion-row> -->
+
+  <ion-row *ngIf="productData.tarimas != '' || productData.detalle != '' ">
+    <ion-col>
+      <ion-button expand="full" shape="round" class="aceptar-button" (click)="receptionProduct()">Aceptar</ion-button>
+    </ion-col>
+  </ion-row>
+</ion-content>
+
+<ion-footer>
+  <ion-toolbar color="dark">
+    <ion-buttons slot="start">
+      <ion-button routerLink="/members/home">
+        <ion-icon slot="icon-only" name="home"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-buttons slot="end">
+      <ion-button>
+        <ion-icon slot="icon-only" name="chatbubbles"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-footer>

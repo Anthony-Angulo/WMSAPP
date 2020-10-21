@@ -15,15 +15,18 @@ import { Platform } from '@ionic/angular';
 export class AbarrotesBatchPage implements OnInit {
 
   productData: any
-  cantidad: number = 0
+  cantidad: number;
   lotes = []
   lote: any
   fechaCad: Date = new Date()
   batch: any
-  tarima
   loteselect
   data
   porcentaje: any;
+  apiSap: string;
+  public uom: any;
+  public productsToDeliver: any = [];
+  public totalUnitBase: any;
 
   constructor(
     private http: HttpClient,
@@ -35,129 +38,103 @@ export class AbarrotesBatchPage implements OnInit {
   ) { }
 
   ngOnInit() {
-    this.productData= this.receptionService.getOrderData()
-    if(this.productData.count){
-      this.cantidad = this.productData.count
-    }
+    this.productData = this.receptionService.getOrderData()
 
-    if(!this.productData.detalle){
-      this.productData.detalle = []
-    } else {
-      this.lotes = this.productData.detalle
+    if(this.productData.DeliveryRowDetailList) {
+      this.productsToDeliver = this.productData.DeliveryRowDetailList;
     }
-
-    if(!this.productData.pallet){
-      this.productData.pallet = ''
-    } else {
-      this.tarima = this.productData.pallet
-    }
-
-    this.http.get(environment.apiSAP + '/api/batch/' + this.productData.WhsCode + '/' +  this.productData.ItemCode).toPromise().then((data) => {
-      console.log(data)
-      this.batch = data
-    }).catch(() => {
-      this.presentToast('Error al traer lotes de producto','danger')
-    })
 
     if (this.platform.is("cordova")) {
       this.data = this.settings.fileData
       this.porcentaje = this.data.porcentaje
+      this.apiSap = this.data.apiSAP;
     } else {
       this.porcentaje = "10"
+      this.apiSap = environment.apiSAP
     }
+
+    this.http.get(this.apiSap + '/api/batch/' + this.productData.WhsCode + '/' + this.productData.ItemCode).toPromise().then((data) => {
+      console.log(data)
+      this.batch = data
+    }).catch(() => {
+      this.presentToast('Error al traer lotes de producto', 'danger')
+    })
+
+
   }
 
-  addLote(){
-    
-    if(this.tarima == undefined|| this.cantidad <= 0 || this.lote == undefined || this.lote == ''){
-      this.presentToast('Datos faltantes','warning')
+  public addLote() {
+
+    if (this.cantidad == undefined || this.cantidad == 0) return
+
+    if (this.lote == undefined || this.lote == '') {
+      this.presentToast('Datos faltantes', 'warning')
       return
     }
-    this.fechaCad = new Date(this.fechaCad)
-    let fechaExp = this.fechaCad.getMonth() + '-' + this.fechaCad.getDay() + '-' + this.fechaCad.getFullYear()
 
-    let dif = Math.abs(Number(Number(this.cantidad * this.productData.Detail.NumInSale).toFixedNoRounding(4)) - Number(this.productData.OpenInvQty))
+    let dif = Math.abs(Number(Number(this.cantidad * this.uom.BaseQty).toFixedNoRounding(4)) - Number(this.productData.OpenInvQty))
 
-    console.log(dif)
-    
-    if(dif < 2){
-      this.lotes.push({
-        name: this.lote,
-        expirationDate: '11-22-2019', 
-        quantity: Number(this.productData.OpenInvQty),
-        code: '',
-        att1: '',
-        pedimento: '',
-        contador: Number(this.cantidad),
-        pallet: this.tarima
+    if (dif < 2) {
+
+      let BatchList =[{
+        Quantity: Number(this.productData.OpenInvQty),
+        Code: this.lote,
+      }]
+
+      this.productsToDeliver.push({
+        BatchList,
+        Count: Number(this.cantidad),
+        uom: this.uom.UomCode,
+        UomEntry: this.uom.UomEntry,
+        total: Number(Number(this.cantidad * this.uom.BaseQty).toFixedNoRounding(4)),
+        lote: this.lote
       })
     } else {
-      let validPercent = (Number(this.porcentaje) / 100) * Number(this.productData.OpenInvQty)
-      let validQuantity = Number(validPercent) + Number(this.productData.OpenInvQty)
 
-      console.log(validPercent)
-      console.log(validQuantity)
+      let BatchList = [{
+        Quantity:  Number(Number(this.cantidad * this.uom.BaseQty).toFixedNoRounding(4)),
+        Code: this.lote,
+      }]
 
-      if(Number(Number(this.cantidad * this.productData.Detail.NumInSale).toFixedNoRounding(4)) > Number(validQuantity)){
-        this.presentToast('Cantidad ingresada excede de la cantidad solicitada','warning')
-      } else {
-        this.lotes.push({
-          name: this.lote,
-          expirationDate: '11-22-2019', 
-          quantity: Number(Number(this.cantidad * this.productData.Detail.NumInSale).toFixedNoRounding(4)),
-          code: '',
-          att1: '',
-          pedimento: '',
-          contador: Number(this.cantidad),
-          pallet: this.tarima
-        }) 
-      }
+      this.productsToDeliver.push({
+        BatchList,
+        Count: Number(this.cantidad),
+        total: Number(Number(this.cantidad * this.uom.BaseQty).toFixedNoRounding(4)),
+        uom: this.uom.UomCode,
+        UomEntry: this.uom.UomEntry,
+        lote: this.lote
+      })
+
     }
 
-    
+    this.totalUnitBase = this.productsToDeliver.map(prod => prod.total).reduce((a,b) => a + b, 0);
 
-    
   }
 
-  eliminar(index){
-    this.lotes.splice(index,1)
+  public eliminarProducto(index: number) {
+    this.productsToDeliver.splice(index, 1);
+    this.totalUnitBase = this.productsToDeliver.map(prod => prod.total).reduce((a,b) => a + b, 0);
   }
 
-  acceptRecepton(){
+  acceptRecepton() {
 
-    if(this.lotes.length == 0){
-      this.presentToast('Falta agregar lote','warning')
-    } else {
-      if(this.productData.count != 0 && this.cantidad == 0){
-        this.productData.count = this.cantidad
-        this.productData.pallet = this.tarima
-        this.receptionService.setReceptionData(this.productData)
-        this.router.navigate(['/members/surtido-sap'])
-      } else if(this.cantidad <= 0){
-        this.presentToast('Debe igresar una cantidad valida','warning')
-        return
-      } else if(this.productData.Detail.QryGroup42 == 'Y'){
-        this.productData.count = this.cantidad
-        this.productData.detalle = this.lotes
-        this.productData.pallet = this.tarima
-        this.receptionService.setReceptionData(this.productData)
-        this.router.navigate(['/members/surtido-sap'])
-      } else {
-        this.productData.count = this.lotes.map(lote => lote.quantity).reduce((a,b) => a + b, 0)
-        this.productData.detalle = this.lotes
-        this.productData.pallet = this.tarima
-        this.receptionService.setReceptionData(this.productData)
-        this.router.navigate(['/members/surtido-sap'])
-      }
+    if (!this.productsToDeliver.length) {
+      this.receptionService.setReceptionData(this.productData)
+      this.router.navigate(['/members/surtido-sap'])
+      return
     }
 
+    this.productData.DeliveryRowDetailList = this.productsToDeliver
+    this.receptionService.setReceptionData(this.productData)
+    this.router.navigate(['/members/surtido-sap'])
+    
   }
 
   async presentToast(msg: string, color: string) {
     const toast = await this.toastController.create({
       message: msg,
       color: color,
-      duration: 4000 
+      duration: 4000
     });
     toast.present();
   }

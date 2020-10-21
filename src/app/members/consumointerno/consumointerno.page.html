@@ -1,0 +1,64 @@
+<ion-header>
+  <ion-toolbar class="tool-bar">
+    <ion-buttons slot="start">
+      <ion-back-button routerLink="/members/etiquetas"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Consumo Interno</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-row *ngIf="!productDetail">
+    <ion-col>
+      <h6>Ingresa Codigo de Producto</h6>
+      <form (ngSubmit)="getProducto()">
+        <ion-input class="input-recepcion" placeholder="Codigo de Producto" [(ngModel)]="productNumber"
+          name="productNumber">
+        </ion-input>
+        <ion-button type="submit" class="search-order-button" expand="full">
+          Buscar
+        </ion-button>
+      </form>
+    </ion-col>
+  </ion-row>
+
+  <div *ngIf="productDetail">
+    <ion-row>
+      <ion-col>
+        <h6>Datos de Producto</h6>
+        <ion-item lines="none" class="container-item">
+          Codigo SAP: {{productDetail.Detail.ItemCode}}<br>
+          Nombre: {{productDetail.Detail.ItemName}}<br>
+        </ion-item>
+      </ion-col>
+    </ion-row>
+    <ion-row>
+      <ion-col>
+        <h6>Lote de Producto</h6>
+        <ion-input class="input-recepcion" placeholder="Lote de Producto" [(ngModel)]="lote" name="lote">
+        </ion-input>
+      </ion-col>
+    </ion-row>
+    <ion-row>
+      <ion-col>
+        <h6>Fecha de Caducidad</h6>
+        <ion-item>
+          <ion-datetime placeholder="Fecha de Caducidad" displayFormat="YYMMDD" [(ngModel)]="caducidad"
+            name="caducidad"></ion-datetime>
+        </ion-item>
+      </ion-col>
+    </ion-row>
+    <ion-row *ngIf="productDetail.Detail.QryGroup7 == 'Y'">
+      <ion-col>
+        <h6>Peso de Producto</h6>
+        <ion-input class="input-recepcion" placeholder="Peso de Producto" [(ngModel)]="peso" name="peso">
+        </ion-input>
+      </ion-col>
+    </ion-row>
+    <ion-row>
+      <ion-col>
+        <ion-button expand="full" class="search-order-button" (click)="printLabel()">Imprimir Etiqueta</ion-button>
+      </ion-col>
+    </ion-row>
+  </div>
+</ion-content>

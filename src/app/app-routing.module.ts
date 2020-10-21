@@ -5,11 +5,11 @@ import { AuthGuard } from './guards/auth.guard';
 const routes: Routes = [
   { path: '', redirectTo: 'members/profile', pathMatch: 'full' },
   { path: 'login', loadChildren: './public/login/login.module#LoginPageModule' },
-  { 
-    path: 'members', 
+  {
+    path: 'members',
     canActivate: [AuthGuard],
     loadChildren: './members/member-routing.module#MemberRoutingModule'
-  },
+  }
 ];
 
 @NgModule({

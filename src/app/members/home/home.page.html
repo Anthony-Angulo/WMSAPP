@@ -1,15 +1,15 @@
 <ion-header>
   <ion-toolbar class="tool-bar">
     <ion-buttons slot="start">
-      <ion-button (click)="ajustes()" >
+      <ion-button (click)="ajustes()">
         <ion-icon slot="icon-only" name="settings"></ion-icon>
       </ion-button>
     </ion-buttons>
     <ion-buttons slot="end">
-        <ion-button (click) = "logout()">
-          <ion-icon slot="icon-only"  name="exit"></ion-icon>
-        </ion-button>
-      </ion-buttons>
+      <ion-button (click)="logout()">
+        <ion-icon slot="icon-only" name="exit"></ion-icon>
+      </ion-button>
+    </ion-buttons>
     <ion-title>WMS CCFN {{version}}</ion-title>
   </ion-toolbar>
 </ion-header>
@@ -23,42 +23,25 @@
         </ion-button>
       </ion-col>
       <ion-col>
-        <ion-button color="light" routerLink="/members/ubicar">
-          <img src="../../../assets/icon/ubicar.png" alt="">
+        <ion-button color="light" routerLink="/members/transferencia-sap">
+          <img src="../../../assets/icon/transfer.jpeg" alt="">
         </ion-button>
       </ion-col>
       <ion-col>
         <ion-button color="light" routerLink="/members/surtido-sap">
-          <img src="../../../assets/icon/surtido.png" alt="">
+          <img src="../../../assets/icon/surtidoClientes.jpeg" alt="">
         </ion-button>
       </ion-col>
     </ion-row>
     <ion-row>
       <ion-col>
         <ion-button color="light" routerLink="/members/full-inventory">
-          <img src="../../../assets/icon/inventario.png" alt="">
-        </ion-button>
-      </ion-col>
-      <ion-col>
-        <ion-button color="light" routerLink="/members/ubicaciones">
-          <img src="../../../assets/icon/ubicaciones.png" alt="">
+          <img src="../../../assets/icon/inventarioCompleto.jpeg" alt="">
         </ion-button>
       </ion-col>
       <ion-col>
         <ion-button color="light" routerLink="/members/partial-inventory">
           <img src="../../../assets/icon/ciclico.png" alt="">
-        </ion-button>
-      </ion-col>
-    </ion-row>
-    <ion-row>
-      <ion-col>
-        <ion-button color="light" routerLink="/members/tarimas">
-          <img src="../../../assets/icon/tarimas.png" alt="">
-        </ion-button>
-      </ion-col>
-      <ion-col>
-        <ion-button color="light" routerLink="/members/delivery">
-          <img src="../../../assets/icon/entregas.png">
         </ion-button>
       </ion-col>
       <ion-col>
@@ -69,17 +52,45 @@
     </ion-row>
     <ion-row>
       <ion-col>
-        <ion-button color="primary" routerLink="/members/transferencia-sap">
-          Transferencia a Tienda
+        <ion-button color="light" routerLink="/members/scann-cajas">
+          <img src="../../../assets/icon/registroCB.jpeg" alt="">
+        </ion-button>
+      </ion-col>
+      <ion-col>
+        <ion-button color="light" routerLink="/members/etiquetas">
+          <!-- <img src="../../../assets/icon/etiquetaTransfer.jpeg" alt=""> -->
+          Etiquetas
+        </ion-button>
+      </ion-col>
+      <ion-col>
+        <ion-button color="light" routerLink="/members/ubicaciones">
+          <img src="../../../assets/icon/ubicaciones.png" alt="">
         </ion-button>
       </ion-col>
     </ion-row>
     <ion-row>
       <ion-col>
+        <ion-button color="light" routerLink="/members/ubicar">
+          <img src="../../../assets/icon/ubicar.png" alt="">
+        </ion-button>
+      </ion-col>
+      <ion-col>
+        <ion-button color="light" routerLink="/members/tarimas">
+          <img src="../../../assets/icon/tarimas.png" alt="">
+        </ion-button>
+      </ion-col>
+      <ion-col>
+        <ion-button color="light" routerLink="/members/delivery">
+          <img src="../../../assets/icon/entregas.png">
+        </ion-button>
+      </ion-col>
+    </ion-row>
+    <ion-row>
+      <!-- <ion-col>
         <ion-button color="primary" routerLink="/members/scann-cajas">
           Registrar CB
         </ion-button>
-      </ion-col>
+      </ion-col> -->
       <ion-col>
         <ion-button color="primary" routerLink="/members/purchase-return">
           Devoluciones Compras
@@ -91,13 +102,13 @@
         </ion-button>
       </ion-col> -->
     </ion-row>
-    <ion-row>
+    <!-- <ion-row>
       <ion-col>
         <ion-button color="primary" routerLink="/members/etiquetas-transferencias">
           Etiquetas RT
         </ion-button>
       </ion-col>
-    </ion-row>
+    </ion-row> -->
   </ion-grid>
 </ion-content>
 <ion-footer>

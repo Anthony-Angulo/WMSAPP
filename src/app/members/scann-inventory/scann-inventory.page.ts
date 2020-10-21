@@ -89,7 +89,7 @@ export class ScannInventoryPage implements OnInit {
 
       this.http.get(this.apiSAP + '/api/codebar/' + this.search).toPromise().then((prod: any) => {
         this.order = prod
-        this.http.get(environment.apiWMS + '/codebardescriptionsVariants/' + this.order.detail.ItemCode).toPromise().then((codeBars: any) => {
+        this.http.get(environment.apiWMS + '/codebardescriptionsVariants/' + this.order.Detail.ItemCode).toPromise().then((codeBars: any) => {
           if (codeBars.length != 0) {
             this.order.cbDetail = codeBars
           } else {

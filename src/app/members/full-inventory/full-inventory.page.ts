@@ -105,7 +105,7 @@ export class FullInventoryPage implements OnInit {
         if (prod) {
           this.productDetail = prod
           this.http.get(environment.apiWMS + '/checkProduct/' +
-            this.productDetail.detail.ItemCode + '/' + this.headerId)
+            this.productDetail.Detail.ItemCode + '/' + this.headerId)
             .toPromise().then((datos: any) => {
               if (datos.Status == 1) {
                 this.presentToast('Este producto ya fue cerrado', 'warning')
@@ -113,12 +113,12 @@ export class FullInventoryPage implements OnInit {
                 this.productDetail.headerId = this.headerId
                 this.productDetail.location = this.location
                 this.navExtras.setInventoryProduct(this.productDetail)
-                if (this.productDetail.detail.U_IL_TipPes == "F") {
+                if (this.productDetail.Detail.U_IL_TipPes == "F") {
                   this.router.navigate(['/members/full-abarrotes'])
                 } else {
                   this.http.get(environment.apiWMS +
                     '/codebardescriptionsVariants/' +
-                    this.productDetail.detail.ItemCode).toPromise()
+                    this.productDetail.Detail.ItemCode).toPromise()
                     .then((codeBars: any) => {
                       if (codeBars.length != 0) {
                         this.productDetail.cBDetail = codeBars
@@ -151,7 +151,7 @@ export class FullInventoryPage implements OnInit {
           if (prod) {
             this.productDetail = prod
             this.http.get(environment.apiWMS + '/checkProduct/'
-              + this.productDetail.detail.ItemCode + '/' + this.headerId)
+              + this.productDetail.Detail.ItemCode + '/' + this.headerId)
               .toPromise().then((datos: any) => {
                 if (datos.Status == 1) {
                   this.presentToast('Este producto ya fue cerrado', 'warning')
@@ -159,11 +159,11 @@ export class FullInventoryPage implements OnInit {
                   this.productDetail.headerId = this.headerId
                   this.productDetail.location = this.location
                   this.navExtras.setInventoryProduct(this.productDetail)
-                  if (this.productDetail.detail.U_IL_TipPes == "F") {
+                  if (this.productDetail.Detail.U_IL_TipPes == "F") {
                     this.router.navigate(['/members/full-abarrotes'])
                   } else {
                     this.http.get(environment.apiWMS + '/codebardescriptionsVariants/'
-                      + this.productDetail.detail.ItemCode)
+                      + this.productDetail.Detail.ItemCode)
                       .toPromise().then((codeBars: any) => {
                         if (codeBars.length != 0) {
                           this.productDetail.cbDetail = codeBars

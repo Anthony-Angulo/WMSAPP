@@ -16,8 +16,8 @@
     <ion-col>
       <h6>Datos de Producto</h6>
       <ion-item lines="none" class="container-item">
-        Codigo: {{productInfo.detail.ItemCode}}<br>
-        Nombre: {{productInfo.detail.ItemName}}
+        Codigo: {{productInfo.Detail.ItemCode}}<br>
+        Nombre: {{productInfo.Detail.ItemName}}
       </ion-item>
     </ion-col>
   </ion-row>
@@ -59,3 +59,17 @@
     </ion-row>
   </div>
 </ion-content>
+<ion-footer>
+  <ion-toolbar color="dark">
+    <ion-buttons slot="start">
+      <ion-button routerLink="/members/home">
+        <ion-icon slot="icon-only" name="home"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-buttons slot="end">
+      <ion-button (click)="promptCodeDesc()">
+        <ion-icon slot="icon-only" name="barcode"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-footer>

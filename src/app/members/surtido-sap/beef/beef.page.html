@@ -16,16 +16,9 @@
     <ion-col>
       <h6>Datos de Producto</h6>
       <ion-item lines="none" class="container-item">
-        Item Code: {{productData.Detail.ItemCode}}<br>
-        Descripcion: {{productData.Detail.ItemName}}
+        Item Code: {{productData.ItemCode}}<br>
+        Descripcion: {{productData.ItemName}}
       </ion-item>
-    </ion-col>
-  </ion-row>
-
-  <h6>Ingresa Tarima</h6>
-  <ion-row>
-    <ion-col>
-      <ion-input class="product-scann" [(ngModel)]="tarima" name="tarima" placeholder="Ingresa Tarima"></ion-input>
     </ion-col>
   </ion-row>
 
@@ -33,15 +26,45 @@
     <ion-col>
       <h6>Escanea codigo de barra de producto.</h6>
       <ion-input class="product-scann" id="input-codigo" placeholder="Codigo de Barra" [(ngModel)]="codigoBarra"
-        name="codigoBarra" (ionChange)="getData()" clearInput debounce="200">
+        name="codigoBarra" (ionChange)="getDataFromCodeBar()" clearInput debounce="200">
       </ion-input>
     </ion-col>
   </ion-row>
 
   <h6>Cajas Escaneadas: {{cantidadEscaneada}}</h6>
-  <h6>Peso Escaneado: {{cantidadPeso}}</h6>
+  <h6>Peso Escaneado: {{cantidadPeso | number}}</h6>
 
-  <h6>Lotes</h6>
+  <h6>Surtiendo</h6> 
+  <ion-row class="table">
+    <ion-col size="5">
+      Lote
+    </ion-col>
+    <ion-col size="3">
+      Cantidad
+    </ion-col>
+    <ion-col size="3">
+      UoM
+    </ion-col>
+  </ion-row>
+
+  <ion-row class="text-content" *ngFor="let delivery of detail; let index = index" (click)="promptLote(index)" >
+    <ion-col size="5">
+      {{delivery.display}}
+    </ion-col>
+    <ion-col size="3">
+      {{delivery.Quantity | number }}
+    </ion-col>
+    <ion-col size="3">
+      {{delivery.uom}}
+    </ion-col>
+    <!-- <ion-col size="2">
+      <ion-button color="danger"  (click) ="eliminarProducto(index)" class="button-eliminar">
+        <ion-icon slot="icon-only" name="close-circle"></ion-icon>
+      </ion-button>
+    </ion-col> -->
+  </ion-row>
+
+  <!-- <h6>Lotes</h6>
   <ion-row *ngFor="let prod of detail; let index = index">
     <ion-col>
       <ion-item lines="none" class="container-item">
@@ -54,7 +77,7 @@
         </ion-button>
       </ion-item>
     </ion-col>
-  </ion-row>
+  </ion-row> -->
 
 
   <!-- <ion-row *ngIf="productData.detalle != '' ">
@@ -72,8 +95,8 @@
       </ion-button>
     </ion-buttons>
     <ion-buttons slot="end">
-      <ion-button>
-        <ion-icon slot="icon-only" name="chatbubbles"></ion-icon>
+      <ion-button (click)="promptCodeDesc()">
+        <ion-icon slot="icon-only" name="barcode"></ion-icon>
       </ion-button>
     </ion-buttons>
   </ion-toolbar>

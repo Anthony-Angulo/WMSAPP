@@ -25,15 +25,22 @@
 
   <ion-row>
     <ion-col>
-      <h6>Pedimento</h6>
-      <ion-input class="input-recepcion" [(ngModel)] = "pedimento" name="aduana" (ionChange)="agregarPedimento()" debounce="200"></ion-input>
+      <h6>Patente</h6>
+      <ion-input class="input-recepcion" maxlength="4" inputmode="numeric" type="text" [(ngModel)] = "patente" name="patente" ></ion-input>
     </ion-col>
   </ion-row>
 
-  <!-- <ion-row>
+  <ion-row>
     <ion-col>
-      <ion-button>Agregar Pedimento</ion-button>
+      <h6>Documento</h6>
+      <ion-input class="input-recepcion" maxlength="7" inputmode="numeric" type="text" [(ngModel)] = "documento" name="documento" ></ion-input>
     </ion-col>
-  </ion-row> -->
+  </ion-row>
+
+  <ion-row>
+    <ion-col>
+      <ion-button class="search-order-button" shape="round" expand="block" (click)="agregarPedimento()">Agregar Pedimento</ion-button>
+    </ion-col>
+  </ion-row>
 
 </ion-content>

@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { File } from '@ionic-native/file/ngx';
 import { ToastController} from '@ionic/angular';
+import { Platform } from '@ionic/angular';
 import { environment } from 'src/environments/environment';
 
 @Injectable({
@@ -13,39 +14,41 @@ export class SettingsService {
 
   constructor(
     private file: File,
-    private toastController: ToastController
+    private toastController: ToastController,
+    private platform: Platform
   ) { }
 
 
   public async validateFile() {
-
-    this.file.checkFile(this.file.dataDirectory, 'settings.txt').then(async (val: any) => {
-      console.log(val)
-      this.readFile()
-    }).catch(async err => {
-      console.log(err)
-      if(err.code == 1){
-        this.file.createFile(this.file.dataDirectory, 'settings.txt', true)
-
-        let url = {
-          apiSAP: environment.apiSAP,
-          porcentaje: '10',
-          sucursal: 'S01'
-        };
-
-        let environmentToString = JSON.stringify(url)
-
-        this.blob = new Blob([environmentToString], { type: 'text/plain' });
-
-        let writePromise = this.file.writeFile(this.file.dataDirectory, 'settings.txt', this.blob, { replace: true, append: false });
-
-        await writePromise.then(() => { this.validateFile() }).catch(err => {
-          console.log(err)
-        })
-        
-      }
-    })
-
+    if(this.platform.is("cordova")) {
+      this.file.checkFile(this.file.dataDirectory, 'settings.txt').then(async (val: any) => {
+        console.log(val)
+        this.readFile()
+      }).catch(async err => {
+        console.log(err)
+        if(err.code == 1){
+          this.file.createFile(this.file.dataDirectory, 'settings.txt', true)
+  
+          let url = {
+            apiSAP: environment.apiSAP,
+            porcentaje: '40',
+            sucursal: 'S01',
+            IpImpresora: ''
+          };
+  
+          let environmentToString = JSON.stringify(url)
+  
+          this.blob = new Blob([environmentToString], { type: 'text/plain' });
+  
+          let writePromise = this.file.writeFile(this.file.dataDirectory, 'settings.txt', this.blob, { replace: true, append: false });
+  
+          await writePromise.then(() => { this.validateFile() }).catch(err => {
+            console.log(err)
+          })
+          
+        }
+      })
+    }
   }
 
   public async readFile() {
@@ -59,11 +62,12 @@ export class SettingsService {
     })
   }
 
-  public async saveFile(apiSAP: string, porcentaje: string, sucursal: string){
+  public async saveFile(apiSAP: string, porcentaje: string, sucursal: string, IpImpresora: string){
     let uri = {
       apiSAP: apiSAP,
       porcentaje: porcentaje,
-      sucursal: sucursal
+      sucursal: sucursal,
+      IpImpresora: IpImpresora
     };
 
     let environmentToString = JSON.stringify(uri)
