@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
-import { SettingsService } from './../../services/settings.service';
+import { SettingsService } from '../../../services/settings.service';
 import { environment } from 'src/environments/environment';
 import { ToastController, LoadingController } from '@ionic/angular';
 import { Platform } from '@ionic/angular';

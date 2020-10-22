@@ -25,9 +25,7 @@ const routes: Routes = [
   { path: 'partial-abarrotes', loadChildren: './partial-inventory/abarrotes/abarrotes.module#AbarrotesPageModule' },
   { path: 'partial-beef', loadChildren: './partial-inventory/beef/beef.module#BeefPageModule' },
   { path: 'pedimento', loadChildren: './recepcion-sap/pedimento/pedimento.module#PedimentoPageModule' },
-  { path: 'etiquetas-transferencias', loadChildren: './etiquetas-transferencias/etiquetas-transferencias.module#EtiquetasTransferenciasPageModule' },
   { path: 'ajustes', loadChildren: './ajustes/ajustes.module#AjustesPageModule' },
-  { path: 'scann-inventory',  canActivate: [AuthGuard], loadChildren: './scann-inventory/scann-inventory.module#ScannInventoryPageModule' },
   { path: 'products-sap',  canActivate: [AuthGuard], loadChildren: './products-sap/products-sap.module#ProductsSapPageModule' },
   { path: 'scann-cajas', loadChildren: './scann-cajas/scann-cajas.module#ScannCajasPageModule' },
   { path: 'purchase-return', loadChildren: './purchase-return/purchase-return.module#PurchaseReturnPageModule' },
@@ -36,8 +34,9 @@ const routes: Routes = [
   { path: 'purchase-return-abarrotes-batch', loadChildren: './purchase-return/abarrotes-batch/abarrotes-batch.module#AbarrotesBatchPageModule' },
   { path: 'purchase-return-beef', loadChildren: './purchase-return/beef/beef.module#BeefPageModule' },
   { path: 'etiquetas', loadChildren: './etiquetas/etiquetas.module#EtiquetasPageModule' },
-  { path: 'consumointerno', loadChildren: './consumointerno/consumointerno.module#ConsumointernoPageModule' },
-  { path: 'locationlabels', loadChildren: './locationlabels/locationlabels.module#LocationlabelsPageModule' },
+  { path: 'etiquetas-transferencias', loadChildren: './etiquetas/etiquetas-transferencias/etiquetas-transferencias.module#EtiquetasTransferenciasPageModule' },
+  { path: 'consumointerno', loadChildren: './etiquetas/consumointerno/consumointerno.module#ConsumointernoPageModule' },
+  { path: 'locationlabels', loadChildren: './etiquetas/locationlabels/locationlabels.module#LocationlabelsPageModule' }, 
 
 
 ];

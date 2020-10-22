@@ -44,7 +44,7 @@ export class FullInventoryPage implements OnInit {
 
     await this.presentLoading('Buscando..')
 
-    this.http.get(environment.apiWMS + '/fullInventoryRequestList').toPromise().then((inventory_orders: any) => {
+    this.http.get(`${environment.apiWMS}/fullInventoryRequestList`).toPromise().then((inventory_orders: any) => {
       this.inventory_orders = inventory_orders
     }).catch(() => {
       this.presentToast('Error al obtener ordenes.', 'danger')

@@ -3,9 +3,10 @@ import { HttpClient } from '@angular/common/http';
 import { ToastController , LoadingController, AlertController} from '@ionic/angular';
 import { Router } from '@angular/router';
 import { environment } from 'src/environments/environment';
-import { Storage } from '@ionic/storage';
+import { Platform } from '@ionic/angular';
+import { SettingsService } from './../../services/settings.service';
+import { getSettingsFileData } from '../commons';
 
-const SUCURSAL_KEY = '0';
 
 @Component({
   selector: 'app-scann-cajas',
@@ -20,24 +21,27 @@ export class ScannCajasPage implements OnInit {
   product: any
   uomentry
   Cb
+  public appSettings: any;
+
   constructor(
     private http: HttpClient,
     private toastController: ToastController,
     private router: Router,
     private loading: LoadingController,
-    private storage: Storage,
-    private alertController: AlertController,) { }
+    private alertController: AlertController,
+    private platform: Platform,
+    private setting: SettingsService) { }
 
   ngOnInit() {
+    this.appSettings = getSettingsFileData(this.platform, this.setting);
   }
 
   async getProducto() {
 
     await this.presentLoading('Buscando...')
 
-    this.http.get(environment.apiSAP + '/api/products/crm/' + this.number.toUpperCase()).toPromise().then((resp:any) => {
+    this.http.get(`${this.appSettings.apiSAP}/api/products/crm/${this.number.toUpperCase()}`).toPromise().then((resp:any) => {
       this.product = resp
-      console.log(this.product)
     }).catch((error) => {
       console.log(error)
       this.presentToast('Error al obtener producto','danger')
@@ -51,19 +55,18 @@ export class ScannCajasPage implements OnInit {
 
     await this.presentLoading('Guardando codigo..')
 
-    this.http.get(environment.apiSAP + '/api/codebar/' + this.Cb).toPromise().then((resp: any) => {
-      if(resp){
+    this.http.get(`${this.appSettings.apiSAP}/api/Codebar/${this.Cb}`).toPromise().then((resp: any) => {
+      if(resp != null){
         this.presentAlert(resp.Detail.ItemCode)
-      }
-    }).catch(error => {
-      if(error.status == 404){
+      } else {
+        
         let data = {
-          itemcode: this.product.products.ItemCode,
-          barcode: this.Cb,
-          uomentry: this.uomentry
+          ItemCode: this.product.products.ItemCode,
+          Barcode : this.Cb,
+          UOMEntry: this.uomentry
         }
     
-        this.http.post(environment.apiSAP + '/api/codebar', data).toPromise().then((resp) => {
+        this.http.post(`${environment.apiSAP}/api/Codebar`, data).toPromise().then((resp) => {
           if(resp){
             this.router.navigate(['/members/home'])
             this.presentToast('Se guardo exitosamente','success')
@@ -77,9 +80,9 @@ export class ScannCajasPage implements OnInit {
         }).finally(() => {
           this.hideLoading()
         })
-      } else {
-        this.presentToast(error.statusText,"danger")
       }
+    }).catch(error => {
+        this.presentToast(error.statusText,"danger")
     }).finally(() => { this.hideLoading() })
 
     
