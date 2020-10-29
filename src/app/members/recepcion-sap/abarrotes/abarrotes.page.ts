@@ -1,9 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { Platform } from '@ionic/angular';
 import { ToastController } from '@ionic/angular';
-import { SettingsService } from '../../../services/settings.service';
 import { RecepcionDataService } from 'src/app/services/recepcion-data.service';
+import { Platform } from '@ionic/angular';
+import { SettingsService } from '../../../services/settings.service';
+import { getSettingsFileData } from '../../commons';
 
 @Component({
   selector: 'app-abarrotes',
@@ -12,6 +13,8 @@ import { RecepcionDataService } from 'src/app/services/recepcion-data.service';
 })
 export class AbarrotesPage implements OnInit {
 
+  public appSettings: any;
+
   productData: any
   cantidad: number
   data: any
@@ -19,21 +22,18 @@ export class AbarrotesPage implements OnInit {
 
   constructor(
     private toastController: ToastController,
-    private settings: SettingsService,
     private router: Router,
+    private receptionService: RecepcionDataService,
     private platform: Platform,
-    private receptionService: RecepcionDataService) { }
+    private settings: SettingsService) { }
 
   ngOnInit() {
 
-    if (this.platform.is("cordova")) {
-      this.data = this.settings.fileData
-      this.porcentaje = this.data.porcentaje
-    } else {
-      this.porcentaje = "10"
-    }
+
+    this.appSettings = getSettingsFileData(this.platform, this.settings);
 
     this.productData = this.receptionService.getOrderData()
+
     if (this.productData.count) {
       this.cantidad = this.productData.count
     }
@@ -41,27 +41,25 @@ export class AbarrotesPage implements OnInit {
 
   acceptRecepton() {
 
-    let validPercent = (Number(this.porcentaje) / 100) * Number(this.productData.OpenInvQty)
+    let validPercent = (Number(this.appSettings.porcentaje) / 100) * Number(this.productData.OpenInvQty)
     let validQuantity = Number(validPercent) + Number(this.productData.OpenInvQty)
 
     if (Number(this.cantidad) > Number(validQuantity)) {
-      this.presentToast('Cantidad ingresada excede de la cantidad solicitada', 'warning')
-    } else {
-      if (this.productData.count != 0 && this.cantidad == 0) {
-        console.log(1)
-        this.productData.count = this.cantidad
-        this.receptionService.setReceptionData(this.productData)
-        this.router.navigate(['/members/recepcion-sap'])
-        return
-      } else if (this.cantidad <= 0) {
-        this.presentToast('Debe igresar una cantidad valida', 'warning')
-        return
-      } else {
-        this.productData.count = this.cantidad
-        this.receptionService.setReceptionData(this.productData)
-        this.router.navigate(['/members/recepcion-sap'])
-      }
+      this.presentToast('Cantidad ingresada excede de la cantidad solicitada', 'warning');
+      return
     }
+
+    if (this.cantidad == 0) {
+      this.productData.count = this.cantidad
+      this.receptionService.setReceptionData(this.productData)
+      this.router.navigate(['/members/recepcion-sap'])
+      return
+    }
+
+    this.productData.count = this.cantidad
+    this.receptionService.setReceptionData(this.productData)
+    this.router.navigate(['/members/recepcion-sap'])
+
 
   }
 

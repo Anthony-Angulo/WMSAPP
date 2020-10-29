@@ -10,7 +10,7 @@ export function getSettingsFileData(platform: Platform, settings: SettingsServic
   if (platform.is("cordova")) {
     return settings.fileData;
   } else {
-    return { apiSAP: environment.apiSAP, porcentage: '10', sucursal: 'S01', IpImpresora: '' };
+    return { apiSAP: environment.apiSAP, porcentage: '10', sucursal: 'S01', IpImpresora: 'S01-recepcion01' };
   }
 }
 

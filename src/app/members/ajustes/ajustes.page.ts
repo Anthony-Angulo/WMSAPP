@@ -2,7 +2,6 @@ import { Component, OnInit } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { SettingsService } from './../../services/settings.service';
 import { ToastController, LoadingController } from '@ionic/angular';
-import { environment } from 'src/environments/environment';
 import { Platform } from '@ionic/angular';
 import { Storage } from '@ionic/storage';
 import { getSettingsFileData } from '../commons';
@@ -17,14 +16,13 @@ const TOKEN_KEY = 'auth-token';
 
 export class AjustesPage implements OnInit {
 
-  data: any;
-  apiSAP: string;
-  porcentaje: string;
-  sucursal: string;
-  IP: string;
-  blob: Blob
-  impresoras: any;
-  load: any;
+  public data: any;
+  public apiSAP: string;
+  public porcentaje: string;
+  public sucursal: string;
+  public IP: string;
+  public impresoras: any;
+  public load: any;
   public appSettings: any;
 
   constructor(
@@ -55,7 +53,11 @@ export class AjustesPage implements OnInit {
     this.http.get(`${this.appSettings.apiSAP}/api/impresion/impresoras`, {headers}).toPromise().then((resp: any) => {
       this.impresoras = resp
     }).catch(err => {
-      console.log(err)
+      if(err.status == 401) {
+        this.presentToast("No Autorizado","danger");
+      } else {
+        this.presentToast(err.error, "danger");
+      }
     }).finally(() => {
       this.hideLoading()
     });

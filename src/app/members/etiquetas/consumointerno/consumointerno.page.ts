@@ -1,9 +1,13 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
 import { SettingsService } from '../../../services/settings.service';
-import { environment } from 'src/environments/environment';
 import { ToastController, LoadingController } from '@ionic/angular';
 import { Platform } from '@ionic/angular';
+import { Storage } from '@ionic/storage';
+import { getSettingsFileData } from '../../commons';
+import { ConsumoInterno, PostConsumoInterno } from '../../../interfaces/ConsumoInterno';
+
+const TOKEN_KEY = 'auth-token';
 
 @Component({
   selector: 'app-consumointerno',
@@ -12,30 +16,24 @@ import { Platform } from '@ionic/angular';
 })
 export class ConsumointernoPage implements OnInit {
 
-  datos: any;
-  apiSAP: string;
-  IpImpresora: string;
+  public appSettings: any; 
+
   productNumber: string;
-  load: any;
   productDetail: any;
   caducidad: any;
-  lote: any;
+  lote: string;
   peso: string;
+  load: any;
 
   constructor(private http: HttpClient,
     private settings: SettingsService,
     private toastController: ToastController,
     private loading: LoadingController,
-    private platform: Platform) { }
+    private platform: Platform,
+    private storage: Storage) { }
 
   ngOnInit() {
-    if (this.platform.is("cordova")) {
-      this.datos = this.settings.fileData
-      this.apiSAP = this.datos.apiSAP
-      this.IpImpresora = this.datos.IpImpresora;
-    } else {
-      this.apiSAP = environment.apiSAP
-    }
+   this.appSettings = getSettingsFileData(this.platform, this.settings);
   }
 
   async getProducto() {
@@ -45,15 +43,28 @@ export class ConsumointernoPage implements OnInit {
       return
     }
 
+    let token = await this.storage.get(TOKEN_KEY);
+
+    let headers = new HttpHeaders();
+
+    headers = headers.set('Authorization', `Bearer ${token}`)
+
     await this.presentLoading('Buscando Producto..');
 
-    this.http.get(this.apiSAP + '/api/products/detail/' + this.productNumber.toUpperCase()).toPromise().then((val) => {
-      if (val) {
-        this.productDetail = val;
-      } else {
+    this.http.get(`${this.appSettings.apiSAP}/api/Products/ConsumoInterno/${this.productNumber.toUpperCase()}`, {headers}).toPromise().then((consumoInterno: ConsumoInterno) => {
+      if (consumoInterno.ItemName == null) {
         this.presentToast('Producto No Encontrado', 'warning');
+      } else {
+        this.productDetail = consumoInterno;
       }
-    }).catch((err) => { console.log(err) }).finally(() => { this.hideLoading() });
+    }).catch((err) => { 
+      if(err.status == 401) {
+        this.presentToast(err.error, "danger");
+      } else {
+        this.presentToast(err.error, "danger");
+      }
+      
+    }).finally(() => { this.hideLoading() });
   }
 
   async printLabel() {
@@ -64,20 +75,27 @@ export class ConsumointernoPage implements OnInit {
     var datesplit = date.split('-').join('');
     datesplit = datesplit.substring(2);
 
-    var options = {
-      ItemCode: this.productDetail.Detail.ItemCode,
-      ItemName: this.productDetail.Detail.ItemName,
+
+    let post: PostConsumoInterno = {
+      ItemCode: this.productDetail.ItemCode,
+      ItemName: this.productDetail.ItemName,
       Batch: this.lote,
       ExpirationDate: datesplit,
       Count: (this.peso == undefined) ? '' : this.peso,
-      IDPrinter: (this.IpImpresora == undefined) ? 'S01-recepcion01' : this.IpImpresora,
-    }
+      IDPrinter: (this.appSettings.IpImpresora == undefined) ? 'S01-recepcion01' : this.appSettings.IpImpresora,
+    };
 
-    this.http.post(this.apiSAP + '/api/impresion/carnes', options).toPromise().catch(error => {
+    let token = await this.storage.get(TOKEN_KEY);
+
+    let headers = new HttpHeaders();
+
+    headers = headers.set('Authorization', `Bearer ${token}`)
+
+    this.http.post(`${this.appSettings.apiSAP}/api/impresion/carnes`, post, {headers}).toPromise().catch(error => {
       this.presentToast('Error al imprimir etiquetas', 'danger')
     }).finally(() => {
       this.hideLoading()
-      // this.presentToast('Impresion Completado', 'success')
+      this.presentToast('Impresion Completado', 'success')
     });
   }
 
@@ -93,14 +111,12 @@ export class ConsumointernoPage implements OnInit {
   async presentLoading(msg) {
     this.load = await this.loading.create({
       message: msg,
-      // duration: 3000
     });
 
     await this.load.present()
   }
 
   hideLoading() {
-    // console.log('loading')
     this.load.dismiss()
   }
 

@@ -45,12 +45,12 @@
     </ion-item>
 
     <ion-row *ngIf="!searchType">
-      <ion-col size="2.5">
+      <!-- <ion-col size="2.5">
         <div class="search-order-product">
           <ion-input class="input-recepcion" placeholder="Ctd" [(ngModel)]="ctd" name="ctd">
           </ion-input>
         </div>
-      </ion-col>
+      </ion-col> -->
       <ion-col>
         <div class="search-order-product">
           <ion-input class="input-recepcion" placeholder="Codigo de Producto" [(ngModel)]="search" name="search">
@@ -62,22 +62,22 @@
       </ion-col>
     </ion-row>
 
-    <ion-row *ngIf="searchType">
+    <!-- <ion-row *ngIf="searchType">
       <ion-col>
         <div class="search-order-product">
           <ion-input class="input-recepcion" placeholder="Tarima" [(ngModel)]="tarima" name="tarima">
           </ion-input>
         </div>
       </ion-col>
-    </ion-row>
+    </ion-row> -->
 
     <ion-row *ngIf="searchType">
-      <ion-col size="2">
+      <!-- <ion-col size="2">
         <div class="search-order-product">
           <ion-input class="input-recepcion" placeholder="Ctd" [(ngModel)]="ctd" name="ctd">
           </ion-input>
         </div>
-      </ion-col>
+      </ion-col> -->
       <ion-col>
         <ion-input id="input-codigo" class="input-recepcion" placeholder="Codigo de Barra"
           (ionChange)="searchProductByCb()" [(ngModel)]="search" debounce="200" name="search">

@@ -27,8 +27,8 @@
       <ion-col>
         <h6>Datos de Producto</h6>
         <ion-item lines="none" class="container-item">
-          Codigo SAP: {{productDetail.Detail.ItemCode}}<br>
-          Nombre: {{productDetail.Detail.ItemName}}<br>
+          Codigo SAP: {{productDetail.ItemCode}}<br>
+          Nombre: {{productDetail.ItemName}}<br>
         </ion-item>
       </ion-col>
     </ion-row>
@@ -48,7 +48,7 @@
         </ion-item>
       </ion-col>
     </ion-row>
-    <ion-row *ngIf="productDetail.Detail.QryGroup7 == 'Y'">
+    <ion-row *ngIf="productDetail.QryGroup7 == 'Y'">
       <ion-col>
         <h6>Peso de Producto</h6>
         <ion-input class="input-recepcion" placeholder="Peso de Producto" [(ngModel)]="peso" name="peso">

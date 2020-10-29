@@ -1,10 +1,13 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
 import { SettingsService } from '../../../services/settings.service';
-import { environment } from 'src/environments/environment';
 import { ToastController, LoadingController } from '@ionic/angular';
 import { Platform } from '@ionic/angular';
+import { Storage } from '@ionic/storage';
+import { getSettingsFileData } from '../../commons';
+import { EtiquetasTransferencia } from '../../../interfaces/etiquetasTransferencia';
 
+const TOKEN_KEY = 'auth_token';
 
 @Component({
   selector: 'app-etiquetas-transferencias',
@@ -12,6 +15,8 @@ import { Platform } from '@ionic/angular';
   styleUrls: ['./etiquetas-transferencias.page.scss'],
 })
 export class EtiquetasTransferenciasPage implements OnInit {
+
+  public appSettings: any;
 
   load: any
   number: number
@@ -28,24 +33,24 @@ export class EtiquetasTransferenciasPage implements OnInit {
     private toastController: ToastController,
     private loading: LoadingController,
     private platform: Platform,
+    private storage: Storage
   ) { }
 
   ngOnInit() {
-
-    if (this.platform.is("cordova")) {
-      this.datos = this.settings.fileData
-      this.apiSAP = this.datos.apiSAP
-      this.IpImpresora = this.datos.IpImpresora;
-    } else {
-      this.apiSAP = environment.apiSAP
-    }
+    this.appSettings = getSettingsFileData(this.platform, this.settings);
   }
 
   async getOrden() {
-    await this.presentLoading('Buscando....')
 
+    await this.presentLoading('Buscando....');
 
-    this.http.get(this.apiSAP + '/api/InventoryTransferRequest/Detail/' + this.number + '/DocNum').toPromise().then((data: any) => {
+    let token = await this.storage.get(TOKEN_KEY);
+
+    let headers = new HttpHeaders();
+
+    headers = headers.set('Authorization', `Bearer ${token}`);
+
+    this.http.get(`${this.appSettings.apiSAP}/api/InventoryTransferRequest/WmsTransferLabels/${this.number}/DocNum`, { headers }).toPromise().then((data: any) => {
       console.log(data)
       const request: any = {
         OWTQ: data.OWTQ,
@@ -77,7 +82,6 @@ export class EtiquetasTransferenciasPage implements OnInit {
                   return false;
                 }
               }).some(result => result);
-              // console.log(detailmatch)
               return detailmatch;
             });
           });
@@ -86,28 +90,26 @@ export class EtiquetasTransferenciasPage implements OnInit {
 
       }
       this.data = request;
-
-      console.log(request)
-
     }).catch(error => {
-      console.log(error)
       if (error.status == 404) {
         this.presentToast('No encontrado o no existe', 'warning')
       } else if (error.status == 400) {
         this.presentToast(error.error, 'warning')
       } else if (error.status == 500) {
         this.presentToast('Error de conexion', 'danger')
+      } else if (error.status == 401) {
+        this.presentToast(error.error, "danger");
       }
     }).finally(() => {
       this.hideLoading()
     })
   }
 
-  async printLabel(index) {
+  async printLabel(index: number) {
 
     await this.presentLoading('Imprimiendo Etiqueta..')
 
-    const output = {
+    let post: EtiquetasTransferencia = {
       WHS: this.data.Transfers[index].Filler,
       IDPrinter: (this.IpImpresora == undefined) ? 'S01-recepcion01' : this.IpImpresora,
       Pallet: (this.data.Transfers[index].Detail[0].U_Tarima) ? this.data.Transfers[index].Detail[0].U_Tarima : '',
@@ -116,7 +118,13 @@ export class EtiquetasTransferenciasPage implements OnInit {
       RequestCopy: (this.data.Transfers[index].Request) ? this.data.Transfers[index].Request.DocNum : ''
     }
 
-    this.http.post(this.apiSAP + '/api/impresion/tarima', output).toPromise().catch(error => {
+    let token = await this.storage.get(TOKEN_KEY);
+
+    let headers = new HttpHeaders();
+
+    headers = headers.set('Authorization', `Bearer ${token}`);
+
+    this.http.post(`${this.appSettings.apiSAP}/api/Impresion/WmsTarima`, post, { headers }).toPromise().catch(error => {
       this.presentToast('Error al imprimir etiquetas', 'danger')
       console.log(error)
     }).finally(() => {
@@ -138,14 +146,12 @@ export class EtiquetasTransferenciasPage implements OnInit {
   async presentLoading(msg) {
     this.load = await this.loading.create({
       message: msg,
-      // duration: 3000
     });
 
     await this.load.present()
   }
 
   hideLoading() {
-    // console.log('loading')
     this.load.dismiss()
   }
 

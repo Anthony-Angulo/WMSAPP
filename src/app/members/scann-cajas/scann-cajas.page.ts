@@ -1,12 +1,14 @@
 import { Component, OnInit } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { ToastController , LoadingController, AlertController} from '@ionic/angular';
 import { Router } from '@angular/router';
 import { environment } from 'src/environments/environment';
 import { Platform } from '@ionic/angular';
+import { Storage } from '@ionic/storage';
 import { SettingsService } from './../../services/settings.service';
 import { getSettingsFileData } from '../commons';
 
+const TOKEN_KEY = 'auth-token';
 
 @Component({
   selector: 'app-scann-cajas',
@@ -30,7 +32,8 @@ export class ScannCajasPage implements OnInit {
     private loading: LoadingController,
     private alertController: AlertController,
     private platform: Platform,
-    private setting: SettingsService) { }
+    private setting: SettingsService,
+    private storage: Storage) { }
 
   ngOnInit() {
     this.appSettings = getSettingsFileData(this.platform, this.setting);
@@ -38,7 +41,8 @@ export class ScannCajasPage implements OnInit {
 
   async getProducto() {
 
-    await this.presentLoading('Buscando...')
+    await this.presentLoading('Buscando...');
+    
 
     this.http.get(`${this.appSettings.apiSAP}/api/products/crm/${this.number.toUpperCase()}`).toPromise().then((resp:any) => {
       this.product = resp
@@ -53,9 +57,15 @@ export class ScannCajasPage implements OnInit {
 
   async registerBox() {
 
-    await this.presentLoading('Guardando codigo..')
+    await this.presentLoading('Guardando codigo..');
 
-    this.http.get(`${this.appSettings.apiSAP}/api/Codebar/${this.Cb}`).toPromise().then((resp: any) => {
+    let token = await this.storage.get(TOKEN_KEY);
+
+      let headers = new HttpHeaders();
+
+      headers = headers.set('Authorization', `Bearer ${token}`);
+
+    this.http.get(`${this.appSettings.apiSAP}/api/Codebar/${this.Cb}`, { headers }).toPromise().then((resp: any) => {
       if(resp != null){
         this.presentAlert(resp.Detail.ItemCode)
       } else {
@@ -66,23 +76,29 @@ export class ScannCajasPage implements OnInit {
           UOMEntry: this.uomentry
         }
     
-        this.http.post(`${environment.apiSAP}/api/Codebar`, data).toPromise().then((resp) => {
+        this.http.post(`${environment.apiSAP}/api/Codebar`, data, { headers }).toPromise().then((resp) => {
           if(resp){
             this.router.navigate(['/members/home'])
             this.presentToast('Se guardo exitosamente','success')
           } 
         }).catch((error) => {
           if(error.status == 404){
-            this.presentToast("Este codigo de barra ya existe para este producto","warning")
+            this.presentToast("Este codigo de barra ya existe para este producto","warning");
+          } else if(error.status == 401){
+            this.presentToast(error.error,"danger");
           } else {
-            this.presentToast(error.error,"danger")
+            this.presentToast(error.error,"danger");
           }
         }).finally(() => {
           this.hideLoading()
         })
       }
     }).catch(error => {
-        this.presentToast(error.statusText,"danger")
+      if(error.status == 401) {
+        this.presentToast(error.error,"danger");
+      } else {
+        this.presentToast(error.error,"danger");
+      }
     }).finally(() => { this.hideLoading() })
 
     

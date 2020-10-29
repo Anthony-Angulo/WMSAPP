@@ -124,7 +124,7 @@ export class TransferenciaSapPage implements OnInit {
       return
     }
 
-    this.receptionService.setOrderData(this.transferData.Lines[index])
+    this.receptionService.setOrderData(this.transferData.Lines[index]);
 
     if (this.transferData.Lines[index].U_IL_TipPes == 'V') {
       this.router.navigate(['members/transferencia-beef'])
@@ -138,60 +138,43 @@ export class TransferenciaSapPage implements OnInit {
     this.search = '';
   }
 
-  // searchProductByCb() {
-  //   if (this.search == '') {
+  public searchProductByCb() {
 
-  //   } else {
+    if (this.search == '') return
 
 
-  //     let index = this.transferData.Lines.findIndex(x => {
-  //       let found = x.CodeBars.findIndex(y => y.BcdCode == this.search)
-  //       if (found > -1) {
-  //         return true
-  //       } else {
-  //         return false
-  //       }
-  //     })
-  //     if (index >= 0) {
-  //       if (Number(this.ctd) > Number(this.transferData.Lines[index].OpenQty)) {
-  //         this.presentToast('Cantidad Excede el limite', 'warning')
-  //       } else {
-  //         if (this.transferData.Lines[index].LineStatus == 'O') {
-  //           if (this.tarima == undefined || this.tarima == '') {
-  //             this.presentToast('Ingresa tarima', 'warning')
-  //           } else {
-  //             if (this.transferData.Lines[index].Detail.ManBtchNum == 'Y') {
-  //               this.receptionService.setOrderData(this.transferData.Lines[index])
-  //               this.presentToast('Ingresa Lote de Producto', 'warning')
-  //               if (this.transferData.Lines[index].Detail.U_IL_TipPes == 'V') {
-  //                 this.router.navigate(['members/transferencia-beef'])
-  //               } else if (this.transferData.Lines[index].Detail.ManBtchNum == 'Y') {
-  //                 this.transferData.Lines[index].count = this.ctd
-  //                 this.transferData.Lines[index].pallet = this.tarima
-  //                 this.router.navigate(['members/transferencia-abarrotes-batch'])
-  //               } else {
-  //                 this.router.navigate(['/members/transferencia-abarrotes'])
-  //               }
-  //             } else {
-  //               this.transferData.Lines[index].count = Number(this.ctd)
-  //               this.transferData.Lines[index].pallet = this.tarima
-  //               this.presentToast('Se agrego a la lista', 'success')
-  //             }
-  //           }
+    let index = this.transferData.Lines.findIndex(x => {
+      let found = x.CodeBars.findIndex(y => y.BcdCode == this.search)
+      if (found > -1) {
+        return true
+      } else {
+        return false
+      }
+    });
 
-  //         } else {
-  //           this.presentToast('Este producto ya se surtio completamente', 'warning')
-  //         }
-  //       }
+    if (index < 0) {
+      this.presentToast("Producto no fue encontrado en la lista.", "warning");
+      return
+    }
 
-  //     } else {
-  //       this.presentToast('Producto no se encontro en la lista', 'warning')
-  //     }
-  //   }
+    if (this.transferData.Lines[index].LineStatus == 'C') {
+      this.presentToast("Producto ya fue transferido completamente.", "warning");
+      return
+    }
 
-  //   document.getElementById('input-codigo').setAttribute('value', '')
+    this.receptionService.setOrderData(this.transferData.Lines[index])
 
-  // }
+    if (this.transferData.Lines[index].Detail.ManBtchNum == 'Y') {
+      this.router.navigate(['members/transferencia-abarrotes-batch'])
+    } else if (this.transferData.Lines[index].Detail.U_IL_TipPes == 'V') {
+      this.router.navigate(['members/transferencia-beef'])
+    } else {
+      this.router.navigate(['/members/transferencia-abarrotes'])
+    }
+
+    document.getElementById('input-codigo').setAttribute('value', '');
+
+  }
 
 
   /* Metodo para enviar al usuario a la pagina de producto a transferir */
