@@ -37,13 +37,16 @@ export class AuthenticationService {
   }
 
   async login(value) {
-    console.log(value)
 
-    await this.presentLoading('Inciando Session.....')
+    await this.presentLoading('Inciando Session.....');
 
-    this.http.post(`${environment.apiSAP}/api/Account/Login`,value).toPromise().then((data: any) => {
+    this.http.post(`${environment.apiCRM}/login`,value).toPromise().then((data: any) => {
+      if (!data.status) {
+        this.presentToast('User y/o password incorrectos.', 'warning')
+      } else {
         this.authenticationState.next(true);
         return this.storage.set(TOKEN_KEY, data.token)
+      }
     }).catch(error => {
       if(error.status == 400){
         this.presentToast(error.error,"danger")
