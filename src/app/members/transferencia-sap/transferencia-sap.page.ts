@@ -70,14 +70,9 @@ export class TransferenciaSapPage implements OnInit {
 
     await this.presentLoading('Buscando Solicitud....')
 
-    let token = await this.storage.get(TOKEN_KEY);
-
-    let headers = new HttpHeaders();
-
-    headers = headers.set('Authorization', `Bearer ${token}`)
 
 
-    this.http.get(`${this.appSettings.apiSAP}/api/InventoryTransferRequest/DeliverySAP/${this.transferRequestDocNum}`, { headers }).toPromise().then((transferData: any) => {
+    this.http.get(`${this.appSettings.apiSAP}/api/InventoryTransferRequest/DeliverySAP/${this.transferRequestDocNum}`).toPromise().then((transferData: any) => {
       this.transferData = transferData;
       let validOrder = this.transferData.Lines.findIndex(x => x.FromWhsCod == this.transferData.Filler && x.WhsCode == this.transferData.ToWhsCode)
       if (validOrder >= 0) {
@@ -85,16 +80,6 @@ export class TransferenciaSapPage implements OnInit {
         return
       } else {
         return this.transferData.Lines.filter((x: any) => x.U_IL_TipPes != 'F').map((x: any) => x.ItemCode);
-      }
-    }).then((itemCodes: Array<string>[]) => {
-      if (itemCodes.length != 0) {
-        return this.http.get(environment.apiWMS + '/codebardescriptionsVariants/' + itemCodes).toPromise()
-      }
-    }).then((codebarDescription: any[]) => {
-      if (codebarDescription) {
-        this.transferData.Lines.map((item: any) => {
-          item.cBDetail = codebarDescription.filter(y => y.codigo_sap == item.ItemCode)
-        })
       }
     }).catch(error => {
       console.log(error)
@@ -108,6 +93,8 @@ export class TransferenciaSapPage implements OnInit {
     }).finally(() => {
       this.hideLoading()
     })
+
+    
   }
 
   public searchProductByCode() {
@@ -144,7 +131,7 @@ export class TransferenciaSapPage implements OnInit {
 
 
     let index = this.transferData.Lines.findIndex(x => {
-      let found = x.CodeBars.findIndex(y => y.BcdCode == this.search)
+      let found = x.CodeBars.findIndex(y => y == this.search)
       if (found > -1) {
         return true
       } else {
@@ -164,9 +151,9 @@ export class TransferenciaSapPage implements OnInit {
 
     this.receptionService.setOrderData(this.transferData.Lines[index])
 
-    if (this.transferData.Lines[index].Detail.ManBtchNum == 'Y') {
+    if (this.transferData.Lines[index].ManBtchNum == 'Y') {
       this.router.navigate(['members/transferencia-abarrotes-batch'])
-    } else if (this.transferData.Lines[index].Detail.U_IL_TipPes == 'V') {
+    } else if (this.transferData.Lines[index].U_IL_TipPes == 'V') {
       this.router.navigate(['members/transferencia-beef'])
     } else {
       this.router.navigate(['/members/transferencia-abarrotes'])
@@ -195,6 +182,8 @@ export class TransferenciaSapPage implements OnInit {
 
     await this.presentLoading('Transfiriendo Productos....')
 
+
+  
     const TransferRows = this.transferData.Lines.filter(product => product.count).map(product => {
       return {
         LineNum: product.LineNum,
@@ -232,6 +221,7 @@ export class TransferenciaSapPage implements OnInit {
       this.presentToast('No hay productos que surtir', 'warning')
       this.hideLoading()
     }
+  
   }
 
 

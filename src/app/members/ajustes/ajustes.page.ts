@@ -44,13 +44,8 @@ export class AjustesPage implements OnInit {
     
     await this.presentLoading("Buscando Impresoras..")
 
-    let token = await this.storage.get(TOKEN_KEY);
 
-    let headers = new HttpHeaders();
-
-    headers = headers.set('Authorization', `Bearer ${token}`)
-
-    this.http.get(`${this.appSettings.apiSAP}/api/impresion/impresoras`, {headers}).toPromise().then((resp: any) => {
+    this.http.get(`${this.appSettings.apiSAP}/api/impresion/impresoras`).toPromise().then((resp: any) => {
       this.impresoras = resp
     }).catch(err => {
       if(err.status == 401) {

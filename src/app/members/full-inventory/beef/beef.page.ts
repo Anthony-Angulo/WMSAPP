@@ -5,7 +5,7 @@ import { Component, OnInit } from '@angular/core';
 import { environment } from 'src/environments/environment';
 import { SettingsService } from '../../../services/settings.service';
 import { NavExtrasService } from '../../../services/nav-extras.service';
-import { validateCodeBar, getCerosFromEtiqueta } from '../../commons';
+import { validateCodeBar, getCerosFromEtiquetaInventario, getSettingsFileData } from '../../commons';
 import {
   Platform,
   ToastController,
@@ -14,7 +14,7 @@ import {
 }
   from '@ionic/angular';
 
-const NAME = 'USER_NAME';
+const USER = 'user';
 
 @Component({
   selector: 'app-beef',
@@ -24,7 +24,7 @@ const NAME = 'USER_NAME';
 export class BeefPage implements OnInit {
 
   public productInfo: any;
-  public Filedata: any;
+  public appSettings: any;
   public warehouseCode: string;
   public apiSAPURL: string;
   public codigoBarra: string;
@@ -33,8 +33,9 @@ export class BeefPage implements OnInit {
   public cajasEscaneadas: number = 0;
   public lote: string;
   public location: string;
-  public pesoEscaneado: number = 0;
+  public total: number = 0;
   public load: any;
+  public manual: any;
   public rows = [];
   codebarDescription: any;
   inputs = [];
@@ -52,17 +53,9 @@ export class BeefPage implements OnInit {
 
   ngOnInit() {
     this.productInfo = this.navExtras.getInventoryProduct();
+    this.appSettings = getSettingsFileData(this.platform, this.settings);
 
     console.log(this.productInfo);
-
-    if (this.platform.is("cordova")) {
-      this.Filedata = this.settings.fileData
-      this.warehouseCode = this.Filedata.sucursal
-      this.apiSAPURL = this.Filedata.apiSAP
-    } else {
-      this.apiSAPURL = environment.apiSAP
-      this.warehouseCode = "S01"
-    }
 
     if (Number(this.productInfo.Detail.U_IL_PesMin) == 0 && Number(this.productInfo.Detail.U_IL_PesMax) == 0) {
       this.productInfo.Detail.U_IL_PesMin = 0
@@ -70,13 +63,13 @@ export class BeefPage implements OnInit {
     }
 
     if (this.productInfo.Detail.QryGroup45 == "Y") {
-      this.codebarDescription = this.productInfo.cBDetail.filter(x => x.proveedor != null)
+      this.codebarDescription = this.productInfo.cBDetail.filter(x => x.OriginLocation != null)
       this.codebarDescription.forEach(y => {
         this.inputs.push({
-          name: y.proveedor,
+          name: y.OriginLocation,
           type: "radio",
-          label: y.proveedor,
-          value: y.proveedor
+          label: y.OriginLocation,
+          value: y.OriginLocation
         })
       })
 
@@ -110,150 +103,39 @@ export class BeefPage implements OnInit {
     await alert.present();
   }
 
-  public getDataFromEtiqueta(): void {
-    if (this.codigoBarra == '') { } else {
-      validateCodeBar(this.productInfo, environment.apiWMS, this.codigoBarra, this.http).then((value: boolean) => {
-        if (!value) {
-          if (this.productInfo.Detail.QryGroup45 == "Y") {
-            let indCodeFoundInList = this.codeBarDetails.findIndex(product =>
-              product.codebar == this.codigoBarra.trim())
-            if (indCodeFoundInList < 0) {
-              let codFound = this.productInfo.cBDetail.findIndex(y =>
-                y.proveedor == this.selectedDesc)
-              if (codFound < 0) {
-                this.presentToast('El codigo de barra no coincide con' +
-                  'la informacion de etiqueta de proveedor.', 'warning')
-              } else {
-
-                let pesoDeEtiqueta = this.codigoBarra.substr(
-                  this.productInfo.cBDetail[codFound].peso_pos - 1,
-                  this.productInfo.cBDetail[codFound].peso_length)
-
-
-                if (this.productInfo.cBDetail[codFound].maneja_decimal == 1) {
-                  if (this.productInfo.cBDetail[codFound].UOM_id != 3) {
-                    this.pesoDeEtiqueta = Number((Number(pesoDeEtiqueta)
-                      / 2.2046).toFixed(2));
-                  } else {
-                    this.pesoDeEtiqueta = Number(pesoDeEtiqueta);
-                  }
-                } else {
-                  this.pesoDeEtiqueta = getCerosFromEtiqueta(this.productInfo,
-                    pesoDeEtiqueta,
-                    codFound);
-                }
-
-                if (Number(this.pesoDeEtiqueta) >= Number(this.productInfo.Detail.U_IL_PesMin)
-                  && Number(this.pesoDeEtiqueta) <= Number(this.productInfo.Detail.U_IL_PesMax)) {
-                  let scanned;
-
-                  scanned = {
-                    ItemCode: this.productInfo.Detail.ItemCode,
-                    ItemName: this.productInfo.Detail.ItemName,
-                    codebar: this.codigoBarra.trim(),
-                    Lote: this.lote,
-                    visual: this.codigoBarra
-                      .substr(this.codigoBarra.length - 14).trim(),
-                    Quantity: this.pesoDeEtiqueta
-                  }
-
-                  this.cajasEscaneadas++;
-                  this.pesoEscaneado = Number((this.pesoEscaneado +
-                    this.pesoDeEtiqueta).toFixed(4));
-
-                  this.presentToast('Se agrego a la lista', 'success');
-                  this.codeBarDetails.push(scanned);
-                } else {
-                  this.presentToast('El peso sobrepasa el peso promedio. ' +
-                'Contactar al departamento de datos maestros.', 'warning')
-                }
-              }
-            } else {
-              this.presentToast('Codigo ya fue escaneado', 'warning');
-            }
-          } else {
-            let indCodeFoundInList = this.codeBarDetails.findIndex(product =>
-              product.codebar == this.codigoBarra.trim())
-            if (indCodeFoundInList < 0) {
-              let codFound = this.productInfo.cBDetail.findIndex(y =>
-                y.length == this.codigoBarra.trim().length)
-              if (codFound < 0) {
-                this.presentToast('El codigo de barra no coincide con' +
-                  'la informacion de etiqueta de proveedor.', 'warning')
-              } else {
-
-                let pesoDeEtiqueta = this.codigoBarra.substr(
-                  this.productInfo.cBDetail[codFound].peso_pos - 1,
-                  this.productInfo.cBDetail[codFound].peso_length)
-
-
-                if (this.productInfo.cBDetail[codFound].maneja_decimal == 1) {
-                  if (this.productInfo.cBDetail[codFound].UOM_id != 3) {
-                    this.pesoDeEtiqueta = Number((Number(pesoDeEtiqueta)
-                      / 2.2046).toFixed(2));
-                  } else {
-                    this.pesoDeEtiqueta = Number(pesoDeEtiqueta);
-                  }
-                } else {
-                  this.pesoDeEtiqueta = getCerosFromEtiqueta(this.productInfo,
-                    pesoDeEtiqueta,
-                    codFound);
-                }
-
-                if (Number(this.pesoDeEtiqueta) >= Number(this.productInfo.Detail.U_IL_PesMin)
-                  && Number(this.pesoDeEtiqueta) <= Number(this.productInfo.Detail.U_IL_PesMax)) {
-                  let scanned;
-
-                  scanned = {
-                    ItemCode: this.productInfo.Detail.ItemCode,
-                    ItemName: this.productInfo.Detail.ItemName,
-                    codebar: this.codigoBarra.trim(),
-                    Lote: this.lote,
-                    visual: this.codigoBarra
-                      .substr(this.codigoBarra.length - 14).trim(),
-                    Quantity: this.pesoDeEtiqueta
-                  }
-
-                  this.cajasEscaneadas++;
-                  this.pesoEscaneado = Number((this.pesoEscaneado +
-                    this.pesoDeEtiqueta).toFixed(4));
-
-                  this.presentToast('Se agrego a la lista', 'success');
-                  this.codeBarDetails.push(scanned);
-                } else {
-                  this.presentToast('El peso sobrepasa el peso promedio. ' +
-                'Contactar al departamento de datos maestros.', 'warning')
-                }
-              }
-            } else {
-              this.presentToast('Codigo ya fue escaneado', 'warning');
-            }
-          }
-
-        } else {
-          this.presentToast("El codigo ya existe. Intenta de nuevo", "warning")
-        }
-      });
-
-    }
-
-    document.getElementById('input-codigo').setAttribute('value', '');
+  productDetail() {
+    this.router.navigate(['/members/inventory-product-detail']);
   }
 
-  async promptCloseProduct() {
+  async weightManual() {
+
+    if(!this.manual) return
+
     const alert = await this.alert.create({
-      header: 'Cerrar Producto',
-      message: 'Si cierra el producto ya no podra seguir inventariandolo. Confirmar para continuar.',
+      header: 'Peso Manual',
+      message: 'Ingresa un peso',
+      inputs: [
+        {
+          name: 'peso',
+          type: 'text',
+        },
+      ],
       buttons: [
         {
           text: 'Cancelar',
           role: 'cancel',
-          cssClass: 'secondary',
-        },
-        {
+          cssClass: 'secondary'
+        }, {
           text: 'Aceptar',
-          handler: () => {
-            this.closeProduct()
+          handler: (data) => {
+            this.codeBarDetails.push({
+              codebar: 'NA',
+              Lote: this.lote,
+              visual: 'NA',
+              Quantity: Number(data.peso)
+            });
+            this.manual = false
+            this.total = this.codeBarDetails.map(x => x.Quantity).reduce((a, b) => a + b, 0);
           }
         }
       ]
@@ -262,74 +144,152 @@ export class BeefPage implements OnInit {
     await alert.present();
   }
 
-  async closeProduct() {
+  public getDataFromEtiqueta(): void {
 
-    await this.presentLoading('Cerrando Producto..')
+    if (this.codigoBarra == '') return
 
-    let data = {
-      SAPheader: this.productInfo.headerId,
-      ItemCode: this.productInfo.Detail.ItemCode
-    }
+    validateCodeBar(environment.apiCCFN, this.codigoBarra, this.productInfo.headerId, this.http).then((value: boolean) => {
 
-    this.http.post(environment.apiWMS + '/closeProduct', data)
-      .toPromise().then((resp: any) => {
-        if (resp.success) {
-          this.presentToast('Se cerro correctamente', 'success')
-          this.router.navigate(['/members/full-inventory'])
+      if (!value) {
+
+        let codeBarSettingInd;
+
+        if (this.productInfo.Detail.QryGroup45 == 'Y') {
+          codeBarSettingInd = this.productInfo.cBDetail.findIndex((y: any) => y.OriginLocation == this.selectedDesc);
+        } else {
+          codeBarSettingInd = this.productInfo.cBDetail.findIndex((y: any) => y.BarcodeLength == this.codigoBarra.trim().length);
         }
-      }).catch(err => {
-        console.log(err)
-        this.presentToast('Error al cerrar producto', 'danger')
-      }).finally(() => {
-        this.hideLoading()
-      })
+
+        if (codeBarSettingInd < 0) {
+          this.presentToast("El Codigo De Barra No Coincide Con la Configuracion Del Codigo De Barra Del Producto.", "warning");
+          this.pesoDeEtiqueta = 0;
+          document.getElementById('input-codigo').setAttribute('value', '');
+          document.getElementById('input-codigo').focus();
+          return
+        }
+
+        let pesoDeEtiqueta = this.codigoBarra.substr(this.productInfo.cBDetail[codeBarSettingInd].WeightPosition - 1, this.productInfo.cBDetail[codeBarSettingInd].WeightLength);
+
+        if (this.productInfo.cBDetail[codeBarSettingInd].HasDecimal.data[0] == 1 && this.productInfo.cBDetail[codeBarSettingInd].UoM == 4) {
+          this.pesoDeEtiqueta = Number((Number(pesoDeEtiqueta) / 2.2046).toFixed(2));
+        } else if (this.productInfo.cBDetail[codeBarSettingInd].HasDecimal.data[0] == 1 && this.productInfo.cBDetail[codeBarSettingInd].UoM == 3) {
+          this.pesoDeEtiqueta = Number(pesoDeEtiqueta);
+        } else {
+          this.pesoDeEtiqueta = getCerosFromEtiquetaInventario(this.productInfo, pesoDeEtiqueta, codeBarSettingInd);
+        }
+
+        if (this.pesoDeEtiqueta < this.productInfo.Detail.U_IL_PesMin || this.pesoDeEtiqueta > this.productInfo.Detail.U_IL_PesMax) {
+          this.presentToast("El Peso Escaneado No Esta Dentro De Los Parametros De Peso Maximo y Peso Minimo.", "warning");
+          this.pesoDeEtiqueta = 0
+          document.getElementById('input-codigo').setAttribute('value', '');
+          document.getElementById('input-codigo').focus();
+          return
+        }
+
+        let isScanned = this.codeBarDetails.findIndex((codeBar: any) => codeBar.codebar == this.codigoBarra.trim());
+
+        if (isScanned >= 0) {
+          this.presentToast("Este Codigo De Barra Ya Fue Escaneado", "warning");
+          this.pesoDeEtiqueta = 0;
+          document.getElementById('input-codigo').setAttribute('value', '');
+          document.getElementById('input-codigo').focus();
+          return
+        }
+
+        this.codeBarDetails.push({
+          codebar: this.codigoBarra.trim(),
+          Lote: this.lote,
+          visual: this.codigoBarra.substr(this.codigoBarra.length - 14).trim(),
+          Quantity: this.pesoDeEtiqueta
+        });
+
+        this.presentToast("Se Escaneo Correctamente", "success");
+
+      } else {
+        this.presentToast("El codigo ya existe. Intenta de nuevo", "warning")
+      }
+
+      this.total = this.codeBarDetails.map(x => x.Quantity).reduce((a, b) => a + b, 0);
+      document.getElementById('input-codigo').setAttribute('value', '');
+
+    });
   }
-
-
-
 
   async saveInventory() {
 
-    if (this.codeBarDetails.length != 0) {
+    if(this.codeBarDetails.length == 0) {
+      this.presentToast("No hay registros para enviar", "warning");
+      return
+    }
 
+      let codeBars = []
+
+      let user = await this.storage.get(USER);
+      
       await this.presentLoading("Guardando...");
 
-      const codeBars = this.codeBarDetails
 
-      this.storage.get(NAME).then(userLogedIn => {
+      return this.http.get(`${environment.apiCCFN}/inventoryProduct/${this.productInfo.headerId}/${this.productInfo.Detail.ItemCode}`).toPromise().then((res: any) => {
 
-         const rows = [{
-          ItemCode: this.productInfo.Detail.ItemCode,
-          ItemName: this.productInfo.Detail.ItemName,
-          Location: this.productInfo.location,
-          InvQuantity: this.pesoEscaneado,
-          EmployeeName: userLogedIn
-        }]
-
-
-        let datos = {
-          SapHeaderId: this.productInfo.headerId,
-          ItemCode: this.productInfo.Detail.ItemCode,
-          ItemName: this.productInfo.Detail.ItemName,
-          UOM: this.productInfo.uom[0].BASEUOM,
-          ManejaLote: this.productInfo.Detail.ManBtchNum,
-          TipoPeso: this.productInfo.Detail.U_IL_TipPes,
-          rows: rows,
-          codeBars
+        if (res.length > 0) {
+          let update = {
+            id: res[0].ID,
+            itemcode: this.productInfo.Detail.ItemCode,
+            quantity: this.total + res[0].Quantity
+          }
+  
+          this.productInfo.productId = res[0].ID
+  
+          return this.http.put(`${environment.apiCCFN}/inventoryProduct`, update).toPromise()
+        } else {
+  
+          let datos = [
+            this.productInfo.Detail.ItemCode,
+            this.productInfo.Detail.ItemName,
+            this.total,
+            0,
+            this.productInfo.Detail.ManBtchNum,
+            this.productInfo.Detail.U_IL_TipPes,
+            user.id,
+            this.productInfo.headerId,
+          ]
+  
+          return this.http.post(`${environment.apiCCFN}/inventoryProduct`, datos).toPromise()
+        } 
+      }).then((res: any) => {
+  
+        let detail = {
+          quantity: this.total,
+          zone: this.productInfo.location,
+          userId: user.id,
+          inventoryProductId: (res.insertId == 0) ? this.productInfo.productId : res.insertId
         }
+  
+        return this.http.post(`${environment.apiCCFN}/inventoryDetail`, detail).toPromise()
+  
+      }).then((res: any) => {
 
-        this.http.post(environment.apiWMS + '/saveOrUpdateInventoryRequestRow', datos)
-          .toPromise()
-          .then(() => {
-            this.presentToast("Guardado Correctamente", "success")
-            this.router.navigate(['members/full-inventory'])
-          }).catch(() => {
-            this.presentToast("Error al Guardar", "danger")
-          }).finally(() => { this.hideLoading() });
-      })
-    } else {
-      this.presentToast("No hay registros para enviar", "warning");
-    }
+        if(this.productInfo.Detail.ManBtchNum == 'Y') {
+          codeBars = this.codeBarDetails.map(x => {
+            return [
+              x.Quantity,
+              x.Lote,
+              x.codebar,
+              res.id
+            ]
+          })
+        }
+  
+        return this.http.post(`${environment.apiCCFN}/inventoryCodeBar`, codeBars).toPromise()
+      }).then((res: any) => {
+        if(res) {
+          this.presentToast('Guardado Correctamente', 'success')
+          this.total = 0
+          this.router.navigate(['/members/full-inventory'])
+        }
+      }).catch((err: any) => {
+        this.presentToast(err.message, "danger")
+      }).finally(() => this.hideLoading());
 
   }
 

@@ -68,12 +68,39 @@ export class AbarrotesBatchPage implements OnInit {
       return
     }
 
+
     console.log(this.uom)
+
+    let dif = Math.abs(Number(Number(this.cantidad * this.uom.BaseQty).toFixedNoRounding(4)) - Number(this.productData.OpenInvQty))
+    let count = 0;
+
+    if(dif < 2) {
+      count = Number(this.productData.OpenInvQty)
+    } else {
+      count = Number(Number(this.cantidad * this.uom.BaseQty).toFixedNoRounding(4))
+    }
 
     if (this.uom.UomEntry == this.uom.BaseEntry) {
 
+
+        let BatchList = [{
+          Quantity: Number(count),
+          Code: this.lote,
+        }]
+
+        this.productsToDeliver.push({
+          BatchList,
+          Count: Number(this.productData.OpenInvQty),
+          uom: this.uom.UomCode,
+          UomEntry: this.uom.UomEntry,
+          total: Number(this.productData.OpenInvQty),
+          lote: this.lote
+        })
+
+    } else {
+
       let BatchList = [{
-        Quantity: Number(Number(this.cantidad * this.uom.BaseQty).toFixedNoRounding(4)),
+        Quantity: Number(count),
         Code: this.lote,
       }]
 
@@ -86,44 +113,10 @@ export class AbarrotesBatchPage implements OnInit {
         lote: this.lote
       });
 
-    } else {
-
-      let dif = Math.abs(Number(Number(this.cantidad * this.uom.BaseQty).toFixedNoRounding(4)) - Number(this.productData.OpenInvQty))
-
-      if (dif < 2) {
-
-        let BatchList = [{
-          Quantity: Number(this.productData.OpenInvQty),
-          Code: this.lote,
-        }]
-
-        this.productsToDeliver.push({
-          BatchList,
-          Count: Number(this.productData.OpenInvQty),
-          uom: this.uom.UomCode,
-          UomEntry: this.uom.UomEntry,
-          total: Number(this.productData.OpenInvQty),
-          lote: this.lote
-        })
-      } else {
-
-        let BatchList = [{
-          Quantity: Number(Number(this.cantidad * this.uom.BaseQty).toFixedNoRounding(4)),
-          Code: this.lote,
-        }]
-  
-        this.productsToDeliver.push({
-          BatchList,
-          Count: Number(this.cantidad),
-          total: Number(Number(this.cantidad * this.uom.BaseQty).toFixedNoRounding(4)),
-          uom: this.uom.UomCode,
-          UomEntry: this.uom.UomEntry,
-          lote: this.lote
-        });
-      }
-
-      this.totalUnitBase = this.productsToDeliver.map(prod => prod.total).reduce((a, b) => a + b, 0);
+      
     }
+
+    this.totalUnitBase = this.productsToDeliver.map(prod => prod.total).reduce((a, b) => a + b, 0);
 
   }
 

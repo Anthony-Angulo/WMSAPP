@@ -6,7 +6,7 @@ import { SettingsService } from '../../../services/settings.service';
 import { Platform } from '@ionic/angular';
 import { HttpClient } from '@angular/common/http';
 import { AlertController, ToastController, LoadingController } from '@ionic/angular';
-import { getCerosFromEtiqueta, getSettingsFileData } from '../../commons';
+import { getCerosFromEtiquetaInventario, getSettingsFileData } from '../../commons';
 
 @Component({
   selector: 'app-beef',
@@ -69,24 +69,29 @@ export class BeefPage implements OnInit {
       this.productData.U_IL_PesMax = 100
     }
 
-    await this.presentLoading('Buscando Lotes de producto...');
+    await this.presentLoading('Buscando informacion de producto...');
 
-    this.http.get(`${this.appSettings.apiSAP}/api/batch/${this.productData.WhsCode}/${this.productData.ItemCode}`).toPromise().then((data) => {
-      this.batch = data;
+    await Promise.all([
+      this.http.get(`${this.appSettings.apiSAP}/api/batch/${this.productData.WhsCode}/${this.productData.ItemCode}`).toPromise(),
+      this.http.get(`${environment.apiCCFN}/codeBar/${this.productData.ItemCode}`).toPromise(),
+    ]).then(([batch, cBDetail]):any => {
+      this.batch = batch;
+      this.productData.cBDetail = cBDetail;
     }).catch((error) => {
-      this.presentToast(error.error.error, 'danger');
+      console.log(error)
+      this.presentToast(error.error.error, 'danger')
     }).finally(() => {
-      this.hideLoading();
-    });
+      this.hideLoading()
+    })
 
     if (this.productData.QryGroup45 == "Y") {
-      this.codebarDescription = this.productData.cBDetail.filter(x => x.proveedor != null)
+      this.codebarDescription = this.productData.cBDetail.filter(x => x.OriginLocation != null)
       this.codebarDescription.forEach(y => {
         this.inputs.push({
-          name: y.proveedor,
+          name: y.OriginLocation,
           type: "radio",
-          label: y.proveedor,
-          value: y.proveedor
+          label: y.OriginLocation,
+          value: y.OriginLocation
         })
       });
 
@@ -197,9 +202,9 @@ export class BeefPage implements OnInit {
     let codeBarSettingInd;
 
     if (this.productData.QryGroup45 == 'Y') {
-      codeBarSettingInd = this.productData.cBDetail.findIndex((y: any) => y.proveedor == this.selectedDesc);
+      codeBarSettingInd = this.productData.cBDetail.findIndex((y: any) => y.OriginLocation == this.selectedDesc);
     } else {
-      codeBarSettingInd = this.productData.cBDetail.findIndex((y: any) => y.length == this.codigoBarra.trim().length);
+      codeBarSettingInd = this.productData.cBDetail.findIndex((y: any) => y.BarcodeLength == this.codigoBarra.trim().length);
     }
 
     if (codeBarSettingInd < 0) {
@@ -210,17 +215,18 @@ export class BeefPage implements OnInit {
       return
     }
 
-    let pesoDeEtiqueta = this.codigoBarra.substr(this.productData.cBDetail[codeBarSettingInd].peso_pos - 1, this.productData.cBDetail[codeBarSettingInd].peso_length);
+    let pesoDeEtiqueta = this.codigoBarra.substr(this.productData.cBDetail[codeBarSettingInd].WeightPosition - 1, this.productData.cBDetail[codeBarSettingInd].WeightLength);
 
-    if (this.productData.cBDetail[codeBarSettingInd].maneja_decimal == 1 && this.productData.cBDetail[codeBarSettingInd].UOM_id == 4) {
+    if (this.productData.cBDetail[codeBarSettingInd].HasDecimal.data[0] == 1 && this.productData.cBDetail[codeBarSettingInd].UoM == 4) {
       this.peso = Number((Number(pesoDeEtiqueta) / 2.2046).toFixed(2));
-    } else if (this.productData.cBDetail[codeBarSettingInd].maneja_decimal == 1 && this.productData.cBDetail[codeBarSettingInd].UOM_id == 3) {
+    } else if (this.productData.cBDetail[codeBarSettingInd].HasDecimal.data[0] == 1 && this.productData.cBDetail[codeBarSettingInd].UoM == 3) {
       this.peso = Number(pesoDeEtiqueta);
     } else {
-      this.peso = getCerosFromEtiqueta(this.productData, pesoDeEtiqueta, codeBarSettingInd);
+      this.peso = getCerosFromEtiquetaInventario(this.productData, pesoDeEtiqueta, codeBarSettingInd);
     }
 
     if (this.peso < this.productData.U_IL_PesMin || this.peso > this.productData.U_IL_PesMax) {
+      console.log(this.peso)
       this.presentToast("El Peso Escaneado No Esta Dentro De Los Parametros De Peso Maximo y Peso Minimo.", "warning");
       this.peso = 0
       document.getElementById('input-codigo').setAttribute('value', '');
@@ -245,15 +251,16 @@ export class BeefPage implements OnInit {
       this.detail.push({
         Code: this.batch[isCodeBarExist].BatchNum,
         Quantity: Number(this.batch[isCodeBarExist].Quantity),
-        CodeBar: this.batch.trim(),
-        uom: this.productData.uoms[madeByUom].BaseEntry
+        CodeBar: this.batch[isCodeBarExist].U_IL_CodBar.trim(),
+        uom: this.productData.Uoms[madeByUom].BaseEntry,
+        uomCode: this.productData.Uoms[madeByUom].UomCode
       });
 
       this.batch.splice(isCodeBarExist, 1);
       this.presentToast("Se Escaneo Correctamente", "success");
     } else {
 
-      let loteGenerico = this.batch.find((y: any) => Number(y.Quantity) > 50);
+      let loteGenerico = this.batch.find((y: any) => y.BatchNum == 'SI');
 
       if (loteGenerico != undefined) {
 
@@ -261,7 +268,7 @@ export class BeefPage implements OnInit {
           Code: loteGenerico.BatchNum,
           Quantity: this.peso,
           CodeBar: this.codigoBarra.trim(),
-          uom: this.productData.uoms[madeByUom].BaseEntry
+          uom: this.productData.Uoms[madeByUom].BaseEntry
         });
 
         this.presentToast("Se Escaneo Correctamente", "success");

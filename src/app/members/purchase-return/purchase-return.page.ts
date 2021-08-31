@@ -1,4 +1,4 @@
-import { HttpClient,HttpHeaders } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
 import { SettingsService } from './../../services/settings.service';
 import { NavExtrasService } from 'src/app/services/nav-extras.service';
@@ -8,7 +8,6 @@ import { Storage } from '@ionic/storage';
 import { ToastController, LoadingController } from '@ionic/angular';
 import { getSettingsFileData } from '../commons';
 
-const TOKEN_KEY = 'auth-token';
 
 
 @Component({
@@ -46,19 +45,16 @@ export class PurchaseReturnPage implements OnInit {
 
     await this.presentLoading("Buscando Entradas...");
 
-    let token = await this.storage.get(TOKEN_KEY);
 
-    let headers = new HttpHeaders();
+      this.http.get(`${this.appSettings.apiSAP}/api/purchaseorder/Receptions/${this.number}`).toPromise().then((resp) => {
+        this.entries = resp
+        console.log(this.entries)
+      }).catch((err) => {
+        console.log(err)
+        this.presentToast("Error al buscar entradas.", "warning")
+      }).finally(() => { this.hideLoading() });
 
-    headers = headers.set('Authorization', `Bearer ${token}`);
 
-    this.http.get(`${this.appSettings.apiSAP}/api/purchaseorder/Receptions/${this.number}`, { headers }).toPromise().then((resp) => {
-      this.entries = resp
-      console.log(this.entries)
-    }).catch((err) => {
-      console.log(err)
-      this.presentToast("Error al buscar entradas.", "warning")
-    }).finally(() => { this.hideLoading() });
   }
 
   public getPurchaseDetail(index: number) {

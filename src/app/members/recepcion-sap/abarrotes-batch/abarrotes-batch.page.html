@@ -28,10 +28,10 @@
   </ion-row>
 
   <ion-row>
-      <ion-col>
-          <ion-datetime class="product-scann" placeholder="Fecha de Caducidad" [(ngModel)]="fechaCad" name="fechaCad" max="2030">
-          </ion-datetime>
-      </ion-col>
+    <ion-col>
+      <h6>Fecha de Expiración</h6>
+      <ion-datetime class="product-scann" displayFormat="DD-MM-YYYY" max="2030" [(ngModel)]="FechaCad" ></ion-datetime>
+    </ion-col>
   </ion-row>
 
   <h6>Ingresar cantidad a recibir.</h6>

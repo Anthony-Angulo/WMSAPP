@@ -27,15 +27,16 @@ export class PartialInventoryPage implements OnInit {
 
   await this.presentLoading("Buscando Inventarios...")
 
-    this.http.get(environment.apiWMS + '/partialInventoryRequestList').toPromise().then((resp) => {
+    this.http.get(`${environment.apiCCFN}/inventory/partial`).toPromise().then((resp) => {
       this.inventory_orders = resp
+      console.log(resp)
     }).catch((err => {
       console.log(err)
     })).finally(() => { this.hideLoading() })
   }
 
   goToInventory(index: number){
-    this.navExtras.setMovInv(this.inventory_orders[index].id)
+    this.navExtras.setMovInv(this.inventory_orders[index].ID)
     this.router.navigate(['/members/partial-inventory-detail'])
   }
 

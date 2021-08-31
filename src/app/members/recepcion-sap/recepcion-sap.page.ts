@@ -76,40 +76,26 @@ export class RecepcionSapPage implements OnInit {
 
     await this.presentLoading('Buscando....');
 
-    let token = await this.storage.get(TOKEN_KEY);
 
-    let headers = new HttpHeaders();
-
-    headers = headers.set('Authorization', `Bearer ${token}`);
-
-    this.http.get(`${this.appSettings.apiSAP}/api/purchaseorder/Reception/${this.number}`, { headers }).toPromise().then((data: any) => {
-      this.order = data;
-      console.log(this.order)
-      if (this.order.OPOR.U_IL_Pedimento != null) {
-        this.navExtras.setPedimento(this.order.OPOR.U_IL_Pedimento)
-      }
-      return this.order.POR1.map(x => x.ItemCode)
-    }).then((codes) => {
-      return this.http.get(environment.apiWMS + '/codebardescriptionsVariants/' + codes).toPromise()
-    }).then((codebarDescription: any[]) => {
-      console.log(codebarDescription)
-      this.order.POR1.map(item => {
-        item.cBDetail = codebarDescription.filter(y => y.codigo_sap == item.ItemCode)
+      this.http.get(`${this.appSettings.apiSAP}/api/purchaseorder/Reception/${this.number}`).toPromise().then((data: any)  => {
+        this.order = data;
+        if (this.order.OPOR.U_IL_Pedimento != null) {
+          this.navExtras.setPedimento(this.order.OPOR.U_IL_Pedimento)
+        }
+      }).catch(async error => {
+        if (error.status == 404) {
+          this.presentToast('No encontrado o no existe', 'warning')
+        } else if (error.status == 400) {
+          this.presentToast(error.error, 'warning')
+        } else if (error.status == 401) {
+          this.presentToast(error.error, "danger");
+        } else {
+          this.presentToast('Error de conexion', 'danger')
+        }
+      }).finally(() => {
+        this.hideLoading();
       })
-      console.log(this.order)
-    }).catch(async error => {
-      if (error.status == 404) {
-        this.presentToast('No encontrado o no existe', 'warning')
-      } else if (error.status == 400) {
-        this.presentToast(error.error, 'warning')
-      } else if(error.status == 401){
-        this.presentToast(error.error, "danger");
-      } else {
-        this.presentToast('Error de conexion', 'danger')
-      }
-    }).finally(() => {
-      this.hideLoading();
-    })
+
   }
 
   searchProductByCode() {
@@ -233,9 +219,6 @@ export class RecepcionSapPage implements OnInit {
     await this.presentLoading('Enviando....');
 
 
-
-
-
     const products = this.order.POR1.filter(product => product.count).map(product => {
       return {
         ItemCode: product.ItemCode,
@@ -265,24 +248,19 @@ export class RecepcionSapPage implements OnInit {
         products
       }
 
-      let token = await this.storage.get(TOKEN_KEY);
 
-      let headers = new HttpHeaders();
-
-      headers = headers.set('Authorization', `Bearer ${token}`);
-
-      this.http.post(`${this.appSettings.apiSAP}/api/PurchaseDelivery`, recepcionData, { headers }).toPromise().then((data: any) => {
-        console.log(data);
-        this.presentAlertConfirm();
-      }).catch(error => {
-        if(error.status == 401) {
-          this.presentToast(error.error, 'danger');
-        } else {
-          this.presentToast(error.error, 'danger');
-        }
-      }).finally(() => {
-        this.hideLoading()
-      })
+        this.http.post(`${this.appSettings.apiSAP}/api/PurchaseDelivery`, recepcionData).toPromise().then((data: any) => {
+          console.log(data);
+          this.presentAlertConfirm();
+        }).catch(error => {
+          if (error.status == 401) {
+            this.presentToast(error.error, 'danger');
+          } else {
+            this.presentToast(error.error, 'danger');
+          }
+        }).finally(() => {
+          this.hideLoading()
+        })
     } else {
       this.presentToast('No hay productos que recibir.', 'warning')
       this.hideLoading()

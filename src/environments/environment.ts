@@ -4,13 +4,13 @@
 
 export const environment = {
   production: false,
-  apiProtevs: 'http://192.168.101.69',
   apiCRM: 'http://crm.ccfnweb.com.mx/apicrm/public/api',
   apiWMS: 'http://crm.ccfnweb.com.mx/apiwms/public/api',
-  // apiWMS: 'http://192.168.101.23:8081/public/api',
-  // apiCRM: 'http://192.168.101.23:8080/public/api',
-  // apiSAP: 'http://192.168.101.104:5002'
-  apiSAP: 'http://192.168.0.10:8889' 
+  // apiSAP: 'http://192.168.101.103:1500', 
+  apiCCFN: 'http://apiccfn.ccfnweb.com.mx/api', 
+  // apiCCFN: 'http://localhost:5004/api',
+  apiSAP: 'http://192.168.0.10:8886',
+  update: 'http://crm.ccfnweb.com.mx/update.xml' 
 };
 
 /*
@@ -21,3 +21,4 @@ export const environment = {
  * on performance if an error is thrown.
  */
 // import 'zone.js/dist/zone-error';  // Included with Angular CLI.
+ 

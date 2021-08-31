@@ -18,9 +18,9 @@ export class AbarrotesBatchPage implements OnInit {
 
   productData: any
   cantidad: number
+  FechaCad: String
   lotes = []
   lote: any
-  fechaCad: Date = new Date()
   data: any;
   porcentaje: any;
 
@@ -38,6 +38,10 @@ export class AbarrotesBatchPage implements OnInit {
     this.productData = this.receptionService.getOrderData();
 
     this.appSettings = getSettingsFileData(this.platform, this.settings);
+
+    var date = new Date();
+    date = new Date(date.setFullYear(date.getFullYear() + 1)); 
+    this.FechaCad = date.toISOString();
 
     if (this.productData.count) {
       this.cantidad = this.productData.count
@@ -57,7 +61,7 @@ export class AbarrotesBatchPage implements OnInit {
 
   addLote() {
 
-    if (this.fechaCad == undefined || this.cantidad <= 0 || this.lote == undefined || this.lote == '') {
+    if (this.FechaCad == undefined || this.cantidad <= 0 || this.lote == undefined || this.lote == '') {
       this.presentToast('Datos faltantes', 'warning')
       return
     }
@@ -68,13 +72,12 @@ export class AbarrotesBatchPage implements OnInit {
       if (pedimento == undefined) {
         this.presentToast('Debes agregar pedimento', 'warning')
       } else {
-        this.fechaCad = new Date(this.fechaCad)
-        let fechaExp = this.fechaCad.getMonth() + '-' + this.fechaCad.getDay() + '-' + this.fechaCad.getFullYear()
+        
 
         if (Number.isInteger(Number(Number(this.cantidad * this.productData.Detail.NumInSale).toFixedNoRounding(4)))) {
           this.lotes.push({
             name: this.lote,
-            expirationDate: '11-22-2019',
+            expirationDate: this.FechaCad,
             quantity: Number(Number(this.cantidad * this.productData.Detail.NumInSale).toFixedNoRounding(4)),
             code: '',
             att1: '',
@@ -88,7 +91,7 @@ export class AbarrotesBatchPage implements OnInit {
           if (dif < 2) {
             this.lotes.push({
               name: this.lote,
-              expirationDate: '11-22-2019',
+              expirationDate: this.FechaCad,
               quantity: Number(this.productData.OpenInvQty),
               code: '',
               att1: '',
@@ -106,7 +109,7 @@ export class AbarrotesBatchPage implements OnInit {
             } else {
               this.lotes.push({
                 name: this.lote,
-                expirationDate: '11-22-2019',
+                expirationDate: this.FechaCad,
                 quantity: Number(Number(this.cantidad * this.productData.Detail.NumInSale).toFixedNoRounding(4)),
                 code: '',
                 att1: '',
@@ -117,13 +120,11 @@ export class AbarrotesBatchPage implements OnInit {
         }
       }
     } else {
-      this.fechaCad = new Date(this.fechaCad)
-      let fechaExp = this.fechaCad.getMonth() + '-' + this.fechaCad.getDay() + '-' + this.fechaCad.getFullYear()
 
       if (Number.isInteger(Number(Number(this.cantidad * this.productData.Detail.NumInSale).toFixedNoRounding(4)))) {
         this.lotes.push({
           name: this.lote,
-          expirationDate: '11-22-2019',
+          expirationDate: this.FechaCad,
           quantity: Number(Number(this.cantidad * this.productData.Detail.NumInSale).toFixedNoRounding(4)),
           code: '',
           att1: '',
@@ -137,7 +138,7 @@ export class AbarrotesBatchPage implements OnInit {
         if (dif < 2) {
           this.lotes.push({
             name: this.lote,
-            expirationDate: '11-22-2019',
+            expirationDate: this.FechaCad,
             quantity: Number(this.productData.OpenInvQty),
             code: '',
             att1: '',
@@ -155,7 +156,7 @@ export class AbarrotesBatchPage implements OnInit {
           } else {
             this.lotes.push({
               name: this.lote,
-              expirationDate: '11-22-2019',
+              expirationDate: this.FechaCad,
               quantity: Number(Number(this.cantidad * this.productData.Detail.NumInSale).toFixedNoRounding(4)),
               code: '',
               att1: '',

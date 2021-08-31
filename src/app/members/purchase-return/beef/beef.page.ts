@@ -298,7 +298,7 @@ export class BeefPage implements OnInit {
       this.router.navigate(['/members/purchase-return-detail'])
     } else {
       this.productData.count = this.detail.map(lote => lote.quantity)
-      .reduce((a, b) => a + b, 0)
+        .reduce((a, b) => a + b, 0)
       this.productData.detalle = this.detail
       this.productData.pallet = ''
       this.NavExtras.setScannedProducts(this.productData)

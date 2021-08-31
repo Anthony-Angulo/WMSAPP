@@ -1,9 +1,6 @@
-import { HttpClient } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
 import { NavExtrasService } from 'src/app/services/nav-extras.service';
-import { environment } from 'src/environments/environment';
 import { Router } from '@angular/router';
-import { Platform } from '@ionic/angular';
 import { ToastController, LoadingController } from '@ionic/angular';
 
 @Component({
@@ -19,12 +16,9 @@ export class PedimentoPage implements OnInit {
   public patente: any;
 
   constructor(
-    private http: HttpClient,
     private navExtras: NavExtrasService,
     private toastController: ToastController,
-    private router: Router,
-    private loading: LoadingController,
-    private platform: Platform
+    private router: Router
   ) { }
 
   ngOnInit() {
@@ -32,17 +26,17 @@ export class PedimentoPage implements OnInit {
 
   agregarPedimento() {
 
-      if (this.aduana == '' || this.aduana == undefined) {
-        this.presentToast('Ingresa aduana', 'warning')
+      if (this.aduana == '' || this.aduana == undefined || this.aduana.length !=2) {
+        this.presentToast('Ingresa aduana o valida la aduana sea igual a 2 caracteres', 'warning')
         return
       } else if (this.year == '' || this.year == undefined) {
         this.presentToast('Ingresa un año', 'warning')
         return
-      } else if(this.documento == '' || this.documento == undefined) { 
-        this.presentToast('Ingresa un documento', 'warning')
+      } else if(this.documento == '' || this.documento == undefined || this.documento.length != 7) { 
+        this.presentToast('Ingresa un documento o valida el documento sea igual a 7 caracteres', 'warning')
         return
-      } else if (this.patente == '' || this.patente == undefined) {
-        this.presentToast('Ingresa un patente', 'warning')
+      } else if (this.patente == '' || this.patente == undefined || this.patente.length != 4) {
+        this.presentToast('Ingresa un patente o valida patente sea igual a 4 caracteres', 'warning')
         return
       }
   

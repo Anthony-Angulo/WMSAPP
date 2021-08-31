@@ -18,6 +18,8 @@ const routes: Routes = [
   { path: 'surtido-abarrotes-batch',  canActivate: [AuthGuard], loadChildren: './surtido-sap/abarrotes-batch/abarrotes-batch.module#AbarrotesBatchPageModule' },
   { path: 'surtido-beef',  canActivate: [AuthGuard], loadChildren: './surtido-sap/beef/beef.module#BeefPageModule' },
   { path: 'full-inventory', loadChildren: './full-inventory/full-inventory.module#FullInventoryPageModule' },
+  { path: 'inventory-product-detail', loadChildren: './full-inventory/detail/product-detail/product-detail.module#ProductDetailPageModule' },
+  { path: 'inventory-product-batch', loadChildren: './full-inventory/detail/product-batch/product-batch.module#ProductBatchPageModule' },
   { path: 'full-abarrotes', loadChildren: './full-inventory/abarrotes/abarrotes.module#AbarrotesPageModule' },
   { path: 'full-beef', loadChildren: './full-inventory/beef/beef.module#BeefPageModule' },
   { path: 'partial-inventory', loadChildren: './partial-inventory/partial-inventory.module#PartialInventoryPageModule' },
@@ -36,9 +38,7 @@ const routes: Routes = [
   { path: 'etiquetas', loadChildren: './etiquetas/etiquetas.module#EtiquetasPageModule' },
   { path: 'etiquetas-transferencias', loadChildren: './etiquetas/etiquetas-transferencias/etiquetas-transferencias.module#EtiquetasTransferenciasPageModule' },
   { path: 'consumointerno', loadChildren: './etiquetas/consumointerno/consumointerno.module#ConsumointernoPageModule' },
-  { path: 'locationlabels', loadChildren: './etiquetas/locationlabels/locationlabels.module#LocationlabelsPageModule' }, 
-
-
+  { path: 'locationlabels', loadChildren: './etiquetas/locationlabels/locationlabels.module#LocationlabelsPageModule' },   
 ];
 
 @NgModule({

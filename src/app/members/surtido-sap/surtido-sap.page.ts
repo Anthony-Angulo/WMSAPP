@@ -55,7 +55,7 @@ export class SurtidoSapPage implements OnInit {
 
     if (productsScanned.DeliveryRowDetailList) {
       let index = this.order.Lines.findIndex(product => product.ItemCode == productsScanned.ItemCode)
-      this.order.Lines[index].count = productsScanned.DeliveryRowDetailList.map(prod => prod.total).reduce((a, b) => a + b, 0)
+      this.order.Lines[index].count = productsScanned.DeliveryRowDetailList.map(prod => prod.Count).reduce((a, b) => a + b, 0)
       let isScanned = this.products.findIndex(prd => prd.ItemCode == productsScanned.ItemCode)
       if (isScanned < 0) {
         this.products.push(productsScanned)
@@ -75,33 +75,22 @@ export class SurtidoSapPage implements OnInit {
   async getOrden() {
     await this.presentLoading('Buscando....');
 
-    let token = await this.storage.get(TOKEN_KEY);
-
-    let headers = new HttpHeaders();
-
-    headers = headers.set('Authorization', `Bearer ${token}`);
-
-    this.http.get(`${this.appSettings.apiSAP}/api/order/deliverySAP/${this.number}`, { headers }).toPromise().then((data: any) => {
-      this.order = data;
-      console.log(this.order)
-      return this.order.Lines.map(x => x.ItemCode)
-    }).then((codes) => {
-      return this.http.get(environment.apiWMS + '/codebardescriptionsVariants/' + codes).toPromise()
-    }).then((codebarDescription: any[]) => {
-      this.order.Lines.map(item => {
-        item.cBDetail = codebarDescription.filter(y => y.codigo_sap == item.ItemCode)
+  
+      this.http.get(`${this.appSettings.apiSAP}/api/order/deliverySAP/${this.number}`).toPromise().then((data: any) => {
+        this.order = data;
+      }).catch(error => {
+        if (error.status == 404) {
+          this.presentToast('No encontrado o no existe', 'warning')
+        } else if (error.status == 400) {
+          this.presentToast(error.statusText, 'warning')
+        } else if (error.status == 204) {
+          this.presentToast('Error de conexion', 'danger')
+        }
+      }).finally(() => {
+        this.hideLoading()
       })
-    }).catch(error => {
-      if (error.status == 404) {
-        this.presentToast('No encontrado o no existe', 'warning')
-      } else if (error.status == 400) {
-        this.presentToast(error.statusText, 'warning')
-      } else if (error.status == 204) {
-        this.presentToast('Error de conexion', 'danger')
-      }
-    }).finally(() => {
-      this.hideLoading()
-    })
+
+    
   }
 
   public searchProductByCode() {
@@ -207,13 +196,9 @@ export class SurtidoSapPage implements OnInit {
         DeliveryRows: DeliveryRowDetailList
       };
 
-      let token = await this.storage.get(TOKEN_KEY);
 
-      let headers = new HttpHeaders();
 
-      headers = headers.set('Authorization', `Bearer ${token}`);
-
-      this.http.post(`${this.appSettings.apiSAP}/api/Delivery/SAP`, recepcionData, { headers }).toPromise().then((data: any) => {
+      this.http.post(`${this.appSettings.apiSAP}/api/Delivery/SAP`, recepcionData).toPromise().then((data: any) => {
         console.log(data);
         this.presentToast('Surtido Concluido', 'success');
         this.order = undefined;
@@ -221,10 +206,11 @@ export class SurtidoSapPage implements OnInit {
         this.products = [];
       }).catch(error => {
         console.log(error)
-        this.presentToast(error, 'danger')
+        this.presentToast(error.error, 'danger')
       }).finally(() => {
         this.hideLoading()
       });
+      
     } else {
       this.presentToast('No hay productos que surtir', 'warning')
       this.hideLoading()

@@ -48,27 +48,23 @@ export class PurchaseReturnDetailPage implements OnInit {
 
     let productsReturn = this.navExtras.getEntry();
 
-    let token = await this.storage.get(TOKEN_KEY);
+      this.http.get(`${this.appSettings.apiSAP}/api/purchasedelivery/return/${productsReturn.DocEntry}`).toPromise().then((res) => {
+        this.Entry = res
+        console.log(res)
+      }).catch((error) => {
+        if (error.status == 404) {
+          this.presentToast('No encontrado o no existe', 'warning')
+          this.router.navigate(['/members/purchase-return'])
+        } else if (error.status == 400) {
+          this.presentToast(error.error, 'warning')
+          this.router.navigate(['/members/purchase-return'])
+        } else {
+          this.presentToast('Error de conexion', 'danger')
+          this.router.navigate(['/members/purchase-return'])
+        }
+      }).finally(() => { this.hideLoading() })
 
-    let headers = new HttpHeaders();
 
-    headers = headers.set('Authorization', `Bearer ${token}`);
-
-    this.http.get(`${this.appSettings.apiSAP}/api/purchasedelivery/return/${productsReturn.DocEntry}`, { headers }).toPromise().then((res) => {
-      this.Entry = res
-      console.log(res)
-    }).catch((error) => {
-      if (error.status == 404) {
-        this.presentToast('No encontrado o no existe', 'warning')
-        this.router.navigate(['/members/purchase-return'])
-      } else if (error.status == 400) {
-        this.presentToast(error.error, 'warning')
-        this.router.navigate(['/members/purchase-return'])
-      } else {
-        this.presentToast('Error de conexion', 'danger')
-        this.router.navigate(['/members/purchase-return'])
-      }
-    }).finally(() => { this.hideLoading() })
   }
 
   ionViewWillEnter() {
@@ -108,49 +104,48 @@ export class PurchaseReturnDetailPage implements OnInit {
 
     let productsReturn = this.navExtras.getEntry();
 
-    let token = await this.storage.get(TOKEN_KEY);
 
-    let headers = new HttpHeaders();
 
-    headers = headers.set('Authorization', `Bearer ${token}`);
+      const products = this.Entry.PDN1.filter(product => product.count)
+        .map(product => {
+          return {
+            ItemCode: product.ItemCode,
+            UoMEntry: product.UomEntry,
+            WarehouseCode: product.WhsCode,
+            Line: product.LineNum,
+            Count: product.count,
+            ItemType: product.Detail.U_IL_TipPes,
+            Group: (product.Detail.QryGroup43 == "Y") ? 43 : 0,
+            Batch: (product.detalle) ? product.detalle : []
+          }
+        })
 
-    const products = this.Entry.PDN1.filter(product => product.count)
-      .map(product => {
-        return {
-          ItemCode: product.ItemCode,
-          UoMEntry: product.UomEntry,
-          WarehouseCode: product.WhsCode,
-          Line: product.LineNum,
-          Count: product.count,
-          ItemType: product.Detail.U_IL_TipPes,
-          Group: (product.Detail.QryGroup43 == "Y") ? 43 : 0,
-          Batch: (product.detalle) ? product.detalle : []
+      if (products.length != 0) {
+        const purchaseReturnData = {
+          order: this.Entry.DocEntry,
+          products
         }
-      })
 
-    if (products.length != 0) {
-      const purchaseReturnData = {
-        order: this.Entry.DocEntry,
-        products
+        this.http.post(`${this.appSettings.apiSAP}/api/PurchaseOrderDeliveryReturn`, purchaseReturnData).toPromise().then((resp) => {
+          this.presentToast("Devolucion Completa", "success")
+          this.router.navigate(['/members/purchase-return'])
+          this.Entry = undefined
+        }).catch(error => {
+          console.log(error)
+          if (error.status == 401) {
+            this.presentToast(error.error.error, "danger");
+          } else {
+            this.presentToast(error.error.error, 'danger')
+          }
+        }).finally(() => {
+          this.hideLoading()
+        })
+      } else {
+        this.presentToast('No hay productos que recibir.', 'warning')
+        this.hideLoading()
       }
 
-      this.http.post(`${this.appSettings.apiSAP}/api/PurchaseOrderDeliveryReturn`, purchaseReturnData, { headers }).toPromise().then((resp) => {
-        this.presentToast("Devolucion Completa", "success")
-        this.router.navigate(['/members/purchase-return'])
-        this.Entry = undefined
-      }).catch(error => {
-        if(error.status == 401) {
-          this.presentToast(error.error, "danger");
-        } else {
-          this.presentToast(error.error, 'danger')
-        }
-      }).finally(() => {
-        this.hideLoading()
-      })
-    } else {
-      this.presentToast('No hay productos que recibir.', 'warning')
-      this.hideLoading()
-    }
+
   }
 
   async presentToast(msg: string, color: string) {

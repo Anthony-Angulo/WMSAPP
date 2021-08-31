@@ -2,13 +2,15 @@ import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { RecepcionDataService } from 'src/app/services/recepcion-data.service';
 import { environment } from 'src/environments/environment';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { NavExtrasService } from 'src/app/services/nav-extras.service';
 import { SettingsService } from '../../../services/settings.service';
 import { Platform } from '@ionic/angular';
 import { AlertController, ToastController, LoadingController } from '@ionic/angular';
-import { getCerosFromEtiqueta, getSettingsFileData } from '../../commons';
+import { getSettingsFileData, getCerosFromEtiquetaInventario } from '../../commons';
+import { Storage } from '@ionic/storage';
 
+const TOKEN_KEY = 'auth-token';
 
 @Component({
   selector: 'app-beef',
@@ -22,7 +24,7 @@ export class BeefPage implements OnInit {
   productData: any
   codigoBarra
   peso
-  fechaProd: Date
+  FechaCad: String
   detail = []
   cantidadEscaneada: number = 0
   cantidadPeso: number = 0
@@ -34,6 +36,7 @@ export class BeefPage implements OnInit {
   codebarDescription: any;
   inputs = [];
   selectedDesc: any;
+  token: any;
 
   constructor(
     private http: HttpClient,
@@ -44,7 +47,8 @@ export class BeefPage implements OnInit {
     private platform: Platform,
     private settings: SettingsService,
     private loading: LoadingController,
-    private alert: AlertController
+    private alert: AlertController,
+    private storage: Storage
   ) { }
 
   async ngOnInit() {
@@ -52,6 +56,12 @@ export class BeefPage implements OnInit {
     this.productData = this.receptionService.getOrderData()
 
     this.appSettings = getSettingsFileData(this.platform, this.settings);
+
+ 
+
+    var date = new Date();
+    date = new Date(date.setFullYear(date.getFullYear() + 1));
+    this.FechaCad = date.toISOString();
 
     if (!this.productData.detalle) {
       this.productData.detalle = []
@@ -76,10 +86,14 @@ export class BeefPage implements OnInit {
       this.productData.Detail.U_IL_PesMax = 100
     }
 
-    await this.presentLoading('Buscando Lotes de producto...');
+    await this.presentLoading('Buscando informacion de producto...');
 
-    this.http.get(`${this.appSettings.apiSAP}/api/batch/${this.productData.WhsCode}/${this.productData.ItemCode}`).toPromise().then((data) => {
-      this.productData.batchs = data;
+    await Promise.all([
+      this.http.get(`${this.appSettings.apiSAP}/api/batch/${this.productData.WhsCode}/${this.productData.ItemCode}`).toPromise(),
+      this.http.get(`${environment.apiCCFN}/codeBar/${this.productData.ItemCode}`).toPromise(),
+    ]).then(([batch, cBDetail]): any => {
+      this.productData.batchs = batch;
+      this.productData.cBDetail = cBDetail;
     }).catch((error) => {
       console.log(error)
       this.presentToast(error.error.error, 'danger')
@@ -88,19 +102,21 @@ export class BeefPage implements OnInit {
     })
 
     if (this.productData.Detail.QryGroup45 == "Y") {
-      this.codebarDescription = this.productData.cBDetail.filter(x => x.proveedor != null)
+      this.codebarDescription = this.productData.cBDetail.filter(x => x.OriginLocation != null)
       this.codebarDescription.forEach(y => {
         this.inputs.push({
-          name: y.proveedor,
+          name: y.OriginLocation,
           type: "radio",
-          label: y.proveedor,
-          value: y.proveedor
+          label: y.OriginLocation,
+          value: y.OriginLocation
         })
       })
 
       this.promptCodeDesc()
       this.presentToast("Selecciona una configuracion", "warning")
     }
+
+    console.log(this.productData)
   }
 
 
@@ -161,6 +177,7 @@ export class BeefPage implements OnInit {
         }, {
           text: 'Aceptar',
           handler: (data) => {
+            console.log(data)
             this.selectedDesc = data
           }
         }
@@ -178,7 +195,7 @@ export class BeefPage implements OnInit {
 
     let pedimento;
 
-    if (this.navExtras.getPedimento() == undefined) {
+    if (this.navExtras.getPedimento() == undefined && this.productData.QryGroup2 == 'Y') {
       this.presentToast("Debes Agregar Un Pedimento", "warning")
       this.peso = 0;
       document.getElementById('input-codigo').setAttribute('value', '');
@@ -196,10 +213,11 @@ export class BeefPage implements OnInit {
 
     let codeBarSettings;
 
-    if (this.productData.QryGroup45 == 'Y') {
-      codeBarSettings = this.productData.cBDetail.findIndex((y: any) => y.proveedor == this.selectedDesc);
+    if (this.productData.Detail.QryGroup45 == 'Y') {
+      codeBarSettings = this.productData.cBDetail.findIndex((y: any) => y.OriginLocation == this.selectedDesc);
+      console.log(codeBarSettings)
     } else {
-      codeBarSettings = this.productData.cBDetail.findIndex((y: any) => y.length == this.codigoBarra.trim().length);
+      codeBarSettings = this.productData.cBDetail.findIndex((y: any) => y.BarcodeLength == this.codigoBarra.trim().length);
     }
 
     if (codeBarSettings < 0) {
@@ -210,14 +228,14 @@ export class BeefPage implements OnInit {
       return
     }
 
-    let pesoDeEtiqueta = this.codigoBarra.substr(this.productData.cBDetail[codeBarSettings].peso_pos - 1, this.productData.cBDetail[codeBarSettings].peso_length);
+    let pesoDeEtiqueta = this.codigoBarra.substr(this.productData.cBDetail[codeBarSettings].WeightPosition - 1, this.productData.cBDetail[codeBarSettings].WeightLength);
 
-    if (this.productData.cBDetail[codeBarSettings].maneja_decimal == 1 && this.productData.cBDetail[codeBarSettings].UOM_id == 4) {
+    if (this.productData.cBDetail[codeBarSettings].HasDecimal.data[0] == 1 && this.productData.cBDetail[codeBarSettings].UoM == 4) {
       this.peso = Number((Number(pesoDeEtiqueta) / 2.2046).toFixed(2));
-    } else if (this.productData.cBDetail[codeBarSettings].maneja_decimal == 1 && this.productData.cBDetail[codeBarSettings].UOM_id == 3) {
+    } else if (this.productData.cBDetail[codeBarSettings].HasDecimal.data[0] == 1 && this.productData.cBDetail[codeBarSettings].UoM == 3) {
       this.peso = Number(pesoDeEtiqueta);
     } else {
-      this.peso = getCerosFromEtiqueta(this.productData, pesoDeEtiqueta, codeBarSettings);
+      this.peso = getCerosFromEtiquetaInventario(this.productData, pesoDeEtiqueta, codeBarSettings);
     }
 
 
@@ -245,7 +263,7 @@ export class BeefPage implements OnInit {
       name: this.codigoBarra.substr(this.codigoBarra.length - 36),
       code: this.codigoBarra.trim(),
       attr1: this.lote,
-      expirationDate: '11-12-2019',
+      expirationDate: this.FechaCad,
       quantity: this.peso,
       pedimento: (pedimento) ? '' : pedimento
     });
@@ -256,9 +274,9 @@ export class BeefPage implements OnInit {
     this.peso = 0;
     document.getElementById('input-codigo').setAttribute('value', '');
     document.getElementById('input-codigo').focus();
+    this.presentToast("Se Escaneo Correctamente", "success");
 
 
-    
   }
 
   async presentToast(msg: string, color: string) {

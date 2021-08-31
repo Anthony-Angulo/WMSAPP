@@ -5,6 +5,7 @@ import { Component, OnInit } from '@angular/core';
 import { environment } from 'src/environments/environment';
 import { SettingsService } from '../../../services/settings.service';
 import { NavExtrasService } from '../../../services/nav-extras.service';
+import { getSettingsFileData } from '../../commons';
 import {
   Platform,
   ToastController,
@@ -13,7 +14,7 @@ import {
 }
   from '@ionic/angular';
 
-const NAME = 'USER_NAME';
+const USER = 'user';
 
 @Component({
   selector: 'app-abarrotes',
@@ -23,7 +24,7 @@ const NAME = 'USER_NAME';
 export class AbarrotesPage implements OnInit {
 
   public productInfo: any;
-  public Filedata: any;
+  public appSettings: any;
   public warehouseCode: string;
   public apiSAPURL: string;
   public uom: any;
@@ -47,16 +48,8 @@ export class AbarrotesPage implements OnInit {
   ngOnInit() {
 
     this.productInfo = this.navExtras.getInventoryProduct();
-    console.log(this.productInfo)
-
-    if (this.platform.is("cordova")) {
-      this.Filedata = this.settings.fileData
-      this.warehouseCode = this.Filedata.sucursal
-      this.apiSAPURL = this.Filedata.apiSAP
-    } else {
-      this.apiSAPURL = environment.apiSAP
-      this.warehouseCode = "S01"
-    }
+    this.uom = this.productInfo.uom.find(x => this.productInfo.Detail.NumInSale == x.BaseQty);
+    this.appSettings = getSettingsFileData(this.platform, this.settings);
 
   }
 
@@ -65,101 +58,85 @@ export class AbarrotesPage implements OnInit {
     this.total = Number(this.uom.BaseQty * this.cantidad)
   }
 
-  async promptCloseProduct() {
-    const alert = await this.alertController.create({
-      header: 'Cerrar Producto',
-      message: 'Si cierra el producto ya no podra seguir inventariandolo. Confirmar para continuar.',
-      buttons: [
-        {
-          text: 'Cancelar',
-          role: 'cancel',
-          cssClass: 'secondary',
-        },
-        {
-          text: 'Aceptar',
-          handler: () => {
-            this.closeProduct()
-          }
-        }
-      ]
-    });
-
-    await alert.present();
+  productDetail() {
+    this.router.navigate(['/members/inventory-product-detail']);
   }
 
-  async closeProduct() {
 
-    await this.presentLoading('Cerrando Producto..')
-
-    let data = {
-      SAPheader: this.productInfo.headerId,
-      ItemCode: this.productInfo.Detail.ItemCode
-    }
-
-    this.http.post(environment.apiWMS + '/closeProduct', data)
-      .toPromise().then((resp: any) => {
-        if (resp.success) {
-          this.presentToast('Se cerro correctamente', 'success')
-          this.router.navigate(['/members/full-inventory'])
-        }
-      }).catch(err => {
-        console.log(err)
-        this.presentToast('Error al cerrar producto', 'danger')
-      }).finally(() => {
-        this.hideLoading()
-      })
-  }
 
   async saveProduct() {
 
-    let codeBars = []
-
-    if(this.productInfo.Detail.ManBtchNum == 'Y'){
-       codeBars = [{
-        ItemCode: this.productInfo.Detail.ItemCode,
-        ItemName: this.productInfo.Detail.ItemName,
-        codebar: '',
-        Lote: this.lote,
-        Quantity: this.total
-      }]
-    }
-
-    console.log(codeBars)
     if (this.total == undefined) {
       this.presentToast("Debes ingresar una cantidad", "warning")
-    } else {
-      this.presentLoading('Guardando...')
-      this.storage.get(NAME).then(nombre => {
-        this.rows.push({
-          ItemCode: this.productInfo.Detail.ItemCode,
-          ItemName: this.productInfo.Detail.ItemName,
-          Location: this.productInfo.location,
-          InvQuantity: this.total,
-          EmployeeName: nombre
-        })
+      return
+    }
 
-        let datos = {
-          SapHeaderId: this.productInfo.headerId,
-          ItemCode: this.productInfo.Detail.ItemCode,
-          ItemName: this.productInfo.Detail.ItemName,
-          UOM: this.uom.BASEUOM,
-          ManejaLote: this.productInfo.Detail.ManBtchNum,
-          TipoPeso: this.productInfo.Detail.U_IL_TipPes,
-          rows: this.rows,
-          codeBars
+    let codeBars = []
+    let datos = []
+
+    let user = await this.storage.get(USER);
+
+
+    this.presentLoading('Guardando...');
+
+    return this.http.get(`${environment.apiCCFN}/inventoryProduct/${this.productInfo.headerId}/${this.productInfo.Detail.ItemCode}`).toPromise().then((res: any) => {
+
+      if (res.length > 0) {
+        let update = {
+          id: res[0].ID,
+          itemcode: this.productInfo.Detail.ItemCode,
+          quantity: this.total + res[0].Quantity
         }
 
-        this.http.post(environment.apiWMS + '/saveOrUpdateInventoryRequestRow', datos).toPromise().then((resp) => {
-          this.presentToast('Guardado Correctamente', 'success')
-          this.cantidad = 0
-          this.router.navigate(['/members/full-inventory'])
-        }).catch(err => {
-          this.presentToast('Error al guardar', 'danger')
-        }).finally(() => {
-          this.hideLoading()
-        })
-      })
-    }
+        this.productInfo.productId = res[0].ID
+
+        return this.http.put(`${environment.apiCCFN}/inventoryProduct`, update).toPromise()
+      } else {
+
+         datos.push([this.productInfo.Detail.ItemCode,
+          this.productInfo.Detail.ItemName,
+          this.total,
+          0,
+          this.productInfo.Detail.ManBtchNum,
+          this.productInfo.Detail.U_IL_TipPes,
+          user.id,
+          this.productInfo.headerId])
+
+        return this.http.post(`${environment.apiCCFN}/inventoryProduct`, datos).toPromise()
+      }
+    }).then((res: any) => {
+
+      let detail = {
+        quantity: this.total,
+        zone: this.productInfo.location,
+        userId: user.id,
+        inventoryProductId: (res.insertId == 0) ? this.productInfo.productId : res.insertId
+      }
+
+      return this.http.post(`${environment.apiCCFN}/inventoryDetail`, detail).toPromise()
+
+    }).then((res: any) => {
+
+      if(this.productInfo.Detail.ManBtchNum == 'Y') {
+        codeBars.push([
+          this.total,
+          this.lote,
+          'Sin Codigo de Barra',
+          res.id
+        ])
+      }
+
+      return this.http.post(`${environment.apiCCFN}/inventoryCodeBar`, codeBars).toPromise()
+    }).then((res: any) => {
+      if(res) {
+        this.presentToast('Guardado Correctamente', 'success')
+        this.cantidad = 0
+        this.router.navigate(['/members/full-inventory'])
+      }
+    }).catch((err: any) => {
+      this.presentToast(err.message, "danger")
+    }).finally(() => this.hideLoading());
+
   }
 
   async presentToast(msg: string, color: string) {

@@ -27,7 +27,7 @@ export class ProductsSapPage implements OnInit {
   data
   priceList = []
   apiSAP: string;
-  CbAbarrote
+  CbAbarrote: any;
   CbCarne
   priceId
   searchType: any;
@@ -53,34 +53,32 @@ export class ProductsSapPage implements OnInit {
 
     if (this.CbAbarrote == '' || this.CbAbarrote == undefined) return
 
+    
     await this.presentLoading('Buscando producto....');
 
-    let token = await this.storage.get(TOKEN_KEY);
+      
 
-    let headers = new HttpHeaders();
+      Promise.all([
+        this.http.get(`${this.appSettings.apiSAP}/api/codebar/${this.CbAbarrote}`).toPromise(),
+        this.http.get(`${this.appSettings.apiSAP}/api/pricelist/WmsProducts`).toPromise()
+      ]).then(([product, priceList]: any) => {
+        this.priceList = priceList.filter(y => y.ListNum == 1 || y.ListNum == 13 || y.ListNum == 16 || y.ListNum == 15 || y.ListNum == 14);
+        return this.http.get(`${this.appSettings.apiSAP}/api/products/crmtosell/${product.Detail.ItemCode}/1/${this.appSettings.sucursal}`).toPromise()
+      }).then((prod: any) => {
+        this.inventory = prod
+        this.uom = this.inventory.UOMList.find(x => x.UomEntry == this.inventory.UomEntry)
+      }).catch(async error => {
+        if (error.status == 401) {
+          this.presentToast(error.error, "danger");
+        } else {
+          this.presentToast('Error al buscar producto', 'danger');
+        }
+      }).finally(() => {
+        this.hideLoading()
+      });
 
-    headers = headers.set('Authorization', `Bearer ${token}`);
-
-    Promise.all([
-      this.http.get(`${this.appSettings.apiSAP}/api/codebar/${this.CbAbarrote}`, { headers }).toPromise(),
-      this.http.get(`${this.appSettings.apiSAP}/api/pricelist/WmsProducts`, { headers }).toPromise()
-    ]).then(([product, priceList]: any) => {
-      this.priceList = priceList.filter(y => y.ListNum == 1 || y.ListNum == 13 || y.ListNum == 16 || y.ListNum == 15 || y.ListNum == 14);
-      return this.http.get(`${this.appSettings.apiSAP}/api/products/crmtosell/${product.Detail.ItemCode}/1/${this.appSettings.sucursal}`).toPromise()
-    }).then((prod: any) => {
-      this.inventory = prod
-      this.uom = this.inventory.UOMList.find(x => x.UomEntry == this.inventory.UomEntry)
-    }).catch(async error => {
-      if(error.status == 401) {
-        this.presentToast(error.error,"danger");
-      } else {
-        this.presentToast('Error al buscar producto', 'danger');
-      }
-    }).finally(() => {
-      this.hideLoading()
-    });
-
-    this.CbAbarrote = '';
+      this.CbAbarrote = '';
+    
   }
 
   async searchProductByCbBeef() {
@@ -91,15 +89,11 @@ export class ProductsSapPage implements OnInit {
 
     let gtin = this.CbCarne.substr(3 - 1, 14)
 
-    let token = await this.storage.get(TOKEN_KEY);
 
-    let headers = new HttpHeaders();
-
-    headers = headers.set('Authorization', `Bearer ${token}`);
 
     Promise.all([
       this.http.get(`${environment.apiWMS}/getProductByGTIN/${gtin}`).toPromise(),
-      this.http.get(`${this.appSettings.apiSAP}/api/pricelist/WmsProducts`, { headers }).toPromise()
+      this.http.get(`${this.appSettings.apiSAP}/api/pricelist/WmsProducts`).toPromise()
     ]).then(([product, priceList]: any) => {
       this.priceList = priceList.filter(y => y.ListNum == 1 || y.ListNum == 13 || y.ListNum == 16 || y.ListNum == 15 || y.ListNum == 14);
       return this.http.get(`${this.appSettings.apiSAP}/api/products/crmtosell/${product.codigo_sap}/1/${this.appSettings.sucursal}`).toPromise()
@@ -107,8 +101,8 @@ export class ProductsSapPage implements OnInit {
       this.inventory = prod
       this.uom = this.inventory.UOMList.find(x => x.UomEntry == this.inventory.UomEntry)
     }).catch(async error => {
-      if(error.status == 401) {
-        this.presentToast(error.error,"danger");
+      if (error.status == 401) {
+        this.presentToast(error.error, "danger");
       } else {
         this.presentToast('Error al buscar producto', 'danger');
       }

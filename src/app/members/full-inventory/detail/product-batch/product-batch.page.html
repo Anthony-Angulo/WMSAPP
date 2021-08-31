@@ -1,0 +1,32 @@
+<ion-header>
+  <ion-toolbar class="tool-bar">
+    <ion-title>Lotes de Producto</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-row class="table">
+    <ion-col size="3">
+      Lote
+    </ion-col>
+    <ion-col size="3">
+      Ctd
+    </ion-col>
+    <ion-col size="5.5">
+      CodeBar 
+    </ion-col>
+  </ion-row>
+  <ion-row class="text-content" *ngFor="let batch of productBatch; let index = index" 
+  (click)="promptelminateBatch(index)">
+    <ion-col size="3">
+      {{batch.Batch}}
+    </ion-col>
+    <ion-col size="3">
+      {{batch.Quantity}}
+    </ion-col>
+    <ion-col size="5.5">
+      {{batch.CodeBar}} 
+    </ion-col>
+  </ion-row>
+
+</ion-content>

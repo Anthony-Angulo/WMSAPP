@@ -59,13 +59,9 @@ export class ScannCajasPage implements OnInit {
 
     await this.presentLoading('Guardando codigo..');
 
-    let token = await this.storage.get(TOKEN_KEY);
 
-      let headers = new HttpHeaders();
 
-      headers = headers.set('Authorization', `Bearer ${token}`);
-
-    this.http.get(`${this.appSettings.apiSAP}/api/Codebar/${this.Cb}`, { headers }).toPromise().then((resp: any) => {
+    this.http.get(`${this.appSettings.apiSAP}/api/Codebar/${this.Cb}`).toPromise().then((resp: any) => {
       if(resp != null){
         this.presentAlert(resp.Detail.ItemCode)
       } else {
@@ -76,7 +72,7 @@ export class ScannCajasPage implements OnInit {
           UOMEntry: this.uomentry
         }
     
-        this.http.post(`${environment.apiSAP}/api/Codebar`, data, { headers }).toPromise().then((resp) => {
+        this.http.post(`${environment.apiSAP}/api/Codebar`, data).toPromise().then((resp) => {
           if(resp){
             this.router.navigate(['/members/home'])
             this.presentToast('Se guardo exitosamente','success')

@@ -7,7 +7,7 @@ import { Storage } from '@ionic/storage';
 import { getSettingsFileData } from '../../commons';
 import { EtiquetasTransferencia } from '../../../interfaces/etiquetasTransferencia';
 
-const TOKEN_KEY = 'auth_token';
+const TOKEN_KEY = 'auth-token';
 
 @Component({
   selector: 'app-etiquetas-transferencias',
@@ -44,14 +44,9 @@ export class EtiquetasTransferenciasPage implements OnInit {
 
     await this.presentLoading('Buscando....');
 
-    let token = await this.storage.get(TOKEN_KEY);
 
-    let headers = new HttpHeaders();
-
-    headers = headers.set('Authorization', `Bearer ${token}`);
-
-    this.http.get(`${this.appSettings.apiSAP}/api/InventoryTransferRequest/WmsTransferLabels/${this.number}/DocNum`, { headers }).toPromise().then((data: any) => {
-      console.log(data)
+    this.http.get(`${this.appSettings.apiSAP}/api/InventoryTransferRequest/WmsTransferLabels/${this.number}/DocNum`).toPromise().then((data: any) => {
+      
       const request: any = {
         OWTQ: data.OWTQ,
         WTQ1: data.WTQ1
@@ -103,6 +98,8 @@ export class EtiquetasTransferenciasPage implements OnInit {
     }).finally(() => {
       this.hideLoading()
     })
+
+    
   }
 
   async printLabel(index: number) {
@@ -111,26 +108,24 @@ export class EtiquetasTransferenciasPage implements OnInit {
 
     let post: EtiquetasTransferencia = {
       WHS: this.data.Transfers[index].Filler,
-      IDPrinter: (this.IpImpresora == undefined) ? 'S01-recepcion01' : this.IpImpresora,
+      IDPrinter: (this.appSettings.IpImpresora == undefined) ? 'S01-abarrotes01' : this.appSettings.IpImpresora,
       Pallet: (this.data.Transfers[index].Detail[0].U_Tarima) ? this.data.Transfers[index].Detail[0].U_Tarima : '',
       Request: this.data.OWTQ.DocNum,
       Transfer: this.data.Transfers[index].DocNum,
       RequestCopy: (this.data.Transfers[index].Request) ? this.data.Transfers[index].Request.DocNum : ''
     }
 
-    let token = await this.storage.get(TOKEN_KEY);
+    console.log(post) 
 
-    let headers = new HttpHeaders();
-
-    headers = headers.set('Authorization', `Bearer ${token}`);
-
-    this.http.post(`${this.appSettings.apiSAP}/api/Impresion/WmsTarima`, post, { headers }).toPromise().catch(error => {
-      this.presentToast('Error al imprimir etiquetas', 'danger')
-      console.log(error)
-    }).finally(() => {
-      this.hideLoading()
-      this.presentToast('Impresion Completado', 'success')
-    });
+  
+      this.http.post(`${this.appSettings.apiSAP}/api/Impresion/WmsTarima`, post).toPromise().catch(error => {
+        this.presentToast('Error al imprimir etiquetas', 'danger')
+        console.log(error)
+      }).finally(() => {
+        this.hideLoading()
+        this.presentToast('Impresion Completado', 'success')
+      });
+    
   }
 
 

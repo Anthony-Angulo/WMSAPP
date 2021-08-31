@@ -4,11 +4,10 @@ import { environment } from 'src/environments/environment';
 import { SettingsService } from '../../services/settings.service';
 import { NavExtrasService } from '../../services/nav-extras.service';
 import { Router } from '@angular/router';
-import { Storage } from '@ionic/storage';
 import { getSettingsFileData } from '../commons';
 import { Platform, ToastController, LoadingController, AlertController } from '@ionic/angular';
-
-const TOKEN_KEY = 'auth_token';
+import { InventoryOrders } from '../../interfaces/fullInventory';
+import { Settings } from '../../interfaces/settings';
 
 @Component({
   selector: 'app-full-inventory',
@@ -17,22 +16,17 @@ const TOKEN_KEY = 'auth_token';
 })
 export class FullInventoryPage implements OnInit {
 
-  public appSettings: any;
+  inventory_orders: InventoryOrders;
+  appSettings: Settings;
 
   load: any;
-  inventory_orders: any;
-  orders: boolean = true
-  productCode: string
-  Filedata: any;
-  warehouseCode: any;
-  apiSAPURL: any;
+  orders: boolean = true;
+  productCode: string;
   productDetail: any;
   headerId: number;
-  employeeName: any;
   search: string;
-  searchType: any;
-  location: any;
-
+  searchType: boolean;
+  location: string;
 
 
   constructor(
@@ -44,20 +38,21 @@ export class FullInventoryPage implements OnInit {
     private alertController: AlertController,
     private navExtras: NavExtrasService,
     private loading: LoadingController,
-    private storage: Storage
   ) { }
 
   async ngOnInit() {
 
     await this.presentLoading('Buscando..');
 
-    this.http.get(`${environment.apiWMS}/fullInventoryRequestList`).toPromise().then((inventory_orders: any) => {
-      this.inventory_orders = inventory_orders
-    }).catch(() => {
-      this.presentToast('Error al obtener ordenes.', 'danger')
-    }).finally(() => {
-      this.hideLoading()
-    });
+
+    this.http.get(`${environment.apiCCFN}/inventory/fullInventory`)
+      .toPromise().then((inventory_orders: InventoryOrders) => {
+        this.inventory_orders = inventory_orders;
+      }).catch(() => {
+        this.presentToast('Error al obtener ordenes.', 'danger');
+      }).finally(() => {
+        this.hideLoading();
+      });
 
     this.appSettings = getSettingsFileData(this.platform, this.settings);
 
@@ -92,7 +87,7 @@ export class FullInventoryPage implements OnInit {
   }
 
   goToInventory(index: number) {
-    this.headerId = this.inventory_orders[index].id
+    this.headerId = this.inventory_orders[index].ID
     this.orders = false
     this.promptLocation()
   }
@@ -101,90 +96,20 @@ export class FullInventoryPage implements OnInit {
 
     await this.presentLoading('Buscando Producto...');
 
-    let token = await this.storage.get(TOKEN_KEY);
-
-    let headers = new HttpHeaders();
-
-    headers = headers.set('Authorization', `Bearer ${token}`)
 
     Promise.all([
-      this.http.get(`${this.appSettings.apiSAP}/api/Products/Detail/${this.productCode.toUpperCase()}`, {headers}).toPromise(),
-      this.http.get(`${environment.apiWMS}/checkProduct/${this.productCode.toUpperCase()}/${this.headerId}`).toPromise(),
-      this.http.get(`${environment.apiWMS}/codebardescriptionsVariants/${this.productCode.toUpperCase()}`).toPromise()
-    ]).then(([productDetail, prodStatus, cBDetail]: any) => {
+      this.http.get(`${this.appSettings.apiSAP}/api/Products/Detail/${this.productCode.toUpperCase()}`).toPromise(),
+      this.http.get(`${environment.apiCCFN}/codeBar/${this.productCode.toUpperCase()}`).toPromise()
+    ]).then(([productDetail, cBDetail]: any) => {
 
-      if(productDetail.Detail.ItemName == null) {
-        this.presentToast("No se Encontre Un Producto Con Ese Codigo","warning");
-        return
-      } else if(prodStatus.Status == 1) {
-        this.presentToast("Este Producto Ya Fue Cerrado","warning");
+      if (productDetail.Detail.ItemName == null) {
+        this.presentToast("No se Encontre Un Producto Con Ese Codigo", "warning");
         return
       }
 
-        this.productDetail = productDetail;
-        this.productDetail.headerId = this.headerId;
-        this.productDetail.location = this.location;
-        this.navExtras.setInventoryProduct(this.productDetail);
-
-        if(this.productDetail.Detail.U_IL_TipPes == "F") {
-          this.router.navigate(['/members/full-abarrotes']);
-        }
-        
-        if(cBDetail.length != 0) {
-          this.productDetail.cBDetail = cBDetail;
-        } else {
-          this.productDetail.cBDetaiil = [];
-        }
-
-        this.router.navigate(['/members/full-beef']);
-    }).catch(async err => {
-      if(err.status == 401) {
-        this.presentToast(err.error,"danger");
-      } else {
-        this.presentToast(err.error,"danger");
-      }
-    }).finally(() => {
-      this.hideLoading();
-    })
-  }
-
-  async searchProductByCb() {
-
-
-    if(this.search == '') return
-
-    await this.presentLoading('Buscando Producto...');
-
-    let token = await this.storage.get(TOKEN_KEY);
-
-    let headers = new HttpHeaders();
-
-    headers = headers.set('Authorization', `Bearer ${token}`)
-
-    this.productDetail = await this.http.get(`${this.appSettings.apiSAP}/api/CodeBar/${this.search}`, { headers }).toPromise();
-
-    if (this.productDetail.Detail.ItemName == null) {
-      this.presentToast("No se Encontro Un Producto Con Ese Codigo", "warning");
-      return
-    }
-
-    Promise.all([
-      this.http.get(`${environment.apiWMS}/checkProduct/${this.productDetail.Detail.ItemCode}/${this.headerId}`).toPromise(),
-      this.http.get(`${environment.apiWMS}/codebardescriptionsVariants/${this.productDetail.Detail.ItemCode}`).toPromise()
-    ]).then(([prodStatus, cBDetail]: any) => {
-
-      if (prodStatus.Status == 1) {
-        this.presentToast("Este Producto Ya Fue Cerrado", "warning");
-        return
-      }
-
+      this.productDetail = productDetail;
       this.productDetail.headerId = this.headerId;
       this.productDetail.location = this.location;
-      this.navExtras.setInventoryProduct(this.productDetail);
-
-      if (this.productDetail.Detail.U_IL_TipPes == "F") {
-        this.router.navigate(['/members/full-abarrotes']);
-      }
 
       if (cBDetail.length != 0) {
         this.productDetail.cBDetail = cBDetail;
@@ -192,8 +117,76 @@ export class FullInventoryPage implements OnInit {
         this.productDetail.cBDetaiil = [];
       }
 
+      this.navExtras.setInventoryProduct(this.productDetail);
+
+
+
+      if (this.productDetail.Detail.U_IL_TipPes == "F") {
+        this.router.navigate(['/members/full-abarrotes']);
+        return
+      }
+
       this.router.navigate(['/members/full-beef']);
-      
+
+    }).catch(async err => {
+      if (err.status == 401) {
+        this.presentToast(err.error, "danger");
+      } else {
+        this.presentToast(err.error, "danger");
+      }
+    }).finally(() => {
+      this.hideLoading();
+    })
+
+
+  }
+
+  async searchProductByCb() {
+
+
+    if (this.search == '') return
+
+    await this.presentLoading('Buscando Producto...');
+
+
+
+
+    this.productDetail = await this.http.get(`${this.appSettings.apiSAP}/api/CodeBar/${this.search}`).toPromise();
+
+    if (this.productDetail.Detail.ItemName == null) {
+      this.presentToast("No se Encontro Un Producto Con Ese Codigo", "warning");
+      return
+    }
+
+    Promise.all([
+      this.http.get(`${this.appSettings.apiSAP}/api/Products/Detail/${this.productDetail.Detail.ItemCode}`).toPromise(),
+      this.http.get(`${environment.apiCCFN}/codeBar/${this.productDetail.Detail.ItemCode}`).toPromise()
+    ]).then(([productDetail, cBDetail]: any) => {
+
+      if (productDetail.Detail.ItemName == null) {
+        this.presentToast("No se Encontre Un Producto Con Ese Codigo", "warning");
+        return
+      }
+
+      this.productDetail = productDetail;
+      this.productDetail.headerId = this.headerId;
+      this.productDetail.location = this.location;
+
+      if (cBDetail.length != 0) {
+        this.productDetail.cBDetail = cBDetail;
+      } else {
+        this.productDetail.cBDetaiil = [];
+      }
+
+      this.navExtras.setInventoryProduct(this.productDetail);
+
+      if (this.productDetail.Detail.U_IL_TipPes == "F") {
+        this.router.navigate(['/members/full-abarrotes']);
+        return
+      }
+
+      this.router.navigate(['/members/full-beef']);
+
     }).catch((err) => {
       this.presentToast(err.error, "danger");
     }).finally(() => {

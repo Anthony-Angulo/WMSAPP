@@ -16,7 +16,7 @@ const TOKEN_KEY = 'auth-token';
 })
 export class ConsumointernoPage implements OnInit {
 
-  public appSettings: any; 
+  public appSettings: any;
 
   productNumber: string;
   productDetail: any;
@@ -33,7 +33,7 @@ export class ConsumointernoPage implements OnInit {
     private storage: Storage) { }
 
   ngOnInit() {
-   this.appSettings = getSettingsFileData(this.platform, this.settings);
+    this.appSettings = getSettingsFileData(this.platform, this.settings);
   }
 
   async getProducto() {
@@ -43,28 +43,25 @@ export class ConsumointernoPage implements OnInit {
       return
     }
 
-    let token = await this.storage.get(TOKEN_KEY);
-
-    let headers = new HttpHeaders();
-
-    headers = headers.set('Authorization', `Bearer ${token}`)
-
     await this.presentLoading('Buscando Producto..');
 
-    this.http.get(`${this.appSettings.apiSAP}/api/Products/ConsumoInterno/${this.productNumber.toUpperCase()}`, {headers}).toPromise().then((consumoInterno: ConsumoInterno) => {
-      if (consumoInterno.ItemName == null) {
-        this.presentToast('Producto No Encontrado', 'warning');
-      } else {
-        this.productDetail = consumoInterno;
-      }
-    }).catch((err) => { 
-      if(err.status == 401) {
-        this.presentToast(err.error, "danger");
-      } else {
-        this.presentToast(err.error, "danger");
-      }
-      
-    }).finally(() => { this.hideLoading() });
+
+      this.http.get(`${this.appSettings.apiSAP}/api/Products/ConsumoInterno/${this.productNumber.toUpperCase()}`).toPromise().then((consumoInterno: ConsumoInterno) => {
+        if (consumoInterno.ItemName == null) {
+          this.presentToast('Producto No Encontrado', 'warning');
+        } else {
+          this.productDetail = consumoInterno;
+        }
+      }).catch((err) => {
+        if (err.status == 401) {
+          this.presentToast(err.error, "danger");
+        } else {
+          this.presentToast(err.error, "danger");
+        }
+
+      }).finally(() => { this.hideLoading() });
+
+
   }
 
   async printLabel() {
@@ -85,18 +82,14 @@ export class ConsumointernoPage implements OnInit {
       IDPrinter: (this.appSettings.IpImpresora == undefined) ? 'S01-recepcion01' : this.appSettings.IpImpresora,
     };
 
-    let token = await this.storage.get(TOKEN_KEY);
+      this.http.post(`${this.appSettings.apiSAP}/api/impresion/carnes`, post).toPromise().catch(error => {
+        this.presentToast('Error al imprimir etiquetas', 'danger')
+      }).finally(() => {
+        this.hideLoading()
+        this.presentToast('Impresion Completado', 'success')
+      });
 
-    let headers = new HttpHeaders();
 
-    headers = headers.set('Authorization', `Bearer ${token}`)
-
-    this.http.post(`${this.appSettings.apiSAP}/api/impresion/carnes`, post, {headers}).toPromise().catch(error => {
-      this.presentToast('Error al imprimir etiquetas', 'danger')
-    }).finally(() => {
-      this.hideLoading()
-      this.presentToast('Impresion Completado', 'success')
-    });
   }
 
   async presentToast(msg: string, color: string) {
