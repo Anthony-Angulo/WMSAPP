@@ -46,8 +46,7 @@ export class AuthenticationService {
         this.authenticationState.next(true);
         this.storage.set(USER,data.AppLogin);
         return this.storage.set(TOKEN_KEY, data.token)
-      }
-    }).catch(error => {
+      }).catch(error => {
       if(error.status == 400){
         this.presentToast(error.error,"danger")
       } else {
