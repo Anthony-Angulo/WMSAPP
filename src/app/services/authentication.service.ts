@@ -38,16 +38,15 @@ export class AuthenticationService {
   }
 
   async login(value) {
-    console.log(value)
 
-    await this.presentLoading('Inciando Session.....')
+    await this.presentLoading('Inciando Session.....');
 
     this.http.post(`${environment.apiSAP}/api/Account/Login`,value).toPromise().then((data: any) => {
       console.log(data)
         this.authenticationState.next(true);
         this.storage.set(USER,data.AppLogin);
         return this.storage.set(TOKEN_KEY, data.token)
-    }).catch(error => {
+      }).catch(error => {
       if(error.status == 400){
         this.presentToast(error.error,"danger")
       } else {
