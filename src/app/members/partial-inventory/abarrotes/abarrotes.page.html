@@ -4,8 +4,8 @@
       <ion-back-button routerLink="/members/partial-inventory-detail"></ion-back-button>
     </ion-buttons>
     <ion-buttons slot="end">
-        <ion-button class="aceptar" (click)="promptCloseProduct()">Cerrar</ion-button>
-    </ion-buttons>
+      <ion-button class="aceptar" (click)="productDetail()">Detalle</ion-button>
+  </ion-buttons>
     <ion-title>Abarrotes</ion-title>
   </ion-toolbar>
 </ion-header>
@@ -27,6 +27,13 @@
       <ion-select class="product-scann" [(ngModel)]="uom" name="uom">
         <ion-select-option *ngFor="let um of productInfo.uom" [value]="um">{{um.UomCode}}</ion-select-option>
       </ion-select>
+    </ion-col>
+  </ion-row>
+
+  <ion-row *ngIf="productInfo.NeedBatch == 'Y'">
+    <ion-col>
+      <h6>Lote</h6>
+        <ion-input class="input-recepcion" [(ngModel)]="lote" name="lote"></ion-input>
     </ion-col>
   </ion-row>
 

@@ -1,12 +1,16 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
 import { SettingsService } from './../../services/settings.service';
 import { RecepcionDataService } from 'src/app/services/recepcion-data.service';
 import { NavExtrasService } from 'src/app/services/nav-extras.service';
 import { environment } from 'src/environments/environment';
 import { Router } from '@angular/router';
+import { Storage } from '@ionic/storage';
 import { Platform } from '@ionic/angular';
 import { ToastController, LoadingController, AlertController } from '@ionic/angular';
+import { getSettingsFileData } from '../commons';
+
+const TOKEN_KEY = 'auth-token';
 
 @Component({
   selector: 'app-recepcion-sap',
@@ -15,8 +19,10 @@ import { ToastController, LoadingController, AlertController } from '@ionic/angu
 })
 export class RecepcionSapPage implements OnInit {
 
+  public appSettings: any;
+
   order: any;
-  number: number;
+  public number: number;
   load: any;
   products: any = []
   search
@@ -35,16 +41,12 @@ export class RecepcionSapPage implements OnInit {
     private loading: LoadingController,
     private alertController: AlertController,
     private platform: Platform,
+    private storage: Storage
   ) { }
 
   ngOnInit() {
 
-    if (this.platform.is("cordova")) {
-      this.data = this.settings.fileData
-      this.apiSAP = this.data.apiSAP
-    } else {
-      this.apiSAP = environment.apiSAP
-    }
+    this.appSettings = getSettingsFileData(this.platform, this.settings);
 
   }
 
@@ -54,56 +56,54 @@ export class RecepcionSapPage implements OnInit {
 
     console.log(productsScanned)
 
-    if (productsScanned != null) {
-      if (productsScanned.count <= 0) {
-        let ind = this.products.findIndex(product => product.ItemCode == productsScanned.ItemCode)
-        this.products.splice(ind, 1)
-      } else {
-        let index = this.order.POR1.findIndex(product => product.ItemCode == productsScanned.ItemCode)
-        this.order.POR1[index].count = productsScanned.count
-        this.products.push(productsScanned)
+    if (productsScanned == null) return
+
+    if (productsScanned.count <= 0) {
+      let ind = this.products.findIndex(product => product.ItemCode == productsScanned.ItemCode)
+      if (ind >= 0) {
+        this.products.splice(ind, 1);
       }
+    } else {
+      let index = this.order.POR1.findIndex(product => product.ItemCode == productsScanned.ItemCode)
+      this.order.POR1[index].count = productsScanned.count
+      this.products.push(productsScanned)
     }
 
-    console.log(this.products)
     this.receptionService.setReceptionData(null)
   }
 
   async getOrden() {
-    await this.presentLoading('Buscando....')
-    this.http.get(this.apiSAP + '/api/purchaseorder/Reception/' + this.number).toPromise().then((data: any) => {
-      this.order = data;
-      console.log(this.order)
-      if (this.order.OPOR.U_IL_Pedimento != null) {
-        this.navExtras.setPedimento(this.order.OPOR.U_IL_Pedimento)
-      }
-      return this.order.POR1.map(x => x.ItemCode)
-    }).then((codes) => {
-      console.log(codes)
-      return this.http.get(environment.apiWMS + '/codebardescriptionsVariants/' + codes).toPromise()
-    }).then((codebarDescription: any[]) => {
-      console.log(codebarDescription)
-      this.order.POR1.map(item => {
-        item.cBDetail = codebarDescription.filter(y => y.codigo_sap == item.ItemCode)
+
+    await this.presentLoading('Buscando....');
+
+
+      this.http.get(`${this.appSettings.apiSAP}/api/purchaseorder/Reception/${this.number}`).toPromise().then((data: any)  => {
+        this.order = data;
+        if (this.order.OPOR.U_IL_Pedimento != null) {
+          this.navExtras.setPedimento(this.order.OPOR.U_IL_Pedimento)
+        }
+      }).catch(async error => {
+        if (error.status == 404) {
+          this.presentToast('No encontrado o no existe', 'warning')
+        } else if (error.status == 400) {
+          this.presentToast(error.error, 'warning')
+        } else if (error.status == 401) {
+          this.presentToast(error.error, "danger");
+        } else {
+          this.presentToast('Error de conexion', 'danger')
+        }
+      }).finally(() => {
+        this.hideLoading();
       })
-      console.log(this.order)
-    }).catch(error => {
-      console.log(error)
-      if (error.status == 404) {
-        this.presentToast('No encontrado o no existe', 'warning')
-      } else if (error.status == 400) {
-        this.presentToast(error.error, 'warning')
-      } else {
-        this.presentToast('Error de conexion', 'danger')
-      }
-    }).finally(() => {
-      this.hideLoading()
-    })
+
   }
 
   searchProductByCode() {
 
     let index = this.order.POR1.findIndex(x => x.ItemCode == this.search.toUpperCase())
+
+
+
     if (index >= 0) {
       if (this.order.POR1[index].LineStatus == 'O') {
         this.receptionService.setOrderData(this.order.POR1[index])
@@ -137,6 +137,7 @@ export class RecepcionSapPage implements OnInit {
           return false
         }
       })
+
       if (index >= 0) {
         if (Number(this.ctd) > Number(this.order.POR1[index].OpenQty)) {
           this.presentToast('Cantidad Excede el limite', 'warning')
@@ -215,8 +216,7 @@ export class RecepcionSapPage implements OnInit {
 
   async sendProducts() {
 
-    await this.presentLoading('Enviando....')
-
+    await this.presentLoading('Enviando....');
 
 
     const products = this.order.POR1.filter(product => product.count).map(product => {
@@ -248,16 +248,19 @@ export class RecepcionSapPage implements OnInit {
         products
       }
 
-      console.log(recepcionData)
-      this.http.post(this.apiSAP + '/api/PurchaseDelivery', recepcionData).toPromise().then((data: any) => {
-        console.log(data);
-        this.presentAlertConfirm();
-      }).catch(error => {
-        console.log(error)
-        this.presentToast(error.error.error, 'danger')
-      }).finally(() => {
-        this.hideLoading()
-      })
+
+        this.http.post(`${this.appSettings.apiSAP}/api/PurchaseDelivery`, recepcionData).toPromise().then((data: any) => {
+          console.log(data);
+          this.presentAlertConfirm();
+        }).catch(error => {
+          if (error.status == 401) {
+            this.presentToast(error.error, 'danger');
+          } else {
+            this.presentToast(error.error, 'danger');
+          }
+        }).finally(() => {
+          this.hideLoading()
+        })
     } else {
       this.presentToast('No hay productos que recibir.', 'warning')
       this.hideLoading()

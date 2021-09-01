@@ -4,7 +4,7 @@
       <ion-back-button routerLink="/members/full-inventory"></ion-back-button>
     </ion-buttons>
     <ion-buttons slot="end">
-        <ion-button class="aceptar" (click)="promptCloseProduct()">Cerrar</ion-button>
+      <ion-button class="aceptar" (click)="productDetail()">Detalle</ion-button>
     </ion-buttons>
     <ion-title>Carnes</ion-title>
   </ion-toolbar>
@@ -32,7 +32,15 @@
   </ion-row>
   <ion-row>
     <ion-col>
-      <h6>Escanea Codigo de Barra</h6>
+      <ion-item lines="none">
+        <ion-label>Ingresar manualmente</ion-label>
+        <ion-toggle [(ngModel)]="manual" (ionChange)="weightManual()"></ion-toggle>
+      </ion-item>
+    </ion-col>
+  </ion-row>
+  <ion-row>
+    <ion-col>
+      <h6>Ingresa un codigo de barra</h6>
       <ion-input class="input-recepcion" id="input-codigo" placeholder="Codigo de Barra" [(ngModel)]="codigoBarra"
         name="codigoBarra" (ionChange)="getDataFromEtiqueta()" debounce="400">
       </ion-input>
@@ -40,13 +48,8 @@
   </ion-row>
 
   <div *ngIf="productInfo">
-    <h6>Cajas Escaneadas: {{cajasEscaneadas}}</h6>
-    <h6>Peso Escaneado: {{pesoEscaneado}}</h6>
-    <ion-row>
-      <ion-col>
-        <ion-button class="search-order-button" expand="full" (click)="saveInventory()">Enviar</ion-button>
-      </ion-col>
-    </ion-row>
+    <h6>Cajas Escaneadas: {{codeBarDetails.length}}</h6>
+    <h6>Peso Escaneado: {{total}}</h6>
     <h6>Lista  de Escaneado</h6>
     <ion-row *ngFor="let prod of codeBarDetails">
       <ion-col>
@@ -58,6 +61,12 @@
       </ion-col>
     </ion-row>
   </div>
+
+  <ion-row *ngIf="productInfo">
+    <ion-col>
+      <ion-button class="search-order-button" expand="full" (click)="saveInventory()">Enviar </ion-button>
+    </ion-col>
+  </ion-row>
 </ion-content>
 <ion-footer>
   <ion-toolbar color="dark">

@@ -2,16 +2,22 @@ import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { ToastController } from '@ionic/angular';
 import { RecepcionDataService } from 'src/app/services/recepcion-data.service';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { Storage } from '@ionic/storage';
 import { SettingsService } from '../../../services/settings.service';
 import { getSettingsFileData, getValidPercentage } from '../../commons';
 import { Platform } from '@ionic/angular';
+
+const TOKEN_KEY = 'auth-token';
 
 @Component({
   selector: 'app-abarrotes-batch',
   templateUrl: './abarrotes-batch.page.html',
   styleUrls: ['./abarrotes-batch.page.scss'],
 })
+
+
+
 export class AbarrotesBatchPage implements OnInit {
 
   public productData: any;
@@ -28,7 +34,8 @@ export class AbarrotesBatchPage implements OnInit {
     private router: Router,
     private platform: Platform,
     private settings: SettingsService,
-    private receptionService: RecepcionDataService
+    private receptionService: RecepcionDataService,
+    private storage: Storage
   ) { }
 
   /* Al iniciar el componente buscara los lotes disponibles para el producto */
@@ -53,7 +60,9 @@ export class AbarrotesBatchPage implements OnInit {
       this.tarima = this.productData.pallet;
     }
 
-    this.http.get(this.appSettings.apiSAP + '/api/batch/' + this.productData.FromWhsCod + '/' + this.productData.ItemCode).toPromise().then((data: any) => {
+
+  
+    this.http.get(`${this.appSettings.apiSAP}/api/batch/${this.productData.FromWhsCod}/${this.productData.ItemCode}`).toPromise().then((data: any) => {
       this.batchs = data;
     }).catch(() => {
       this.presentToast('Error al traer lotes de producto', 'danger')

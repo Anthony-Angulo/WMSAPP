@@ -24,6 +24,13 @@
 
   <ion-row>
     <ion-col>
+      <h6>Fecha de Expiración</h6>
+      <ion-datetime class="product-scann" displayFormat="DD-MM-YYYY" max="2030" [(ngModel)]="FechaCad" ></ion-datetime>
+    </ion-col>
+  </ion-row>
+
+  <ion-row>
+    <ion-col>
       <h6>Ingresa Lote</h6>
       <ion-input class="product-scann"  placeholder="Lote" [(ngModel)]="lote"
       name="lote">

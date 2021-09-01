@@ -1,9 +1,12 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { ToastController } from '@ionic/angular';
-import { HttpClient } from '@angular/common/http';
-import { environment } from 'src/environments/environment';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { NavExtrasService } from 'src/app/services/nav-extras.service';
+import { SettingsService } from '../../../services/settings.service';
+import { getSettingsFileData } from '../../commons';
+import { Platform } from '@ionic/angular';
+
 
 @Component({
   selector: 'app-abarrotes-batch',
@@ -11,6 +14,8 @@ import { NavExtrasService } from 'src/app/services/nav-extras.service';
   styleUrls: ['./abarrotes-batch.page.scss'],
 })
 export class AbarrotesBatchPage implements OnInit {
+
+  public appSettings: any;
 
   productData: any
   cantidad: number
@@ -22,12 +27,17 @@ export class AbarrotesBatchPage implements OnInit {
     private http: HttpClient,
     private toastController: ToastController,
     private router: Router,
-    private navExtras: NavExtrasService
+    private navExtras: NavExtrasService,
+    private platform: Platform,
+    private settings: SettingsService
   ) { }
 
   ngOnInit() {
 
     this.productData = this.navExtras.getProducts();
+
+    this.appSettings = getSettingsFileData(this.platform, this.settings);
+
 
     if (this.productData.count) {
       this.cantidad = this.productData.count
@@ -39,8 +49,7 @@ export class AbarrotesBatchPage implements OnInit {
       this.lotes = this.productData.detalle
     }
 
-    this.http.get(environment.apiSAP +  '/api/batch/' + this.productData.WhsCode
-    + '/' +  this.productData.Detail.ItemCode).toPromise().then((data) => {
+    this.http.get(`${this.appSettings.apiSAP}/api/batch/${this.productData.WhsCode}/${this.productData.Detail.ItemCode}`).toPromise().then((data) => {
       console.log(data)
       this.batch = data
     }).catch(() => {

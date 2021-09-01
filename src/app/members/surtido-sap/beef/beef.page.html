@@ -49,42 +49,15 @@
 
   <ion-row class="text-content" *ngFor="let delivery of detail; let index = index" (click)="promptLote(index)" >
     <ion-col size="5">
-      {{delivery.display}}
+      {{delivery.Code}}
     </ion-col>
     <ion-col size="3">
       {{delivery.Quantity | number }}
     </ion-col>
     <ion-col size="3">
-      {{delivery.uom}}
+      {{delivery.uomCode}}
     </ion-col>
-    <!-- <ion-col size="2">
-      <ion-button color="danger"  (click) ="eliminarProducto(index)" class="button-eliminar">
-        <ion-icon slot="icon-only" name="close-circle"></ion-icon>
-      </ion-button>
-    </ion-col> -->
   </ion-row>
-
-  <!-- <h6>Lotes</h6>
-  <ion-row *ngFor="let prod of detail; let index = index">
-    <ion-col>
-      <ion-item lines="none" class="container-item">
-        Name: {{prod.display}}<br>
-        Fecha: {{prod.expirationDate}}<br>
-        Peso: {{prod.quantity}}<br>
-        Tarima: {{prod.pallet}}
-        <ion-button color="danger" (click)="eliminar(index)" class="button-eliminar">
-          <ion-icon slot="icon-only" name="close-circle"></ion-icon>
-        </ion-button>
-      </ion-item>
-    </ion-col>
-  </ion-row> -->
-
-
-  <!-- <ion-row *ngIf="productData.detalle != '' ">
-    <ion-col>
-      <ion-button expand="full" shape="round" class="aceptar-button" (click)="receptionProduct()">Aceptar</ion-button>
-    </ion-col>
-  </ion-row> -->
 </ion-content>
 
 <ion-footer>

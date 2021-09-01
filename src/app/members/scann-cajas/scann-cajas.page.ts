@@ -1,11 +1,14 @@
 import { Component, OnInit } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { ToastController , LoadingController, AlertController} from '@ionic/angular';
 import { Router } from '@angular/router';
 import { environment } from 'src/environments/environment';
+import { Platform } from '@ionic/angular';
 import { Storage } from '@ionic/storage';
+import { SettingsService } from './../../services/settings.service';
+import { getSettingsFileData } from '../commons';
 
-const SUCURSAL_KEY = '0';
+const TOKEN_KEY = 'auth-token';
 
 @Component({
   selector: 'app-scann-cajas',
@@ -20,24 +23,29 @@ export class ScannCajasPage implements OnInit {
   product: any
   uomentry
   Cb
+  public appSettings: any;
+
   constructor(
     private http: HttpClient,
     private toastController: ToastController,
     private router: Router,
     private loading: LoadingController,
-    private storage: Storage,
-    private alertController: AlertController,) { }
+    private alertController: AlertController,
+    private platform: Platform,
+    private setting: SettingsService,
+    private storage: Storage) { }
 
   ngOnInit() {
+    this.appSettings = getSettingsFileData(this.platform, this.setting);
   }
 
   async getProducto() {
 
-    await this.presentLoading('Buscando...')
+    await this.presentLoading('Buscando...');
+    
 
-    this.http.get(environment.apiSAP + '/api/products/crm/' + this.number.toUpperCase()).toPromise().then((resp:any) => {
+    this.http.get(`${this.appSettings.apiSAP}/api/products/crm/${this.number.toUpperCase()}`).toPromise().then((resp:any) => {
       this.product = resp
-      console.log(this.product)
     }).catch((error) => {
       console.log(error)
       this.presentToast('Error al obtener producto','danger')
@@ -49,36 +57,43 @@ export class ScannCajasPage implements OnInit {
 
   async registerBox() {
 
-    await this.presentLoading('Guardando codigo..')
+    await this.presentLoading('Guardando codigo..');
 
-    this.http.get(environment.apiSAP + '/api/codebar/' + this.Cb).toPromise().then((resp: any) => {
-      if(resp){
+
+
+    this.http.get(`${this.appSettings.apiSAP}/api/Codebar/${this.Cb}`).toPromise().then((resp: any) => {
+      if(resp != null){
         this.presentAlert(resp.Detail.ItemCode)
-      }
-    }).catch(error => {
-      if(error.status == 404){
+      } else {
+        
         let data = {
-          itemcode: this.product.products.ItemCode,
-          barcode: this.Cb,
-          uomentry: this.uomentry
+          ItemCode: this.product.products.ItemCode,
+          Barcode : this.Cb,
+          UOMEntry: this.uomentry
         }
     
-        this.http.post(environment.apiSAP + '/api/codebar', data).toPromise().then((resp) => {
+        this.http.post(`${environment.apiSAP}/api/Codebar`, data).toPromise().then((resp) => {
           if(resp){
             this.router.navigate(['/members/home'])
             this.presentToast('Se guardo exitosamente','success')
           } 
         }).catch((error) => {
           if(error.status == 404){
-            this.presentToast("Este codigo de barra ya existe para este producto","warning")
+            this.presentToast("Este codigo de barra ya existe para este producto","warning");
+          } else if(error.status == 401){
+            this.presentToast(error.error,"danger");
           } else {
-            this.presentToast(error.error,"danger")
+            this.presentToast(error.error,"danger");
           }
         }).finally(() => {
           this.hideLoading()
         })
+      }
+    }).catch(error => {
+      if(error.status == 401) {
+        this.presentToast(error.error,"danger");
       } else {
-        this.presentToast(error.statusText,"danger")
+        this.presentToast(error.error,"danger");
       }
     }).finally(() => { this.hideLoading() })
 

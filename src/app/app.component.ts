@@ -5,6 +5,9 @@ import { SettingsService } from './services/settings.service';
 import { Platform } from '@ionic/angular';
 import { SplashScreen } from '@ionic-native/splash-screen/ngx';
 import { StatusBar } from '@ionic-native/status-bar/ngx';
+import { AppUpdate } from '@ionic-native/app-update/ngx';
+import { ToastController } from '@ionic/angular';
+import { environment } from 'src/environments/environment';
 
 declare global {
   interface Date {
@@ -45,7 +48,7 @@ Array.prototype.swap = function(a: number, b: number) {
   this[a] = this[b];
   this[b] = temp;
   return this;
-};
+}; 
 
 @Component({
   selector: 'app-root',
@@ -58,7 +61,9 @@ export class AppComponent {
     private statusBar: StatusBar,
     private authenticationService: AuthenticationService,
     private router: Router,
-    private settings: SettingsService
+    private settings: SettingsService,
+    private appUpdate: AppUpdate,
+    private toastController: ToastController
   ) {
     this.initializeApp();
   }
@@ -67,9 +72,17 @@ export class AppComponent {
 
   
     this.platform.ready().then(() => {
+
+      if (this.platform.is("cordova")) {
+        const updateUrl = environment.update;
+        this.appUpdate.checkAppUpdate(updateUrl).then(() => { console.log("actualizado") }).catch(err => console.log(err));
+      }
+
       this.settings.validateFile()
       this.statusBar.styleDefault();
       this.splashScreen.hide();
+
+      
 
       this.authenticationService.authenticationState.subscribe(state => {
         if (state) {
@@ -80,6 +93,15 @@ export class AppComponent {
       });
 
     });
+  }
+
+  async presentToast(msg: string, color: string) {
+    const toast = await this.toastController.create({
+      message: msg,
+      color: color,
+      duration: 4000
+    });
+    toast.present();
   }
 
   

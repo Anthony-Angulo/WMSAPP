@@ -1,55 +1,61 @@
 import { Component, OnInit } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { SettingsService } from './../../services/settings.service';
 import { ToastController, LoadingController } from '@ionic/angular';
-import { environment } from 'src/environments/environment';
 import { Platform } from '@ionic/angular';
+import { Storage } from '@ionic/storage';
+import { getSettingsFileData } from '../commons';
+
+const TOKEN_KEY = 'auth-token';
 
 @Component({
   selector: 'app-ajustes',
   templateUrl: './ajustes.page.html',
   styleUrls: ['./ajustes.page.scss'],
 })
+
 export class AjustesPage implements OnInit {
 
-  data: any;
-  apiSAP: string;
-  porcentaje: string;
-  sucursal: string;
-  IP: string;
-  blob: Blob
-  impresoras: any;
-  load: any;
+  public data: any;
+  public apiSAP: string;
+  public porcentaje: string;
+  public sucursal: string;
+  public IP: string;
+  public impresoras: any;
+  public load: any;
+  public appSettings: any;
 
   constructor(
     private http: HttpClient,
     private toastController: ToastController,
     private loading: LoadingController,
     private settings: SettingsService,
-    private platform: Platform
+    private platform: Platform,
+    private storage: Storage
   ) { }
 
   async ngOnInit() {
 
-    if (this.platform.is("cordova")) {
-      this.data = this.settings.fileData
-      this.apiSAP = this.data.apiSAP
-      this.porcentaje = this.data.porcentaje
-      this.sucursal = this.data.sucursal
-    } else {
-      this.apiSAP = environment.apiSAP
-    }
+    this.appSettings = getSettingsFileData(this.platform, this.settings);
 
-
+    this.apiSAP = this.appSettings.apiSAP;
+    this.porcentaje = this.appSettings.porcentaje;
+    this.sucursal = this.appSettings.sucursal;
+    
     await this.presentLoading("Buscando Impresoras..")
 
-    this.http.get(this.apiSAP + '/api/impresion/impresoras').toPromise().then((resp: any) => {
+
+    this.http.get(`${this.appSettings.apiSAP}/api/impresion/impresoras`).toPromise().then((resp: any) => {
       this.impresoras = resp
     }).catch(err => {
-      console.log(err)
+      if(err.status == 401) {
+        this.presentToast("No Autorizado","danger");
+      } else {
+        this.presentToast(err.error, "danger");
+      }
     }).finally(() => {
       this.hideLoading()
-    })
+    });
   }
 
   async guardarAjustes() {
@@ -76,14 +82,12 @@ export class AjustesPage implements OnInit {
   async presentLoading(msg) {
     this.load = await this.loading.create({
       message: msg,
-      // duration: 3000
     });
 
     await this.load.present()
   }
 
   hideLoading() {
-    // console.log('loading')
     this.load.dismiss()
   }
 

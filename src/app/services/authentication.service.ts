@@ -8,6 +8,7 @@ import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 
 const TOKEN_KEY = 'auth-token';
+const USER = 'user';
 
 @Injectable({
   providedIn: 'root'
@@ -40,11 +41,10 @@ export class AuthenticationService {
 
     await this.presentLoading('Inciando Session.....');
 
-    this.http.post(`${environment.apiCRM}/login`,value).toPromise().then((data: any) => {
-      if (!data.status) {
-        this.presentToast('User y/o password incorrectos.', 'warning')
-      } else {
+    this.http.post(`${environment.apiSAP}/api/Account/Login`,value).toPromise().then((data: any) => {
+      console.log(data)
         this.authenticationState.next(true);
+        this.storage.set(USER,data.AppLogin);
         return this.storage.set(TOKEN_KEY, data.token)
       }
     }).catch(error => {

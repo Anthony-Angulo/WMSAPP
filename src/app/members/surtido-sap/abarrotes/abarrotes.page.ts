@@ -3,9 +3,9 @@ import { Router } from '@angular/router';
 import { ToastController } from '@ionic/angular';
 import { SettingsService } from '../../../services/settings.service';
 import { HttpClient } from '@angular/common/http';
-import { environment } from 'src/environments/environment';
 import { Platform } from '@ionic/angular';
 import { RecepcionDataService } from 'src/app/services/recepcion-data.service';
+import { getSettingsFileData } from '../../commons';
 
 @Component({
   selector: 'app-abarrotes',
@@ -14,15 +14,11 @@ import { RecepcionDataService } from 'src/app/services/recepcion-data.service';
 })
 export class AbarrotesPage implements OnInit {
 
-  productData: any
+  public productData: any
+  public appSettings: any;
   public uom: any;
-  cantidad: number;
-  tarima
-  data
-  porcentaje: any;
-  sucursal: any;
-  stock: any;
-  apiSap: string;
+  public cantidad: number;
+  public stock: any;
   public DeliveryRowDetailList: any = [];
   public totalConvertido: number;
   public totalInUnitBase: number;
@@ -36,25 +32,18 @@ export class AbarrotesPage implements OnInit {
     private receptionService: RecepcionDataService) { }
 
   ngOnInit() {
-    this.productData = this.receptionService.getOrderData()
+
+    this.productData = this.receptionService.getOrderData();
+
+    this.appSettings = getSettingsFileData(this.platform, this.settings);
 
     if(this.productData.DeliveryRowDetailList) {
       this.DeliveryRowDetailList = this.productData.DeliveryRowDetailList;
     }
 
-    if (this.platform.is("cordova")) {
-      this.data = this.settings.fileData
-      this.porcentaje = this.data.porcentaje
-      this.sucursal = this.data.sucursal
-      this.apiSap = this.data.apiSAP;
-    } else {
-      this.porcentaje = "10"
-      this.sucursal = "S47"
-      this.apiSap = environment.apiSAP
-    }
 
-    this.http.get(this.apiSap + '/api/batch/' + this.sucursal + '/' + this.productData.ItemCode).toPromise().then((val: any) => {
-      this.stock = val.stock
+    this.http.get(`${this.appSettings.apiSAP}/api/batch/${this.productData.WhsCode}/${this.productData.ItemCode}`).toPromise().then((val: any) => {
+      this.stock = val.stock;
     }).catch((error) => {
       console.log(error)
       this.presentToast('Error al traer stock de producto', 'danger')
@@ -99,7 +88,7 @@ export class AbarrotesPage implements OnInit {
       return
     }
 
-    let validPercent = (Number(this.porcentaje) / 100) * Number(this.productData.OpenInvQty)
+    let validPercent = (Number(this.appSettings.porcentaje) / 100) * Number(this.productData.OpenInvQty)
     let validQuantity = Number(validPercent) + Number(this.productData.OpenInvQty)
 
     if (Number(this.totalInUnitBase) > Number(validQuantity)) {
@@ -107,8 +96,6 @@ export class AbarrotesPage implements OnInit {
       return
     }
 
-    // this.productData.count = this.cantidad
-    // this.productData.pallet = this.tarima
 
     this.productData.DeliveryRowDetailList = this.DeliveryRowDetailList
 

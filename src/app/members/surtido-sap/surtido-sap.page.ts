@@ -1,11 +1,15 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
 import { RecepcionDataService } from 'src/app/services/recepcion-data.service';
 import { environment } from 'src/environments/environment';
 import { Router } from '@angular/router';
 import { Platform } from '@ionic/angular';
+import { Storage } from '@ionic/storage';
 import { SettingsService } from './../../services/settings.service';
 import { ToastController, LoadingController } from '@ionic/angular';
+import { getSettingsFileData } from '../commons';
+
+const TOKEN_KEY = 'auth-token';
 
 @Component({
   selector: 'app-surtido-sap',
@@ -14,16 +18,14 @@ import { ToastController, LoadingController } from '@ionic/angular';
 })
 export class SurtidoSapPage implements OnInit {
 
-  load;
-  order;
-  number;
-  searchType;
-  products = []
-  search;
-  ctd
-  tarima
-  data
-  apiSAP: any;
+  public appSettings: any;
+
+  public load: any;
+  public order: any;
+  public number: number;
+  public searchType: any;
+  public products: any = []
+  public search: string;
 
   constructor(
     private http: HttpClient,
@@ -33,16 +35,12 @@ export class SurtidoSapPage implements OnInit {
     private loading: LoadingController,
     private platform: Platform,
     private settings: SettingsService,
+    private storage: Storage
   ) { }
 
   ngOnInit() {
 
-    if (this.platform.is("cordova")) {
-      this.data = this.settings.fileData
-      this.apiSAP = this.data.apiSAP
-    } else {
-      this.apiSAP = environment.apiSAP
-    }
+    this.appSettings = getSettingsFileData(this.platform, this.settings);
   }
 
   ionViewWillEnter() {
@@ -50,22 +48,22 @@ export class SurtidoSapPage implements OnInit {
     let productsScanned = this.receptionService.getReceptionData()
 
 
-    if(productsScanned == null) {
+    if (productsScanned == null) {
       return
     }
 
-    
+
     if (productsScanned.DeliveryRowDetailList) {
       let index = this.order.Lines.findIndex(product => product.ItemCode == productsScanned.ItemCode)
-      this.order.Lines[index].count = productsScanned.DeliveryRowDetailList.map(prod => prod.total).reduce((a,b) => a + b, 0)
+      this.order.Lines[index].count = productsScanned.DeliveryRowDetailList.map(prod => prod.Count).reduce((a, b) => a + b, 0)
       let isScanned = this.products.findIndex(prd => prd.ItemCode == productsScanned.ItemCode)
-      if(isScanned < 0) {
+      if (isScanned < 0) {
         this.products.push(productsScanned)
       }
     } else {
       let ind = this.products.findIndex(product => product.ItemCode == productsScanned.ItemCode)
       if (ind >= 0) {
-        this.products.splice(ind, 1) 
+        this.products.splice(ind, 1)
       }
     }
 
@@ -75,120 +73,96 @@ export class SurtidoSapPage implements OnInit {
   }
 
   async getOrden() {
-    await this.presentLoading('Buscando....')
-    this.http.get(this.apiSAP + '/api/order/deliverySAP/' + this.number).toPromise().then((data: any) => {
-      this.order = data;
-      console.log(this.order)
-      return this.order.Lines.map(x => x.ItemCode)
-    }).then((codes) => {
-      return this.http.get(environment.apiWMS + '/codebardescriptionsVariants/' + codes).toPromise()
-    }).then((codebarDescription: any[]) => {
-      this.order.Lines.map(item => {
-        item.cBDetail = codebarDescription.filter(y => y.codigo_sap == item.ItemCode)
+    await this.presentLoading('Buscando....');
+
+  
+      this.http.get(`${this.appSettings.apiSAP}/api/order/deliverySAP/${this.number}`).toPromise().then((data: any) => {
+        this.order = data;
+      }).catch(error => {
+        if (error.status == 404) {
+          this.presentToast('No encontrado o no existe', 'warning')
+        } else if (error.status == 400) {
+          this.presentToast(error.statusText, 'warning')
+        } else if (error.status == 204) {
+          this.presentToast('Error de conexion', 'danger')
+        }
+      }).finally(() => {
+        this.hideLoading()
       })
-    }).catch(error => {
-      if (error.status == 404) {
-        this.presentToast('No encontrado o no existe', 'warning')
-      } else if (error.status == 400) {
-        this.presentToast(error.statusText, 'warning')
-      } else if(error.status == 204) {
-        this.presentToast('Error de conexion', 'danger')
-      }
-    }).finally(() => {
-      this.hideLoading()
-    })
+
+    
   }
 
-  // searchProductByCode() { //TODO
+  public searchProductByCode() {
 
-  //   let index = this.order.Lines.findIndex(x => x.ItemCode == this.search.toUpperCase())
-  //   if (index >= 0) {
-  //     if (this.order.Lines[index].LineStatus == 'O') {
-  //       if (this.order.Lines[index].Detail.ManBtchNum == 'Y') {
-  //         this.receptionService.setOrderData(this.order.Lines[index])
-  //         this.presentToast('Ingresa Lote de Producto', 'warning')
-  //         if (this.order.Lines[index].Detail.U_IL_TipPes == 'V') {
-  //           this.router.navigate(['members/surtido-beef'])
-  //         } else if (this.order.Lines[index].Detail.ManBtchNum == 'Y') {
-  //           this.order.Lines[index].count = Number(this.ctd)
-  //           this.router.navigate(['members/surtido-abarrotes-batch'])
-  //         } else {
-  //           this.router.navigate(['/members/surtido-abarrotes'])
-  //         }
+    let index = this.order.Lines.findIndex(x => x.ItemCode == this.search.toUpperCase());
 
-  //       } else {
-  //         this.order.Lines[index].count = Number(this.ctd)
-  //         this.order.Lines[index].pallet = ''
-  //         this.presentToast('Se agrego a la lista', 'success')
-  //       }
-  //     } else {
-  //       this.presentToast('Este producto ya se surtio completamente', 'warning')
-  //     }
-  //   } else {
-  //     this.presentToast('Producto no se encontro en la lista', 'warning')
-  //   }
+    if (index < 0) {
+      this.presentToast("Producto no se encontro en la lista", "warning");
+      return
+    }
 
-  //   this.search = ''
-  //   this.ctd = 0
-  // }
+    if (this.order.Lines[index].LineStatus == 'C') {
+      this.presentToast("Este producto ya se surtio completamente", "warning");
+      return
+    }
 
-  // searchProductByCb() { //TODO
-  //   if (this.search == '') {
+    this.receptionService.setOrderData(this.order.Lines[index]);
 
-  //   } else {
-  //     let index = this.order.Lines.findIndex(x => {
-  //       let found = x.CodeBars.findIndex(y => y == this.search)
-  //       if (found > -1) {
-  //         return true
-  //       } else {
-  //         return false
-  //       }
-  //     })
-  //     console.log(index)
-  //     if (index >= 0) {
-  //       if (Number(this.ctd) > Number(this.order.Lines[index].OpenQty)) {
-  //         this.presentToast('Cantidad Excede el limite', 'warning')
-  //       } else {
-  //         if (this.order.Lines[index].LineStatus == 'O') {
-  //           if (this.tarima == undefined || this.tarima == '') {
-  //             this.presentToast('Ingresa tarima', 'warning')
-  //           } else {
-  //             if (this.order.Lines[index].Detail.ManBtchNum == 'Y') {
+    if (this.order.Lines[index].Detail.ManBtchNum == 'Y') {
+      this.router.navigate(['members/surtido-abarrotes-batch']);
+    } else if (this.order.Lines[index].Detail.U_IL_TipPes == 'V') {
+      this.router.navigate(['members/surtido-beef']);
+    } else {
+      this.router.navigate(['/members/surtido-abarrotes']);
+    }
 
-  //               this.receptionService.setOrderData(this.order.Lines[index])
-  //               this.presentToast('Ingresa Lote de Producto', 'warning')
-  //               if (this.order.Lines[index].Detail.U_IL_TipPes == 'V') {
-  //                 this.router.navigate(['members/surtido-beef'])
-  //               } else if (this.order.Lines[index].Detail.ManBtchNum == 'Y') {
-  //                 this.order.Lines[index].count = Number(this.ctd)
-  //                 this.order.Lines[index].pallet = this.tarima
-  //                 this.router.navigate(['members/surtido-abarrotes-batch'])
-  //               } else {
-  //                 this.router.navigate(['/members/surtido-abarrotes'])
-  //               }
+    this.search = '';
 
-  //             } else {
-  //               this.order.Lines[index].count = Number(this.ctd)
-  //               this.order.Lines[index].pallet = ''
-  //               this.presentToast('Se agrego a la lista', 'success')
-  //             }
-  //           }
-  //         } else {
-  //           this.presentToast('Este producto ya se surtio completamente', 'warning')
-  //         }
-  //       }
+  }
 
-  //     } else {
-  //       this.presentToast('Producto no se encontro en la lista', 'warning')
-  //     }
-  //   }
+  public searchProductByCb() {
 
-  //   document.getElementById('input-codigo').setAttribute('value', '')
-
-  // }
+    if (this.search == '') return
 
 
-  goToProduct(index) {
+    let index = this.order.Lines.findIndex(x => {
+      let found = x.CodeBars.findIndex(y => y == this.search)
+      if (found > -1) {
+        return true
+      } else {
+        return false
+      }
+    });
+
+    if (index < 0) {
+      this.presentToast("Producto no se encontro en la lista", "warning");
+      return
+    }
+
+
+    if (this.order.Lines[index].LineStatus == 'C') {
+      this.presentToast("Este producto ya se surtio completamente", "warning");
+      return
+    }
+
+    this.receptionService.setOrderData(this.order.Lines[index]);
+
+    if (this.order.Lines[index].Detail.ManBtchNum == 'Y') {
+      this.router.navigate(['members/surtido-abarrotes-batch']);
+    } else if (this.order.Lines[index].Detail.U_IL_TipPes == 'V') {
+      this.router.navigate(['members/surtido-beef']);
+    } else {
+      this.router.navigate(['/members/surtido-abarrotes']);
+    }
+
+    document.getElementById('input-codigo').setAttribute('value', '');
+
+
+  }
+
+
+  public goToProduct(index) {
 
     this.receptionService.setOrderData(this.order.Lines[index])
 
@@ -203,7 +177,9 @@ export class SurtidoSapPage implements OnInit {
 
   async sendProducts() {
 
-    await this.presentLoading('Enviando....')
+    await this.presentLoading('Enviando....');
+
+
 
     const DeliveryRowDetailList = this.products.map(product => {
       return {
@@ -219,7 +195,10 @@ export class SurtidoSapPage implements OnInit {
         DocEntry: this.order.DocEntry,
         DeliveryRows: DeliveryRowDetailList
       };
-      this.http.post(this.apiSAP + '/api/Delivery/SAP', recepcionData).toPromise().then((data: any) => {
+
+
+
+      this.http.post(`${this.appSettings.apiSAP}/api/Delivery/SAP`, recepcionData).toPromise().then((data: any) => {
         console.log(data);
         this.presentToast('Surtido Concluido', 'success');
         this.order = undefined;
@@ -227,10 +206,11 @@ export class SurtidoSapPage implements OnInit {
         this.products = [];
       }).catch(error => {
         console.log(error)
-        this.presentToast(error, 'danger')
+        this.presentToast(error.error, 'danger')
       }).finally(() => {
         this.hideLoading()
       });
+      
     } else {
       this.presentToast('No hay productos que surtir', 'warning')
       this.hideLoading()

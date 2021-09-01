@@ -7,7 +7,7 @@ import { Storage } from '@ionic/storage';
 import { Platform } from '@ionic/angular';
 import { ToastController, LoadingController, AlertController } from '@ionic/angular';
 
-const USER_ID = 'USER_ID';
+const USER = 'user';
 
 @Component({
   selector: 'app-partial-inventory-detail',
@@ -32,36 +32,30 @@ export class PartialInventoryDetailPage implements OnInit {
 
   async ngOnInit() {
 
-    await this.presentLoading("Buscando productos...")
+    await this.presentLoading("Buscando productos...");
 
     let sapHeader = this.navExtras.getMovInv()
 
-    this.storage.get(USER_ID).then(SapId => {
-      this.http.get(environment.apiWMS + '/getPartialProductByUser/'
-        + SapId + '/' + sapHeader).toPromise().then((resp) => {
-          this.products = resp;
-          console.log(this.products)
-        }).catch((err) => {
-          console.log(err)
-        }).finally(() => { this.hideLoading() })
-    })
+    let user = await this.storage.get(USER);
+
+    this.http.get(`${environment.apiCCFN}/inventory/${sapHeader}/${user.id}`).toPromise().then((resp) => {
+      this.products = resp;
+    }).catch((err) => {
+      this.presentToast(err.message, "danger");
+    }).finally(() => { this.hideLoading() })
   }
 
   goToProduct(index: number) {
+    this.products[index].headerId = this.navExtras.getMovInv();
+    this.navExtras.setInventoryProduct(this.products[index])
 
-    if (this.products[index].Status == 1) {
-      this.presentToast("Este producto ya fue cerrado", "warning")
+    if (this.products[index].WeightType == "F") {
+      this.router.navigate(['members/partial-abarrotes']);
+    } else if (this.products[index].WeightType == "V") {
+      this.router.navigate(['members/partial-beef']);
     } else {
-      this.navExtras.setInventoryProduct(this.products[index])
-
-      if (this.products[index].TipoPeso == "F") {
-        this.router.navigate(['members/partial-abarrotes']);
-      } else if (this.products[index].TipoPeso == "V") {
-        this.router.navigate(['members/partial-beef']);
-      } else {
-        this.presentToast("El producto no tiene configurado tipo de peso. " +
-          "Contactar datos maestros.", "warning")
-      }
+      this.presentToast("El producto no tiene configurado tipo de peso. " +
+        "Contactar datos maestros.", "warning")
     }
   }
 

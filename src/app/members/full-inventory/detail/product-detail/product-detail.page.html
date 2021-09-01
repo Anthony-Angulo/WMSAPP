@@ -1,0 +1,46 @@
+<ion-header>
+  <ion-toolbar class="tool-bar">
+    <!-- <ion-buttons slot="start">
+      <ion-back-button routerLink="/members/full-inventory"></ion-back-button>
+    </ion-buttons> -->
+    <ion-title>Detalle De Producto</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-row *ngIf="productRow">
+    <ion-col>
+      <h6>Datos de Contacto</h6>
+      <ion-item lines="none" class="container-item">
+        Producto: {{productRow[0].ItemName}}<br>
+        Codigo: {{productRow[0].ItemCode}}<br>
+        Contada: {{productRow[0].Quantity}}
+      </ion-item>
+    </ion-col>
+  </ion-row>
+
+  <ion-row class="table">
+    <ion-col size="3">
+      Ctd
+    </ion-col>
+    <ion-col size="3.5">
+      Zona
+    </ion-col>
+    <ion-col size="5">
+      User 
+    </ion-col>
+  </ion-row>
+  <ion-row class="text-content" *ngFor="let products of productDetail; let index = index" 
+  (click)="goToProduct(index)">
+    <ion-col size="3">
+      {{products.Quantity}}
+    </ion-col>
+    <ion-col size="3.5">
+      {{products.Zone}}
+    </ion-col>
+    <ion-col size="5">
+      {{products.UserName}} 
+    </ion-col>
+  </ion-row>
+
+</ion-content>
