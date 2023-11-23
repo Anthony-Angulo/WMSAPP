@@ -26,6 +26,7 @@ export class FullInventoryPage implements OnInit {
   headerId: number;
   search: string;
   searchType: boolean;
+  whsType:any;
   location: string;
 
 
@@ -88,6 +89,7 @@ export class FullInventoryPage implements OnInit {
 
   goToInventory(index: number) {
     this.headerId = this.inventory_orders[index].ID
+    this.whsType = this.inventory_orders[index].type
     this.orders = false
     this.promptLocation()
   }
