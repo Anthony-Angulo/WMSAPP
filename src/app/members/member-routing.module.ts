@@ -38,7 +38,9 @@ const routes: Routes = [
   { path: 'etiquetas', loadChildren: './etiquetas/etiquetas.module#EtiquetasPageModule' },
   { path: 'etiquetas-transferencias', loadChildren: './etiquetas/etiquetas-transferencias/etiquetas-transferencias.module#EtiquetasTransferenciasPageModule' },
   { path: 'consumointerno', loadChildren: './etiquetas/consumointerno/consumointerno.module#ConsumointernoPageModule' },
-  { path: 'locationlabels', loadChildren: './etiquetas/locationlabels/locationlabels.module#LocationlabelsPageModule' },   
+  { path: 'locationlabels', loadChildren: './etiquetas/locationlabels/locationlabels.module#LocationlabelsPageModule' },
+  { path: 'scannlabel', loadChildren: './etiquetas/scann-label/scann-label.module#ScannLabelPageModule' }, 
+  { path: 'scangs1', loadChildren: './etiquetas/scangs1/scangs1.module#Scangs1Module' },     
 ];
 
 @NgModule({

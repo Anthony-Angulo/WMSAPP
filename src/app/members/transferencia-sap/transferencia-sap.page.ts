@@ -7,7 +7,7 @@ import { Storage } from '@ionic/storage';
 import { Platform } from '@ionic/angular';
 import { SettingsService } from './../../services/settings.service';
 import { ToastController, LoadingController } from '@ionic/angular';
-import { getSettingsFileData } from '../commons';
+import { getSettingsFileData, getValidPercentage } from '../commons';
 
 const TOKEN_KEY = 'auth-token';
 
@@ -26,6 +26,7 @@ export class TransferenciaSapPage implements OnInit {
   public ctd: number;
   public products: any = []
   public tarima: string;
+  public crBars: any = [];
   public appSettings: any;
 
   constructor(
@@ -56,6 +57,7 @@ export class TransferenciaSapPage implements OnInit {
     } else {
       let index = this.transferData.Lines.findIndex(product => product.ItemCode == productsScanned.ItemCode)
       this.transferData.Lines[index].count = productsScanned.count
+      this.crBars = this.transferData.Lines[index].crBarsUpdate;
       this.products.push(productsScanned)
     }
 
@@ -72,15 +74,15 @@ export class TransferenciaSapPage implements OnInit {
 
 
 
-    this.http.get(`${this.appSettings.apiSAP}/api/InventoryTransferRequest/DeliverySAP/${this.transferRequestDocNum}`).toPromise().then((transferData: any) => {
+    this.http.get(`${this.appSettings.apiSAP}/api/InventoryTransferRequest/DeliverySAPNew/${this.transferRequestDocNum}`).toPromise().then((transferData: any) => {
       this.transferData = transferData;
-      let validOrder = this.transferData.Lines.findIndex(x => x.FromWhsCod == this.transferData.Filler && x.WhsCode == this.transferData.ToWhsCode)
-      if (validOrder >= 0) {
-        this.presentToast('Orden de transferencia mal creada. Revisar almacenes de salida y destino.', 'warning')
-        return
-      } else {
+      // let validOrder = this.transferData.Lines.findIndex(x => x.FromWhsCod == this.transferData.Filler && x.WhsCode == this.transferData.ToWhsCode)
+      // if (validOrder >= 0) {
+      //   this.presentToast('Orden de transferencia mal creada. Revisar almacenes de salida y destino.', 'warning')
+      //   return
+      // } else {
         return this.transferData.Lines.filter((x: any) => x.U_IL_TipPes != 'F').map((x: any) => x.ItemCode);
-      }
+      // }
     }).catch(error => {
       console.log(error)
       if (error.status == 404) {
@@ -125,13 +127,16 @@ export class TransferenciaSapPage implements OnInit {
     this.search = '';
   }
 
+  
+
   public searchProductByCb() {
 
     if (this.search == '') return
 
+    let found;
 
     let index = this.transferData.Lines.findIndex(x => {
-      let found = x.CodeBars.findIndex(y => y == this.search)
+      found = x.CodeBars.findIndex(y => y.BcdCode == this.search)
       if (found > -1) {
         return true
       } else {
@@ -139,24 +144,77 @@ export class TransferenciaSapPage implements OnInit {
       }
     });
 
+    // console.log(this.transferData.Lines[index].CodeBars[found])
+
     if (index < 0) {
       this.presentToast("Producto no fue encontrado en la lista.", "warning");
+      this.ctd = null;
+      this.tarima = '';
+      this.search = '';
       return
     }
+
+    if(this.transferData.Lines[index].CodeBars[found].UomEntry != this.transferData.Lines[index].UomEntry) {
+      this.presentToastmid("La unidad de medida escaneada no es igual a la del pedido.", "warning");
+    }
+
+    let total = Number(this.transferData.Lines[index].CodeBars[found].BaseQty) * Number(this.ctd);
+
+    if(total > this.transferData.Lines[index].OpenInvQty) {
+      this.presentToast("La Cantidad Registrada Excede La Cantidad Requerida", "danger");
+      return;
+    }
+
 
     if (this.transferData.Lines[index].LineStatus == 'C') {
       this.presentToast("Producto ya fue transferido completamente.", "warning");
+      this.ctd = null;
+      this.tarima = '';
+      this.search = '';
       return
     }
 
+    this.transferData.Lines[index].pallet = this.tarima;
+    this.transferData.Lines[index].ctd = this.ctd;
+    
     this.receptionService.setOrderData(this.transferData.Lines[index])
+
 
     if (this.transferData.Lines[index].ManBtchNum == 'Y') {
       this.router.navigate(['members/transferencia-abarrotes-batch'])
+      this.ctd = null;
+      this.tarima = '';
+      this.search = '';
     } else if (this.transferData.Lines[index].U_IL_TipPes == 'V') {
       this.router.navigate(['members/transferencia-beef'])
     } else {
-      this.router.navigate(['/members/transferencia-abarrotes'])
+      console.log(getValidPercentage(this.transferData.Lines[index], this.appSettings.porcentaje))
+
+      if (this.ctd > getValidPercentage(this.transferData.Lines[index], this.appSettings.porcentaje)) {
+        this.presentToast("Cantidad Ingresada Excede De La Cantidad Solicitada", "warning");
+        this.ctd = null;
+        this.tarima = '';
+        this.search = '';
+        return;
+      }
+      
+      this.http.get(`${this.appSettings.apiSAP}/api/batch/${this.transferData.Lines[index].FromWhsCod}/${this.transferData.Lines[index].ItemCode}`).toPromise()
+        .then((r:any) => {
+          if(r.stock <= 0) {
+            this.presentToast(`Stock En Negativo Para el Producto: ${this.transferData.Lines[index].ItemCode}`, "warning");
+          } else if(this.ctd > r.stock) {
+            this.presentToast(`Stock Insuficiente Para el Producto: ${this.transferData.Lines[index].ItemCode} Stock: ${r.stock}`, "warning");
+          } else {
+            this.transferData.Lines[index].count = this.ctd;
+            this.transferData.Lines[index].pallet = this.tarima;
+          }
+        }).catch((err) => {
+          this.presentToast(`Error Al Buscar Stock Para El Producto ${this.transferData.Lines[index].ItemCode}`,"danger");
+        }).finally(() => {
+          this.ctd = null;
+          this.tarima = '';
+          this.search = '';
+        });
     }
 
     document.getElementById('input-codigo').setAttribute('value', '');
@@ -166,6 +224,8 @@ export class TransferenciaSapPage implements OnInit {
 
   /* Metodo para enviar al usuario a la pagina de producto a transferir */
   public goToProductPage(indexOfProduct: number) {
+
+    this.transferData.Lines[indexOfProduct].DocNum = this.transferData.DocNum;
 
     this.receptionService.setOrderData(this.transferData.Lines[indexOfProduct])
 
@@ -189,6 +249,9 @@ export class TransferenciaSapPage implements OnInit {
         LineNum: product.LineNum,
         Count: product.count,
         Pallet: product.pallet,
+        ItemCode: product.ItemCode,
+        ItemName: product.ItemName,
+        UomCode: product.UomCode,
         BatchList: (product.detalle) ? product.detalle : []
       };
     });
@@ -199,6 +262,7 @@ export class TransferenciaSapPage implements OnInit {
         TransferRows
       };
       this.http.post(this.appSettings.apiSAP + '/api/inventorytransfer/SAP', recepcionData).toPromise().then((data: any) => {
+        // this.sendUpdateCr();
         this.presentToast('Recepcion Concluida', 'success');
         this.transferData = undefined;
         this.transferRequestDocNum = undefined;
@@ -224,13 +288,27 @@ export class TransferenciaSapPage implements OnInit {
   
   }
 
+  // async sendUpdateCr() {
+  //   await this.http.put(`${environment.apiCCFN}/crbar/updateCr`, this.crBars).toPromise()
+  // }
+
 
 
   async presentToast(msg: string, color: string) {
     const toast = await this.toastController.create({
       message: msg,
       color: color,
-      duration: 4000
+      duration: 4000,
+    });
+    toast.present();
+  }
+
+  async presentToastmid(msg: string, color: string) {
+    const toast = await this.toastController.create({
+      message: msg,
+      color: color,
+      duration: 4000,
+      position: 'middle'
     });
     toast.present();
   }

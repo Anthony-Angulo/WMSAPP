@@ -7,6 +7,7 @@ import { Platform } from '@ionic/angular';
 import { Storage } from '@ionic/storage';
 import { ToastController, LoadingController } from '@ionic/angular';
 import { getSettingsFileData } from '../../commons';
+import { environment } from 'src/environments/environment';
 
 const TOKEN_KEY = 'auth-token';
 
@@ -27,6 +28,7 @@ export class PurchaseReturnDetailPage implements OnInit {
   Entry: any;
   products: any = [];
   load: any;
+  crBars: any = [];
 
   constructor(
     private http: HttpClient,
@@ -78,6 +80,7 @@ export class PurchaseReturnDetailPage implements OnInit {
       } else {
         let index = this.Entry.PDN1.findIndex(product => product.ItemCode == productsScanned.ItemCode)
         this.Entry.PDN1[index].count = productsScanned.count
+        this.crBars = this.Entry.PDN1[index].crBars;
         this.products.push(productsScanned)
       }
     }
@@ -104,8 +107,6 @@ export class PurchaseReturnDetailPage implements OnInit {
 
     let productsReturn = this.navExtras.getEntry();
 
-
-
       const products = this.Entry.PDN1.filter(product => product.count)
         .map(product => {
           return {
@@ -127,6 +128,7 @@ export class PurchaseReturnDetailPage implements OnInit {
         }
 
         this.http.post(`${this.appSettings.apiSAP}/api/PurchaseOrderDeliveryReturn`, purchaseReturnData).toPromise().then((resp) => {
+          // this.sendUpdateCr();
           this.presentToast("Devolucion Completa", "success")
           this.router.navigate(['/members/purchase-return'])
           this.Entry = undefined
@@ -147,6 +149,10 @@ export class PurchaseReturnDetailPage implements OnInit {
 
 
   }
+
+  // async sendUpdateCr() {
+  //   await this.http.put(`${environment.apiCCFN}/crbar/updateCr`, this.crBars).toPromise()
+  // }
 
   async presentToast(msg: string, color: string) {
     const toast = await this.toastController.create({

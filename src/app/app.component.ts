@@ -70,9 +70,7 @@ export class AppComponent {
 
   initializeApp() {
 
-  
     this.platform.ready().then(() => {
-
       if (this.platform.is("cordova")) {
         const updateUrl = environment.update;
         this.appUpdate.checkAppUpdate(updateUrl).then(() => { console.log("actualizado") }).catch(err => console.log(err));

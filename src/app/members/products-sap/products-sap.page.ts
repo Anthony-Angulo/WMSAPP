@@ -62,7 +62,7 @@ export class ProductsSapPage implements OnInit {
         this.http.get(`${this.appSettings.apiSAP}/api/codebar/${this.CbAbarrote}`).toPromise(),
         this.http.get(`${this.appSettings.apiSAP}/api/pricelist/WmsProducts`).toPromise()
       ]).then(([product, priceList]: any) => {
-        this.priceList = priceList.filter(y => y.ListNum == 1 || y.ListNum == 13 || y.ListNum == 16 || y.ListNum == 15 || y.ListNum == 14);
+        this.priceList = priceList.filter(y => y.ListNum == 26 || y.ListNum == 27 || y.ListNum == 11 || y.ListNum == 12 );
         return this.http.get(`${this.appSettings.apiSAP}/api/products/crmtosell/${product.Detail.ItemCode}/1/${this.appSettings.sucursal}`).toPromise()
       }).then((prod: any) => {
         this.inventory = prod

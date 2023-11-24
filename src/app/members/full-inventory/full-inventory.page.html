@@ -3,6 +3,11 @@
     <ion-buttons slot="start">
       <ion-back-button routerLink="/members/home"></ion-back-button>
     </ion-buttons>
+    <ion-buttons slot="end">
+      <div *ngIf="!orders">
+        <ion-button class="aceptar" (click)="searchCode()">CodigoSAP</ion-button>
+      </div>
+    </ion-buttons>
     <ion-title>Lista de Inventarios</ion-title>
   </ion-toolbar>
 </ion-header>
@@ -43,22 +48,17 @@
 
   <ion-row *ngIf="!orders && !searchType">
     <ion-col>
-      <h6>Ingresa codigo de producto.</h6>
-      <form (ngSubmit)="getProductByCode()">
-        <ion-input class="input-recepcion" placeholder="Codigo de Producto" [(ngModel)]="productCode"
-          name="productCode">
+      <h6>Escanea codigo de producto</h6>
+        <ion-input (ionChange)="searchProductByCb()" class="input-recepcion" placeholder="Codigo de Barra de Producto" [(ngModel)]="productCodeScanned"
+          name="productCode" debounce="200">
         </ion-input>
-        <ion-button type="submit" class="search-order-button" expand="full">
-          Buscar
-        </ion-button>
-      </form>
     </ion-col>
   </ion-row>
 
   <ion-row *ngIf="!orders && searchType">
     <ion-col>
-      <h6>Escanea codigo de barra para buscar producto.</h6>
-      <ion-input (ionChange)="searchProductByCb()" [(ngModel)]="search" debounce="200" name="search"
+      <h6>Escanea codigo de barra Carnico.</h6>
+      <ion-input (ionChange)="searchProductByCbVariado()" [(ngModel)]="search" debounce="200" name="search"
         class="input-recepcion" placeholder="Codigo de Barra">
       </ion-input>
     </ion-col>

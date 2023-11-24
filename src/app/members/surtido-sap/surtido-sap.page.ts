@@ -25,6 +25,7 @@ export class SurtidoSapPage implements OnInit {
   public number: number;
   public searchType: any;
   public products: any = []
+  public crBars: any = [];
   public search: string;
 
   constructor(
@@ -60,6 +61,7 @@ export class SurtidoSapPage implements OnInit {
       if (isScanned < 0) {
         this.products.push(productsScanned)
       }
+      this.crBars = this.order.Lines[index].crBarsUpdate;
     } else {
       let ind = this.products.findIndex(product => product.ItemCode == productsScanned.ItemCode)
       if (ind >= 0) {
@@ -76,7 +78,7 @@ export class SurtidoSapPage implements OnInit {
     await this.presentLoading('Buscando....');
 
   
-      this.http.get(`${this.appSettings.apiSAP}/api/order/deliverySAP/${this.number}`).toPromise().then((data: any) => {
+      this.http.get(`${this.appSettings.apiSAP}/api/order/DeliverySAPNew/${this.number}`).toPromise().then((data: any) => {
         this.order = data;
       }).catch(error => {
         if (error.status == 404) {
@@ -125,9 +127,10 @@ export class SurtidoSapPage implements OnInit {
 
     if (this.search == '') return
 
+    let found;
 
     let index = this.order.Lines.findIndex(x => {
-      let found = x.CodeBars.findIndex(y => y == this.search)
+      found = x.CodeBars.findIndex(y => y == this.search)
       if (found > -1) {
         return true
       } else {
@@ -140,6 +143,9 @@ export class SurtidoSapPage implements OnInit {
       return
     }
 
+    if(this.order.Lines[index].CodeBars[found].UomEntry != this.order.Lines[index].UomEntry) {
+      this.presentToastmid("La unidad de medida escaneada no es igual a la del pedido.", "warning");
+    }
 
     if (this.order.Lines[index].LineStatus == 'C') {
       this.presentToast("Este producto ya se surtio completamente", "warning");
@@ -200,6 +206,7 @@ export class SurtidoSapPage implements OnInit {
 
       this.http.post(`${this.appSettings.apiSAP}/api/Delivery/SAP`, recepcionData).toPromise().then((data: any) => {
         console.log(data);
+        this.sendUpdateCr();
         this.presentToast('Surtido Concluido', 'success');
         this.order = undefined;
         this.number = undefined;
@@ -219,6 +226,10 @@ export class SurtidoSapPage implements OnInit {
 
   }
 
+  async sendUpdateCr() {
+    await this.http.put(`${environment.apiCCFN}/crbar/updateCr`, this.crBars).toPromise()
+  }
+
 
 
   async presentToast(msg: string, color: string) {
@@ -226,6 +237,16 @@ export class SurtidoSapPage implements OnInit {
       message: msg,
       color: color,
       duration: 4000
+    });
+    toast.present();
+  }
+
+  async presentToastmid(msg: string, color: string) {
+    const toast = await this.toastController.create({
+      message: msg,
+      color: color,
+      duration: 4000,
+      position: 'middle'
     });
     toast.present();
   }

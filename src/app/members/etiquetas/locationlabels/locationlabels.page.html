@@ -8,22 +8,18 @@
 </ion-header>
 
 <ion-content>
-  <ion-item lines="none">
-    <ion-label>Tipo de Etiqueta</ion-label>
-    <ion-toggle [(ngModel)]="searchType"></ion-toggle>
-  </ion-item>
-
   <ion-row>
     <ion-col>
-      <h6>Cuarto</h6>
-      <ion-input class="input-recepcion" placeholder="Cuarto" [(ngModel)]="cuarto" name="cuarto">
-      </ion-input>
+      <h6>Almacén</h6>
+      <ion-select class="product-scann" [(ngModel)]="almacen">
+        <ion-select-option  *ngFor="let a of almacenes" value= "{{a.WhsCode}}">{{a.WhsName}}</ion-select-option>
+      </ion-select> 
     </ion-col>
   </ion-row>
   <ion-row>
     <ion-col>
-      <h6>Zona</h6>
-      <ion-input class="input-recepcion" placeholder="Zona" [(ngModel)]="zona" name="zona">
+      <h6>Sección</h6>
+      <ion-input class="input-recepcion" placeholder="Sección" [(ngModel)]="seccion" name="seccion">
       </ion-input>
     </ion-col>
   </ion-row>
@@ -36,35 +32,39 @@
   </ion-row>
   <ion-row>
     <ion-col>
-      <h6>Rack</h6>
-      <ion-input class="input-recepcion" placeholder="Rack" [(ngModel)]="rack" name="rack">
+      <h6>Estante</h6>
+      <ion-input class="input-recepcion" placeholder="Estante" [(ngModel)]="rack" name="rack">
       </ion-input>
     </ion-col>
   </ion-row>
-  <ion-row *ngIf="searchType">
+  <ion-row>
     <ion-col>
-      <h6>Seccion</h6>
-      <ion-input class="input-recepcion" placeholder="Seccion" [(ngModel)]="seccion" name="seccion">
-      </ion-input>
-    </ion-col>
-  </ion-row>
-  <ion-row *ngIf="searchType">
-    <ion-col>
-      <h6>Nivel</h6>
+      <h6>Número de Niveles</h6>
       <ion-input class="input-recepcion" placeholder="Nivel" [(ngModel)]="nivel" name="nivel">
       </ion-input>
     </ion-col>
   </ion-row>
-  <ion-row *ngIf="searchType">
+  <ion-row>
     <ion-col>
-      <h6>Posicion</h6>
+      <h6>Número de Posiciones</h6>
       <ion-input class="input-recepcion" placeholder="Posicion" [(ngModel)]="posicion" name="posicion">
       </ion-input>
     </ion-col>
   </ion-row>
   <ion-row>
     <ion-col>
-      <ion-button expand="full" class="search-order-button" (click)="printLabel()">Imprimir Etiqueta</ion-button>
+      <ion-button expand="full" class="search-order-button" (click)="printLabel()">Generar Etiqueta</ion-button>
+    </ion-col>
+  </ion-row>
+
+  <ion-row>
+    <ion-col>
+      <ion-card *ngIf="createdCode">
+        <ngx-qrcode [value]="createdCode"></ngx-qrcode>
+        <ion-card-content>
+          <p>Value: {{ createdCode }} </p>
+        </ion-card-content>
+      </ion-card>
     </ion-col>
   </ion-row>
 </ion-content>
