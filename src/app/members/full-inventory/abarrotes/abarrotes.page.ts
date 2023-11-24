@@ -126,6 +126,8 @@ export class AbarrotesPage implements OnInit {
         ])
       }
 
+      console.log(codeBars)
+
       return this.http.post(`${environment.apiCCFN}/inventoryCodeBar`, codeBars).toPromise()
     }).then((res: any) => {
       if(res) {
@@ -134,6 +136,7 @@ export class AbarrotesPage implements OnInit {
         this.router.navigate(['/members/full-inventory'])
       }
     }).catch((err: any) => {
+      console.log(err)
       this.presentToast(err.message, "danger")
     }).finally(() => this.hideLoading());
 
