@@ -48,7 +48,13 @@ export class AbarrotesPage implements OnInit {
   ngOnInit() {
 
     this.productInfo = this.navExtras.getInventoryProduct();
-    this.uom = this.productInfo.uom.find(x => this.productInfo.Detail.NumInSale == x.BaseQty);
+    
+    if(this.productInfo.Detail.busqueda == 0){
+      let index = this.productInfo.CodeBars.findIndex(x => x.BcdCode == this.productInfo.codeBar);
+      this.uom = this.productInfo.uom.find(x => this.productInfo.CodeBars[index].UomEntry == x.UomEntry);
+    }
+
+    console.log(this.productInfo)
     this.appSettings = getSettingsFileData(this.platform, this.settings);
 
   }

@@ -5,8 +5,8 @@
     </ion-buttons>
     <ion-buttons slot="end">
       <ion-button class="aceptar" (click)="productDetail()">Detalle</ion-button>
-  </ion-buttons>
-    <ion-title>Abarrotes</ion-title>
+    </ion-buttons>
+    <ion-title>Producto Fijo</ion-title>
   </ion-toolbar>
 </ion-header>
 
@@ -24,16 +24,21 @@
   <ion-row *ngIf="productInfo">
     <ion-col>
       <h6>Unidad de Medida</h6>
-      <ion-select class="product-scann" [(ngModel)]="uom" name="uom">
-        <ion-select-option *ngFor="let um of productInfo.uom" [value]="um">{{um.UomCode}}</ion-select-option>
-      </ion-select>
+      <ion-item *ngIf="productInfo.Detail.busqueda == 0">
+        {{uom.UomCode}}
+      </ion-item>
+      <div *ngIf="productInfo.Detail.busqueda == 1">
+        <ion-select class="product-scann" [(ngModel)]="uom" name="uom">
+          <ion-select-option *ngFor="let um of productInfo.uom" [value]="um">{{um.UomCode}}</ion-select-option>
+        </ion-select>
+      </div>
     </ion-col>
   </ion-row>
 
   <ion-row *ngIf="productInfo.Detail.ManBtchNum == 'Y'">
     <ion-col>
       <h6>Lote</h6>
-        <ion-input class="input-recepcion" [(ngModel)]="lote" name="lote"></ion-input>
+      <ion-input class="input-recepcion" [(ngModel)]="lote" name="lote"></ion-input>
     </ion-col>
   </ion-row>
 

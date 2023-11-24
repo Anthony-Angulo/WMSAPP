@@ -1,0 +1,97 @@
+<ion-header>
+  <ion-toolbar class="tool-bar">
+    <ion-buttons slot="start">
+      <ion-back-button routerLink="/members/home"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Ubicaciones</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+
+  <ion-row>
+    <ion-col>
+      <ion-item lines="none">
+        <ion-label>QR Scanner</ion-label>
+        <ion-toggle [(ngModel)]="QRscanner" (ionChange)="openQR()"></ion-toggle>
+      </ion-item>
+    </ion-col>
+  </ion-row>
+
+  <ion-row *ngIf="!scannedCode && !QRscanner">
+    <ion-col>
+      <h6>Ubicación</h6>
+      <ion-input
+        class="input-recepcion"
+        placeholder="Ubicacion"
+        [(ngModel)]="scannedCode" 
+        name="scannedCode"
+        (ionChange)="getCode()"
+        clearInput
+        debounce="100"
+      >
+      </ion-input>
+    </ion-col>
+  </ion-row>
+  <div *ngIf="scannedCode">
+    <ion-row>
+      <ion-col>
+        <h6>Almacén</h6>
+        <ion-input
+          class="input-recepcion"
+          placeholder="almacen"
+          [(ngModel)]="almacen"
+          name="almacen"
+        ></ion-input>
+      </ion-col>
+    </ion-row>
+    <ion-row>
+      <ion-col>
+        <h6>Sección</h6>
+        <ion-input
+          class="input-recepcion"
+          placeholder="Sección"
+          [(ngModel)]="seccion"
+          name="seccion"
+        >
+        </ion-input>
+      </ion-col>
+    </ion-row>
+    <ion-row>
+      <ion-col>
+        <h6>Pasillo</h6>
+        <ion-input
+          class="input-recepcion"
+          placeholder="Pasillo"
+          [(ngModel)]="pasillo"
+          name="pasillo"
+        >
+        </ion-input>
+      </ion-col>
+    </ion-row>
+    <ion-row>
+      <ion-col>
+        <h6>Estante</h6>
+        <ion-input
+          class="input-recepcion"
+          placeholder="Estante"
+          [(ngModel)]="rack"
+          name="rack"
+        >
+        </ion-input>
+      </ion-col>
+    </ion-row>
+    <ion-row>
+      <ion-col>
+        <h6>Nivel Posicion</h6>
+        <ion-input
+          class="input-recepcion"
+          placeholder="Nivel"
+          [(ngModel)]="nivel"
+          name="nivel"
+        >
+        </ion-input>
+      </ion-col>
+    </ion-row>
+  </div>
+</ion-content>

@@ -3,7 +3,11 @@ import { Component, OnInit } from '@angular/core';
 import { SettingsService } from '../../../services/settings.service';
 import { environment } from 'src/environments/environment';
 import { ToastController, LoadingController } from '@ionic/angular';
+import { getSettingsFileData } from '../../commons';
 import { Platform } from '@ionic/angular';
+import { Settings } from '../../../interfaces/settings';
+import { BarcodeScanner } from '@ionic-native/barcode-scanner/ngx';
+
 
 
 @Component({
@@ -13,16 +17,16 @@ import { Platform } from '@ionic/angular';
 })
 export class LocationlabelsPage implements OnInit {
 
-  datos: any;
-  apiSAP: string;
-  IpImpresora: string;
+  appSettings: any;
   load: any;
-  searchType: any;
-  cuarto: string;
-  zona: string;
+  createdCode = null;
+  almacenes: any = [];
+
+
+  almacen: string;
+  seccion: string;
   pasillo: string;
   rack: string;
-  seccion: string;
   nivel: string;
   posicion: string;
 
@@ -32,47 +36,36 @@ export class LocationlabelsPage implements OnInit {
     private loading: LoadingController,
     private platform: Platform) { }
 
-  ngOnInit() {
-    if (this.platform.is("cordova")) {
-      this.datos = this.settings.fileData
-      this.apiSAP = this.datos.apiSAP
-      this.IpImpresora = this.datos.IpImpresora;
-    } else {
-      this.apiSAP = environment.apiSAP
-    }
+  async ngOnInit() {
+    this.appSettings = getSettingsFileData(this.platform, this.settings);
+
+    await this.presentLoading('Cargando...');
+
+    this.http.get(`${environment.apiCCFN}/warehouse`)
+      .toPromise().then((x: any) => {
+        this.almacenes = x;
+      })
+      .catch((err: Error) => {
+        console.log(err);
+      })
+      .finally(() => this.hideLoading());
   }
 
   async printLabel() {
-    var options = {
-      room: this.cuarto,
-      zone: this.zona,
-      pasillo: this.pasillo,
-      rack: this.rack,
-      section: (this.seccion == undefined) ? '' : this.seccion,
-      nivel: (this.nivel == undefined) ? '' : this.nivel,
-      posicion: (this.posicion == undefined) ? '' : this.posicion,
-      IDPrinter: (this.IpImpresora == undefined) ? 'S01-recepcion01' : this.IpImpresora,
+    this.createdCode = this.almacen + '-' + this.seccion + '-' + this.pasillo + '-' + this.rack + '-' + this.nivel + '-' + this.posicion;
+    
+    let output = {
+      Codigo: this.createdCode,
+      IDPrinter: 'Etiquetas_Tarima'
     }
 
-    if (this.seccion == undefined || this.nivel == undefined || this.posicion == undefined) {
-      this.http.post(this.apiSAP + '/api/impresion/masterdomicilio', options).toPromise().catch((err) => {
-        if (err) {
-          this.presentToast('Error al imprimir', 'danger')
-          return
-        }
-      });
-    } else {
-      this.http.post(this.apiSAP + '/api/impresion/domicilio', options).toPromise().catch((err) => {
-        if (err) {
-          this.presentToast('Error al imprimir', 'danger')
-          return
-        }
-      });
-
-      this.presentToast('Se imprimio correctamente', 'success')
-    }
-
-    console.log(options)
+    this.http.post(`${environment.apiSAP}/api/Impresion/QR`, output).toPromise().then((res: any) => {
+      console.log(res)
+      this.presentToast('impreso correctamente','success');
+    }).catch((err: any) => {
+      console.log(err)
+      this.presentToast('Error al imprimir', 'danger')
+    })
   }
 
   async presentToast(msg: string, color: string) {

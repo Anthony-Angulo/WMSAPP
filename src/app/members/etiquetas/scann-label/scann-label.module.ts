@@ -2,15 +2,15 @@ import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Routes, RouterModule } from '@angular/router';
-import { NgxQRCodeModule } from '@techiediaries/ngx-qrcode';
+
 import { IonicModule } from '@ionic/angular';
 
-import { LocationlabelsPage } from './locationlabels.page';
+import { ScannLabelPage } from './scann-label.page';
 
 const routes: Routes = [
   {
     path: '',
-    component: LocationlabelsPage
+    component: ScannLabelPage
   }
 ];
 
@@ -19,9 +19,8 @@ const routes: Routes = [
     CommonModule,
     FormsModule,
     IonicModule,
-    NgxQRCodeModule,
     RouterModule.forChild(routes)
   ],
-  declarations: [LocationlabelsPage]
+  declarations: [ScannLabelPage]
 })
-export class LocationlabelsPageModule {}
+export class ScannLabelPageModule {}

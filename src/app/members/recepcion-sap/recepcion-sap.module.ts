@@ -1,4 +1,4 @@
-import { NgModule } from '@angular/core';
+import { NgModule, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Routes, RouterModule } from '@angular/router';
@@ -15,12 +15,14 @@ const routes: Routes = [
 ];
 
 @NgModule({
+  declarations: [RecepcionSapPage],
   imports: [
     CommonModule,
-    FormsModule,
     IonicModule,
+    FormsModule,
     RouterModule.forChild(routes)
   ],
-  declarations: [RecepcionSapPage]
+  // schemas: [CUSTOM_ELEMENTS_SCHEMA],
+  
 })
 export class RecepcionSapPageModule {}

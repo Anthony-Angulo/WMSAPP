@@ -23,7 +23,7 @@
   <h6>Selecciona Un Lote</h6>
   <ion-row>
     <ion-col>
-      <ion-select class="product-scann" [(ngModel)]="batchNum">
+      <ion-select (ionChange)="triggerQty()" class="product-scann" [(ngModel)]="batchNum">
         <ion-select-option *ngFor="let lote of batchs" value="{{lote.BatchNum}}"
           >{{lote.BatchNum.substr(lote.BatchNum.length - 5)}} - {{lote.Quantity
           | number}}</ion-select-option
@@ -31,6 +31,15 @@
       </ion-select>
     </ion-col>
   </ion-row>
+
+  <!-- <ion-row>
+    <ion-col>
+      <h6>Selecciona Una Unidad de Medida</h6>
+      <ion-select class="product-scann" [(ngModel)]="uom" name="uom">
+        <ion-select-option *ngFor="let um of productData.Uoms" [value]="um">{{um.UomCode}}</ion-select-option>
+      </ion-select>
+    </ion-col>
+  </ion-row> -->
 
   <h6>Ingresa Numero De Tarima</h6>
   <ion-row>

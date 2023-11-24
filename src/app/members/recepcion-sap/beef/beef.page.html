@@ -24,6 +24,10 @@
 
   <ion-row>
     <ion-col>
+      <h6>Fecha de Producción</h6>
+      <ion-datetime class="product-scann" displayFormat="DD-MM-YYYY" max="2030" [(ngModel)]="FechaProd" ></ion-datetime>
+    </ion-col>
+    <ion-col>
       <h6>Fecha de Expiración</h6>
       <ion-datetime class="product-scann" displayFormat="DD-MM-YYYY" max="2030" [(ngModel)]="FechaCad" ></ion-datetime>
     </ion-col>
@@ -41,7 +45,7 @@
     <ion-col>
       <h6>Escanea codigo de barra de producto.</h6>
       <ion-input class="product-scann" id="input-codigo" placeholder="Codigo de Barra" [(ngModel)]="codigoBarra"
-        name="codigoBarra" (ionChange)="getDataFromCodeBar()" clearInput debounce="100">
+        name="codigoBarra" (ionChange)="getDataFromGS1()" clearInput debounce="100">
       </ion-input>
     </ion-col>
   </ion-row>
@@ -50,13 +54,16 @@
   <h6>Cajas Escaneadas: {{cantidadEscaneada}}</h6>
   <h6>Peso Escaneado: {{cantidadPeso}}</h6>
 
-  <h6>Lotes</h6>
+  <h6>Lotes         <ion-button size="small" (click)="imprimirTarima()">
+    <ion-icon slot="icon-only" name="print"></ion-icon>
+  </ion-button></h6>
   <ion-row *ngFor="let prod of detail; let index = index">
     <ion-col>
       <ion-item lines="none" class="container-item">
-        Name: {{prod.name}}<br>
-        fecha: {{prod.expirationDate}}<br>
-        cantidad: {{prod.quantity}}
+        Lote: {{prod.name}}<br>
+        FechaVenc: {{prod.expirationDate}}<br>
+        FechaProd: {{prod.manufacturingDate}}<br>
+        Peso: {{prod.quantity}}
         <ion-button color="danger" (click)="eliminar(index)" class="button-eliminar">
           <ion-icon slot="icon-only" name="close-circle"></ion-icon>
         </ion-button>
@@ -75,8 +82,8 @@
 <ion-footer>
   <ion-toolbar color="dark">
     <ion-buttons slot="start">
-      <ion-button routerLink="/members/home">
-        <ion-icon slot="icon-only" name="home"></ion-icon>
+      <ion-button (click)="promtNewCr()">
+        <ion-icon slot="icon-only" name="barcode"></ion-icon>
       </ion-button>
     </ion-buttons>
     <ion-buttons slot="end">

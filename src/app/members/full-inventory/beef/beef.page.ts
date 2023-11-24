@@ -13,7 +13,7 @@ import {
   AlertController
 }
   from '@ionic/angular';
-
+  declare var parseBarcode: any;
 const USER = 'user';
 
 @Component({
@@ -51,11 +51,27 @@ export class BeefPage implements OnInit {
     private toastController: ToastController,
     private storage: Storage) { }
 
-  ngOnInit() {
+  async ngOnInit() {
     this.productInfo = this.navExtras.getInventoryProduct();
     this.appSettings = getSettingsFileData(this.platform, this.settings);
 
-    console.log(this.productInfo);
+    await this.presentLoading("Obteniendo codigos de barra..");
+
+    Promise.all([
+      this.http.get(`${environment.apiCCFN}/codeBar/${this.productInfo.Detail.ItemCode}`).toPromise(),
+      this.http.get(`${environment.apiCCFN}/crBar/${this.productInfo.Detail.ItemCode}`).toPromise(),
+    ]).then(([cBDetail, crBars] : any) => {
+      if (cBDetail.length != 0) {
+        this.productInfo.cBDetail = cBDetail;
+      } else {
+        this.productInfo.cBDetaiil = [];
+      }
+      this.productInfo.crBars = crBars;
+    }).catch((err) => {
+      this.presentToast(err.error, "danger");
+    }).finally(() => {
+      this.hideLoading();
+    });
 
     if (Number(this.productInfo.Detail.U_IL_PesMin) == 0 && Number(this.productInfo.Detail.U_IL_PesMax) == 0) {
       this.productInfo.Detail.U_IL_PesMin = 0
@@ -76,6 +92,8 @@ export class BeefPage implements OnInit {
       this.promptCodeDesc()
       this.presentToast("Selecciona una configuracion", "warning")
     }
+
+    console.log(this.productInfo);
 
   }
 
@@ -144,11 +162,39 @@ export class BeefPage implements OnInit {
     await alert.present();
   }
 
+  getGS1Data() {
+
+    if (this.codigoBarra == '') return
+
+    try {
+      let answer = parseBarcode(this.codigoBarra);
+
+      if(this.productInfo.Detail.SuppCatNum != answer.parsedCodeItems[0].data) {
+        this.presentToast("El codigo de manufactura no coincide con el codigo escaneado. Contactar Datos Maestros.", "warning");
+        this.pesoDeEtiqueta = 0;
+        document.getElementById('input-codigo').setAttribute('value', '');
+        document.getElementById('input-codigo').focus();
+        return
+      }
+
+      this.getDataFromEtiqueta();
+    }catch(error) {
+      this.presentToast("Esctructura GS1 mal estrucurada.", "warning");
+      this.getDataFromEtiqueta();
+    }
+  }
+
   public getDataFromEtiqueta(): void {
 
     if (this.codigoBarra == '') return
 
     validateCodeBar(environment.apiCCFN, this.codigoBarra, this.productInfo.headerId, this.http).then((value: boolean) => {
+
+      if (this.codigoBarra.trim()[0] == 'C') {
+        console.log(1)
+       this.getcrBarData();
+       return
+      }
 
       if (!value) {
 
@@ -213,6 +259,34 @@ export class BeefPage implements OnInit {
       document.getElementById('input-codigo').setAttribute('value', '');
 
     });
+  }
+
+  public getcrBarData(): void {
+    let isScanned = this.codeBarDetails.findIndex((codeBar: any) => codeBar.codebar == this.codigoBarra.trim());
+
+    if (isScanned >= 0) {
+      this.presentToast("Este Codigo De Barra Ya Fue Escaneado", "warning");
+      this.pesoDeEtiqueta = 0;
+      document.getElementById('input-codigo').setAttribute('value', '');
+      document.getElementById('input-codigo').focus();
+      return
+    }
+
+    let foundInCrs = this.productInfo.crBars.findIndex((x:any) => x.CodeBar == this.codigoBarra.trim());
+    
+    if(foundInCrs >= 0) {
+      this.codeBarDetails.push({
+        codebar: this.productInfo.crBars[foundInCrs].CodeBar,
+        Lote: this.lote,
+        visual: this.productInfo.crBars[foundInCrs].CodeBar,
+        Quantity: Number(this.productInfo.crBars[foundInCrs].Peso)
+      });
+    } else {
+      this.presentToast("Codigo de barra CR no encontrado.","warning");
+    }
+
+    this.total = this.codeBarDetails.map(x => x.Quantity).reduce((a, b) => a + b, 0);
+    document.getElementById('input-codigo').setAttribute('value', '');
   }
 
   async saveInventory() {

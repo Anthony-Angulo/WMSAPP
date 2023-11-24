@@ -9,6 +9,8 @@ import { Storage } from '@ionic/storage';
 import { Platform } from '@ionic/angular';
 import { ToastController, LoadingController, AlertController } from '@ionic/angular';
 import { getSettingsFileData } from '../commons';
+// import * as barCodeReader from 'src/assets/scripts/BarcodeParser.js'
+declare var parseBarcode: any;
 
 const TOKEN_KEY = 'auth-token';
 
@@ -25,6 +27,7 @@ export class RecepcionSapPage implements OnInit {
   public number: number;
   load: any;
   products: any = []
+  crbarras: any = [];
   search
   ctd
   data: any
@@ -66,35 +69,50 @@ export class RecepcionSapPage implements OnInit {
     } else {
       let index = this.order.POR1.findIndex(product => product.ItemCode == productsScanned.ItemCode)
       this.order.POR1[index].count = productsScanned.count
+
+      for (let x = 0; x < this.order.POR1[index].crBars.length; x++) {
+        let array = [this.order.POR1[index].crBars[x].ItemCode, this.order.POR1[index].crBars[x].Peso, this.order.POR1[index].crBars[x].CodeBar, this.order.POR1[index].crBars[x].FechaCaducidad, this.order.POR1[index].crBars[x].FechaProduccion]
+        this.crbarras.push(array)
+      }
+
       this.products.push(productsScanned)
     }
 
+
+
     this.receptionService.setReceptionData(null)
   }
+
+  // getGs1Data() {
+  //   console.log(this.number)
+  //   let answer = parseBarcode(this.number);
+  //   console.log(answer)
+  // }
 
   async getOrden() {
 
     await this.presentLoading('Buscando....');
 
 
-      this.http.get(`${this.appSettings.apiSAP}/api/purchaseorder/Reception/${this.number}`).toPromise().then((data: any)  => {
-        this.order = data;
-        if (this.order.OPOR.U_IL_Pedimento != null) {
-          this.navExtras.setPedimento(this.order.OPOR.U_IL_Pedimento)
-        }
-      }).catch(async error => {
-        if (error.status == 404) {
-          this.presentToast('No encontrado o no existe', 'warning')
-        } else if (error.status == 400) {
-          this.presentToast(error.error, 'warning')
-        } else if (error.status == 401) {
-          this.presentToast(error.error, "danger");
-        } else {
-          this.presentToast('Error de conexion', 'danger')
-        }
-      }).finally(() => {
-        this.hideLoading();
-      })
+    this.http.get(`${this.appSettings.apiSAP}/api/purchaseorder/Reception/${this.number}`).toPromise().then((data: any) => {
+      this.crbarras = [];
+      this.order = data;
+      if (this.order.OPOR.U_IL_Pedimento != null) {
+        this.navExtras.setPedimento(this.order.OPOR.U_IL_Pedimento)
+      }
+    }).catch(async error => {
+      if (error.status == 404) {
+        this.presentToast('No encontrado o no existe', 'warning')
+      } else if (error.status == 400) {
+        this.presentToast(error.error, 'warning')
+      } else if (error.status == 401) {
+        this.presentToast(error.error, "danger");
+      } else {
+        this.presentToast('Error de conexion', 'danger')
+      }
+    }).finally(() => {
+      this.hideLoading();
+    });
 
   }
 
@@ -106,6 +124,7 @@ export class RecepcionSapPage implements OnInit {
 
     if (index >= 0) {
       if (this.order.POR1[index].LineStatus == 'O') {
+        this.order.POR1[index].DocNum = this.number;
         this.receptionService.setOrderData(this.order.POR1[index])
         if (this.order.POR1[index].Detail.U_IL_TipPes == 'V') {
           this.router.navigate(['members/beef'])
@@ -175,6 +194,10 @@ export class RecepcionSapPage implements OnInit {
 
   goToProduct(index) {
 
+    console.log(this.order.POR1[index].crBars)
+
+    this.order.POR1[index].DocNum = this.number;
+
     this.receptionService.setOrderData(this.order.POR1[index])
 
     if (this.order.POR1[index].Detail.U_IL_TipPes == 'V') {
@@ -200,6 +223,7 @@ export class RecepcionSapPage implements OnInit {
             this.presentToast('Recepcion Concluida', 'success');
             this.order = undefined;
             this.number = undefined;
+            this.crbarras = [];
             this.navExtras.setPedimento(null)
           }
         }, {
@@ -228,10 +252,14 @@ export class RecepcionSapPage implements OnInit {
         Line: product.LineNum,
         Count: product.count,
         ItemType: product.Detail.U_IL_TipPes,
+        SupplierCode: product.SupplierCode,
         Group: (product.Detail.QryGroup43 == "Y") ? 43 : 0,
         Batch: (product.detalle) ? product.detalle : []
       }
     })
+
+
+    console.log(this.crbarras);
 
     let pedimento
 
@@ -241,6 +269,9 @@ export class RecepcionSapPage implements OnInit {
       pedimento = this.navExtras.getPedimento()
     }
 
+    // this.createCrBars();
+    
+
     if (products.length != 0) {
       const recepcionData = {
         order: this.order.OPOR.DocEntry,
@@ -248,25 +279,34 @@ export class RecepcionSapPage implements OnInit {
         products
       }
 
+      console.log(recepcionData)
 
-        this.http.post(`${this.appSettings.apiSAP}/api/PurchaseDelivery`, recepcionData).toPromise().then((data: any) => {
-          console.log(data);
-          this.presentAlertConfirm();
-        }).catch(error => {
-          if (error.status == 401) {
-            this.presentToast(error.error, 'danger');
-          } else {
-            this.presentToast(error.error, 'danger');
-          }
-        }).finally(() => {
-          this.hideLoading()
-        })
+      
+
+
+      this.http.post(`${this.appSettings.apiSAP}/api/PurchaseDelivery`, recepcionData).toPromise().then((data: any) => {
+        console.log(data);
+        this.createCrBars();
+        this.presentAlertConfirm();
+      }).catch(error => {
+        if (error.status == 401) {
+          this.presentToast(error.error, 'danger');
+        } else {
+          this.presentToast(error.error, 'danger');
+        }
+      }).finally(() => {
+        this.hideLoading()
+      })
     } else {
       this.presentToast('No hay productos que recibir.', 'warning')
       this.hideLoading()
     }
 
 
+  }
+
+  async createCrBars() {
+    await this.http.post(`${environment.apiCCFN}/crBar`, this.crbarras).toPromise()
   }
 
   async presentToast(msg: string, color: string) {

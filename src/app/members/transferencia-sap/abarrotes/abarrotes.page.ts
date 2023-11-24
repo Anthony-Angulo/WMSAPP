@@ -43,7 +43,7 @@ export class AbarrotesPage implements OnInit {
       this.productData.pallet = '';
     }
 
-    this.http.get(this.appSettings.apiSAP + '/api/batch/' + this.appSettings.sucursal + '/' + this.productData.ItemCode).toPromise().then((val: any) => {
+    this.http.get(this.appSettings.apiSAP + '/api/batch/' + this.productData.FromWhsCod + '/' + this.productData.ItemCode).toPromise().then((val: any) => {
       this.stock = val.stock;
     }).catch((error) => {
       this.presentToast(error.error, "danger");

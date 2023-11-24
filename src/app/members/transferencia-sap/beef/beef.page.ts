@@ -22,6 +22,7 @@ export class BeefPage implements OnInit {
   public batchDetail: any = [];
   public cantidadEscaneada: number = 0;
   public cantidadPeso: number = 0;
+  public crBars = [];
   public availableBatchs: any;
   public tarima: string;
   public loadController: any;
@@ -44,6 +45,8 @@ export class BeefPage implements OnInit {
   async ngOnInit() {
 
     this.productData = this.receptionService.getOrderData();
+
+    console.log(this.productData)
     this.appSettings = getSettingsFileData(this.platform, this.settings);
 
     if (!this.productData.detalle) {
@@ -79,9 +82,11 @@ export class BeefPage implements OnInit {
     await Promise.all([
       this.http.get(`${this.appSettings.apiSAP}/api/batch/${this.productData.FromWhsCod}/${this.productData.ItemCode}`).toPromise(),
       this.http.get(`${environment.apiCCFN}/codeBar/${this.productData.ItemCode}`).toPromise(),
-    ]).then(([batch, cBDetail]):any => {
+      this.http.get(`${environment.apiCCFN}/crBar/${this.productData.ItemCode}`).toPromise(),
+    ]).then(([batch, cBDetail, crBars]): any => {
       this.availableBatchs = batch;
       this.productData.cBDetail = cBDetail;
+      this.productData.crBars = crBars;
     }).catch((error) => {
       console.log(error)
       this.presentToast(error.error.error, 'danger')
@@ -131,12 +136,70 @@ export class BeefPage implements OnInit {
     await alert.present();
   }
 
+  public getCodeBarCR(): void {
+
+    let isScanned = this.productData.crBars.findIndex((prod: any) => prod.CodeBar == this.codeBarInput.trim());
+    if (isScanned < 0) {
+      this.presentToast("CR No Esta Registrado", "warning");
+      this.peso = 0
+      document.getElementById('input-codigo').setAttribute('value', '');
+      document.getElementById('input-codigo').focus();
+      return
+    }
+
+    let alreadyScanned = this.batchDetail.findIndex((y: any) => y.CodeBar == this.codeBarInput.trim());
+
+    if (alreadyScanned >= 0) {
+      this.presentToast("CR Ya Fue Escaneado", "warning");
+      this.peso = 0
+      document.getElementById('input-codigo').setAttribute('value', '');
+      document.getElementById('input-codigo').focus();
+      return
+    }
+
+    let foundInBatch = this.availableBatchs.findIndex((code: any) => code.U_IL_CodBar == this.codeBarInput.trim());
+
+    if (foundInBatch < 0) {
+      let loteGenerico = this.availableBatchs.find((y: any) => y.BatchNum == 'SI');
+
+      if (loteGenerico != undefined) {
+
+        this.batchDetail.push({
+          Code: loteGenerico.BatchNum,
+          Quantity: this.productData.crBars[isScanned].Peso,
+          CodeBar: this.codeBarInput.trim()
+        });
+
+        this.presentToast("Se Escaneo Correctamente", "success");
+      }
+    } else {
+      this.batchDetail.push({
+        Code: this.availableBatchs[foundInBatch].BatchNum,
+        Quantity: Number(this.availableBatchs[foundInBatch].Quantity),
+        CodeBar: this.codeBarInput.trim()
+      });
+      this.presentToast("Se Escaneo Correctamente", "success");
+    }
+
+    this.crBars.push({CodeBar: this.codeBarInput.trim(), Active: 1})
+
+    this.cantidadEscaneada = this.batchDetail.length
+    this.cantidadPeso = this.batchDetail.map((x: any) => x.Quantity).reduce((a, b) => a + b, 0);
+    document.getElementById('input-codigo').setAttribute('value', '');
+    document.getElementById('input-codigo').focus();
+  }
+
   public getDataFromCodeBar(): void {
 
     if (this.codeBarInput == '') return
 
     if (this.tarima == undefined || this.tarima == '') {
       this.presentToast("Debes Ingresar Un Numero De Tarima", "warning");
+      return
+    }
+
+    if (this.codeBarInput.trim()[0] == 'C') {
+      this.getCodeBarCR();
       return
     }
 
@@ -220,6 +283,20 @@ export class BeefPage implements OnInit {
     document.getElementById('input-codigo').focus();
   }
 
+  async imprimirTarima() {
+    await this.presentLoading('Imprimiendo etiqueta...');
+
+    this.http.get(`${environment.apiSAP}/api/Impresion/PruebaReciboTarima?Itemcode=${this.productData.ItemCode}&Total=${Number(this.cantidadPeso)}&UoM=${this.productData.UomEntry}
+    &DocNum=${this.productData.DocNum}&Cajas=${Number(this.cantidadEscaneada)}&printer=${this.appSettings.IpImpresora}`).toPromise()
+      .then(() => {
+        this.presentToast("Se imprimio Correctamente", "success");
+      }).catch((error) => {
+        this.presentToast(error.error.error, 'danger')
+      }).finally(() => {
+        this.hideLoading()
+      })
+  }
+
 
   public eliminar(index: number) {
     this.batchDetail.splice(index, 1)
@@ -249,6 +326,7 @@ export class BeefPage implements OnInit {
 
     this.productData.pallet = this.tarima;
     this.productData.detalle = this.batchDetail;
+    this.productData.crBarsUpdate = this.crBars;
     this.receptionService.setReceptionData(this.productData)
     this.router.navigate(['/members/transferencia-sap'])
 

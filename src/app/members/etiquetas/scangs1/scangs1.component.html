@@ -1,0 +1,70 @@
+<ion-header>
+  <ion-toolbar class="tool-bar">
+    <ion-buttons slot="start">
+      <ion-back-button routerLink="/members/home"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Etiquetas GS1</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+
+  <ion-row *ngIf="!productData">
+    <ion-col>
+      <h6>Codigo de Producto</h6>
+      <form (ngSubmit)="getProduct()">
+        <ion-input class="input-recepcion" placeholder="Codigo de Producto"  [(ngModel)]="itemCode" name="itemCode">
+        </ion-input>
+        <ion-button type="submit" class="search-order-button" expand="full">
+          Buscar
+        </ion-button>
+      </form>
+    </ion-col>
+  </ion-row>
+  <ion-row *ngIf="productData">
+    <ion-col>
+      <h6>Datos de Producto</h6>
+      <ion-item lines="none" class="container-item">
+        Codigo: {{productData.Detail.ItemCode}}<br>
+        Nombre: {{productData.Detail.ItemName}}<br>
+        GTIN: {{productData.Detail.SuppCatNum}}
+      </ion-item>
+    </ion-col>
+  </ion-row>
+  <ion-row *ngIf="!answer && productData">
+    <ion-col>
+      <h6>Escanear Etiqueta GS1</h6>
+      <ion-input
+      id="input-codigo"
+        class="input-recepcion"
+        placeholder="GS1"
+        [(ngModel)]="scannedCode" 
+        name="scannedCode"
+        (ionChange)="getGs1Data()"
+        clearInput
+        debounce="100"
+      >
+      </ion-input>
+    </ion-col>
+  </ion-row>
+
+  <ion-row *ngIf="answer && productData">
+    <ion-row *ngFor="let p of answer.parsedCodeItems">
+      {{p.ai}}
+    {{p.dataTitle}}
+    {{p.data}}
+    {{p.unit}}
+    </ion-row>
+  </ion-row>
+
+  <ion-row *ngIf="answer && productData">
+    <ion-col>
+      <ion-button type="submit" class="search-order-button" expand="full" (click)="saveGTIN()">
+        Guardar GTIN
+      </ion-button>
+    </ion-col>
+  </ion-row>
+
+</ion-content>
+
+

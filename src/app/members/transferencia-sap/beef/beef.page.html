@@ -41,7 +41,9 @@
   <h6>Cajas Escaneadas: {{cantidadEscaneada}}</h6>
   <h6>Peso Escaneado: {{cantidadPeso}}</h6>
 
-  <h6>Lotes</h6>
+  <h6>Lotes         <ion-button size="small" (click)="imprimirTarima()">
+    <ion-icon slot="icon-only" name="print"></ion-icon>
+  </ion-button></h6>
   <ion-row *ngFor="let prod of batchDetail; let index = index">
     <ion-col>
       <ion-item lines="none" class="container-item">

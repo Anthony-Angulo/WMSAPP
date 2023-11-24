@@ -9,6 +9,8 @@ import { Platform, ToastController, LoadingController, AlertController } from '@
 import { InventoryOrders } from '../../interfaces/fullInventory';
 import { Settings } from '../../interfaces/settings';
 
+declare var parseBarcode: any;
+
 @Component({
   selector: 'app-full-inventory',
   templateUrl: './full-inventory.page.html',
@@ -22,13 +24,14 @@ export class FullInventoryPage implements OnInit {
   load: any;
   orders: boolean = true;
   productCode: string;
+  productCodeScanned: string;
   productDetail: any;
   headerId: number;
   search: string;
   searchType: boolean;
   whsType:any;
   location: string;
-
+  answer:any;
 
   constructor(
     private http: HttpClient,
@@ -115,6 +118,7 @@ export class FullInventoryPage implements OnInit {
       }
 
       this.productDetail = productDetail;
+      this.productDetail.Detail.busqueda = 1;
       this.productDetail.headerId = this.headerId;
       this.productDetail.location = this.location;
 
@@ -140,72 +144,27 @@ export class FullInventoryPage implements OnInit {
         this.presentToast(err.error, "danger");
     }).finally(() => {
       this.hideLoading();
-    })
+    });
 
 
   }
 
-  // async getProductRetail() {
-
-  //   await this.presentLoading('Buscando Producto...');
-
-
-  //   Promise.all([
-  //     this.http.get(`${this.appSettings.apiSAP}/api/Products/Detail/${this.productCode.toUpperCase()}`).toPromise(),
-  //     this.http.get(`${environment.apiCCFN}/codeBar/${this.productCode.toUpperCase()}`).toPromise()
-  //   ]).then(([productDetail, cBDetail]: any) => {
-
-  //     if (productDetail.Detail.ItemName == null) {
-  //       this.presentToast("No se Encontre Un Producto Con Ese Codigo", "warning");
-  //       return
-  //     }
-
-  //     this.productDetail = productDetail;
-  //     this.productDetail.headerId = this.headerId;
-  //     this.productDetail.location = this.location;
-
-  //     if (cBDetail.length != 0) {
-  //       this.productDetail.cBDetail = cBDetail;
-  //     } else {
-  //       this.productDetail.cBDetaiil = [];
-  //     }
-
-  //     this.navExtras.setInventoryProduct(this.productDetail);
-
-
-
-  //     if (this.productDetail.Detail.U_IL_TipPes == "F") {
-  //       this.router.navigate(['/members/full-abarrotes']);
-  //       return
-  //     }
-
-  //     this.router.navigate(['/members/full-beef']);
-
-  //   }).catch(async err => {
-  //     if (err.status == 401) {
-  //       this.presentToast(err.error, "danger");
-  //     } else {
-  //       this.presentToast(err.error, "danger");
-  //     }
-  //   }).finally(() => {
-  //     this.hideLoading();
-  //   })
-  // }
-
   async searchProductByCb() {
 
 
-    if (this.search == '') return
+    if (this.productCodeScanned == '') return
 
     await this.presentLoading('Buscando Producto...');
 
 
+    this.productDetail = await this.http.get(`${this.appSettings.apiSAP}/api/CodeBar/${this.productCodeScanned}`).toPromise();
 
 
-    this.productDetail = await this.http.get(`${environment.apiSAPR}/Product/CodeBar/${this.search}`).toPromise();
+    this.productDetail = await this.http.get(`${this.appSettings.apiSAP}/api/CodeBar/${this.search}`).toPromise();
 
     if (this.productDetail.Detail.ItemName == null) {
       this.presentToast("No se Encontro Un Producto Con Ese Codigo", "warning");
+      this.productCodeScanned = '';
       return
     }
 
@@ -216,10 +175,13 @@ export class FullInventoryPage implements OnInit {
 
       if (productDetail.Detail.ItemName == null) {
         this.presentToast("No se Encontre Un Producto Con Ese Codigo", "warning");
+        this.productCodeScanned = '';
         return
       }
 
       this.productDetail = productDetail;
+      this.productDetail.Detail.busqueda = 0;
+      this.productDetail.codeBar = this.productCodeScanned;
       this.productDetail.headerId = this.headerId;
       this.productDetail.location = this.location;
 
@@ -233,10 +195,12 @@ export class FullInventoryPage implements OnInit {
 
       if (this.productDetail.Detail.U_IL_TipPes == "F") {
         this.router.navigate(['/members/full-abarrotes']);
+        this.productCodeScanned = '';
         return
       }
 
       this.router.navigate(['/members/full-beef']);
+      this.productCodeScanned = '';
 
     }).catch((err) => {
       this.presentToast(err.error, "danger");

@@ -4,24 +4,22 @@ import { FormsModule } from '@angular/forms';
 import { Routes, RouterModule } from '@angular/router';
 import { NgxQRCodeModule } from '@techiediaries/ngx-qrcode';
 import { IonicModule } from '@ionic/angular';
-
-import { LocationlabelsPage } from './locationlabels.page';
-
+import {Scangs1Component} from './scangs1.component'
 const routes: Routes = [
   {
     path: '',
-    component: LocationlabelsPage
+    component: Scangs1Component
   }
 ];
 
 @NgModule({
+  declarations: [Scangs1Component],
   imports: [
     CommonModule,
     FormsModule,
     IonicModule,
     NgxQRCodeModule,
     RouterModule.forChild(routes)
-  ],
-  declarations: [LocationlabelsPage]
+  ]
 })
-export class LocationlabelsPageModule {}
+export class Scangs1Module { }

@@ -23,6 +23,7 @@ export class BeefPage implements OnInit {
   batch: any;
   codebarDescription: any;
   inputs = [];
+  crBars: any = [];
   selectedDesc: any;
 
   constructor(
@@ -38,65 +39,65 @@ export class BeefPage implements OnInit {
 
     this.productData = this.NavExtras.getProducts();
 
-    await this.presentLoading('Buscando Lotes de producto...')
+    if (!this.productData.detalle) {
+      this.productData.detalle = []
+    } else {
+      this.detail = this.productData.detalle
+    }
 
-    this.http.get(environment.apiSAP + '/api/batch/' + this.productData.WhsCode
-      + '/' + this.productData.ItemCode).toPromise().then((batchs: any) => {
-        console.log(batchs)
-        this.batch = batchs
-      }).then(() => {
-        return this.http.get(environment.apiWMS + '/codebardescriptionsVariants/'
-          + this.productData.ItemCode).toPromise()
-      }).then((codebarDescription: any[]) => {
-        console.log(codebarDescription)
-        this.productData.cBDetail = codebarDescription
-      }).then(() => {
-        if (!this.productData.detalle) {
-          this.productData.detalle = []
-        } else {
-          this.detail = this.productData.detalle
-        }
+    if (this.productData.cajasEscaneadas) {
+      this.cantidadEscaneada = Number(this.productData.cajasEscaneadas)
+    } else {
+      this.cantidadEscaneada = 0
+    }
 
-        if (this.productData.cajasEscaneadas) {
-          this.cantidadEscaneada = Number(this.productData.cajasEscaneadas)
-        } else {
-          this.cantidadEscaneada = 0
-        }
+    if (!this.productData.pesoContado) {
+      this.productData.pesoContado = 0
+    } else {
+      this.cantidadPeso = this.productData.pesoContado
+    }
 
-        if (!this.productData.pesoContado) {
-          this.productData.pesoContado = 0
-        } else {
-          this.cantidadPeso = this.productData.pesoContado
-        }
+    if (!this.productData.pallet) {
+      this.productData.pallet = ''
+    }
 
-        if (!this.productData.pallet) {
-          this.productData.pallet = ''
-        }
+    if (Number(this.productData.Detail.U_IL_PesMin) == 0 && Number(this.productData.Detail.U_IL_PesMax) == 0) {
+      this.productData.Detail.U_IL_PesMin = 0
+      this.productData.Detail.U_IL_PesMax = 100
+    }
 
-        if (Number(this.productData.Detail.U_IL_PesMin) == 0 && Number(this.productData.Detail.U_IL_PesMax) == 0) {
-          this.productData.Detail.U_IL_PesMin = 0
-          this.productData.Detail.U_IL_PesMax = 100
-        }
+    await this.presentLoading('Buscando Lotes de producto...');
 
-        if (this.productData.Detail.QryGroup45 == "Y") {
-          this.codebarDescription = this.productData.cBDetail.filter(x => x.proveedor != null)
-          this.codebarDescription.forEach(y => {
-            this.inputs.push({
-              name: y.proveedor,
-              type: "radio",
-              label: y.proveedor,
-              value: y.proveedor
-            })
-          })
+    await Promise.all([
+      this.http.get(environment.apiSAP + '/api/batch/' + this.productData.WhsCode
+        + '/' + this.productData.ItemCode).toPromise(),
+      this.http.get(environment.apiWMS + '/codebardescriptionsVariants/'
+        + this.productData.ItemCode).toPromise(),
+        // this.http.get(`${environment.apiCCFN}/crBar/nonActive/${this.productData.ItemCode}`).toPromise()
+    ]).then(([batchs, codebarDescription]): any => {
+      this.batch = batchs;
+      this.productData.cBDetail = codebarDescription;
+      // this.productData.crBars = crBars;
+    }).catch((error) => {
+      this.presentToast(error.error.error, 'danger')
+    }).finally(() => {
+      this.hideLoading()
+    })
 
-          this.promptCodeDesc()
-          this.presentToast("Selecciona una configuracion", "warning")
-        }
-      }).catch((error) => {
-        this.presentToast(error.error.error, 'danger')
-      }).finally(() => {
-        this.hideLoading()
+    if (this.productData.Detail.QryGroup45 == "Y") {
+      this.codebarDescription = this.productData.cBDetail.filter(x => x.proveedor != null)
+      this.codebarDescription.forEach(y => {
+        this.inputs.push({
+          name: y.proveedor,
+          type: "radio",
+          label: y.proveedor,
+          value: y.proveedor
+        })
       })
+
+      this.promptCodeDesc()
+      this.presentToast("Selecciona una configuracion", "warning")
+    }
   }
 
   public eliminar(index) {
@@ -105,7 +106,54 @@ export class BeefPage implements OnInit {
     this.detail.splice(index, 1)
   }
 
+  public getCodeBarCR(): void {
+
+    let isScanned = this.productData.crBars.findIndex((prod: any) => prod.CodeBar == this.codigoBarra.trim());
+    if (isScanned < 0) {
+      this.presentToast("CR No Esta Registrado", "warning");
+      this.peso = 0
+      document.getElementById('input-codigo').setAttribute('value', '');
+      document.getElementById('input-codigo').focus();
+      return
+    }
+
+    let alreadyScanned = this.detail.findIndex((y: any) => y.CodeBar == this.codigoBarra.trim());
+
+    if (alreadyScanned >= 0) {
+      this.presentToast("CR Ya Fue Escaneado", "warning");
+      this.peso = 0
+      document.getElementById('input-codigo').setAttribute('value', '');
+      document.getElementById('input-codigo').focus();
+      return
+    }
+
+    let foundInBatch = this.batch.findIndex((code: any) => code.U_IL_CodBar == this.codigoBarra.trim());
+
+    if (foundInBatch < 0) {
+        this.presentToast("No se encontro el lotes a regresar.", "success");
+    } else {
+      this.crBars.push({CodeBar: this.codigoBarra.trim(), active: 0})
+      this.detail.push({
+        Code: this.batch[foundInBatch].BatchNum,
+        Quantity: Number(this.batch[foundInBatch].Quantity),
+        CodeBar: this.codigoBarra.trim()
+      });
+      this.presentToast("Se Escaneo Correctamente", "success");
+    }
+
+    this.cantidadEscaneada = this.detail.length
+    this.cantidadPeso = this.detail.map((x: any) => x.Quantity).reduce((a, b) => a + b, 0);
+    document.getElementById('input-codigo').setAttribute('value', '');
+    document.getElementById('input-codigo').focus();
+  }
+
   public getDataFromCodeBar(): void {
+
+    // if (this.codigoBarra.trim()[0] == 'C') {
+    //   this.getCodeBarCR();
+    //   return
+    // }
+
     if (this.codigoBarra == '') {
 
     } else if (this.productData.Detail.QryGroup44 == 'Y') {
@@ -294,6 +342,7 @@ export class BeefPage implements OnInit {
       this.productData.count = this.cantidadEscaneada
       this.productData.pallet = ''
       this.productData.detalle = this.detail
+      this.productData.crBars = this.crBars;
       this.NavExtras.setScannedProducts(this.productData)
       this.router.navigate(['/members/purchase-return-detail'])
     } else {
@@ -301,6 +350,7 @@ export class BeefPage implements OnInit {
         .reduce((a, b) => a + b, 0)
       this.productData.detalle = this.detail
       this.productData.pallet = ''
+      this.productData.crBars = this.crBars;
       this.NavExtras.setScannedProducts(this.productData)
       this.router.navigate(['/members/purchase-return-detail'])
     }

@@ -27,6 +27,7 @@ export class AbarrotesBatchPage implements OnInit {
   public batchs: any;
   public tarima: string;
   public appSettings: any;
+  public uom: any;
 
   constructor(
     private http: HttpClient,
@@ -44,9 +45,11 @@ export class AbarrotesBatchPage implements OnInit {
     this.productData = this.receptionService.getOrderData();
     this.appSettings = getSettingsFileData(this.platform, this.settings);
 
-    if (this.productData.count) {
-      this.cantidad = this.productData.count;
-    }
+    console.log(this.productData)
+
+    // if (this.productData.count) {
+    //   this.cantidad = this.productData.count;
+    // }
 
     if (!this.productData.detalle) {
       this.productData.detalle = [];
@@ -61,13 +64,26 @@ export class AbarrotesBatchPage implements OnInit {
     }
 
 
-  
-    this.http.get(`${this.appSettings.apiSAP}/api/batch/${this.productData.FromWhsCod}/${this.productData.ItemCode}`).toPromise().then((data: any) => {
+    Promise.all([
+      this.http.get(`${this.appSettings.apiSAP}/api/batch/${this.productData.FromWhsCod}/${this.productData.ItemCode}`).toPromise(),
+      // this.http.get(`${this.appSettings.apiSAP}/api/InventoryTransfer/lastUOM/${this.productData.ItemCode}`).toPromise()
+    ]).then(([data]:any) => {
+
+      if(data[0].BatchNum == null) {
+        this.presentToast('Producto Sin Lotes Disponibles. Notificar A Adutoria.', 'danger');
+        return;
+      }
       this.batchs = data;
+      // this.uom = this.productData.Uoms.filter(x => x.UomEntry == lastU)[0];
+      
     }).catch(() => {
       this.presentToast('Error al traer lotes de producto', 'danger')
     });
 
+  }
+
+  triggerQty(){
+    this.cantidad = this.productData.ctd;
   }
 
   /* Metodo que agrga el lote y cantidad automaticamente al ingresar una cantida en el campo de cantidad. 
@@ -89,17 +105,17 @@ export class AbarrotesBatchPage implements OnInit {
     let unitBase = this.productData.Uoms.findIndex((x: any) => x.UomEntry == this.productData.UomEntry)
 
     let unitBaseValor
-
+    
     if (unitBase >= 0) {
       unitBaseValor = this.cantidad * this.productData.Uoms[unitBase].BaseQty
     }
 
-    let dif = Math.abs(unitBaseValor - this.productData.OpenInvQty)
+    let dif = Math.abs(unitBaseValor - this.productData.OpenInvQty);
 
     if (dif < 2) {
       this.loteAEnviar = [{
         Code: this.batchNum,
-        Quantity: this.productData.OpenInvQty,
+        Quantity: this.productData.OpenInvQty
       }];
     } else {
 

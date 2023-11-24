@@ -23,6 +23,7 @@ export class BeefPage implements OnInit {
   public detail: any = []
   public cantidadEscaneada: number = 0;
   public cantidadPeso: number = 0;
+  public crBars = [];
   public batch: any;
   public load: any;
   public codebarDescription: any;
@@ -74,9 +75,11 @@ export class BeefPage implements OnInit {
     await Promise.all([
       this.http.get(`${this.appSettings.apiSAP}/api/batch/${this.productData.WhsCode}/${this.productData.ItemCode}`).toPromise(),
       this.http.get(`${environment.apiCCFN}/codeBar/${this.productData.ItemCode}`).toPromise(),
-    ]).then(([batch, cBDetail]):any => {
+      this.http.get(`${environment.apiCCFN}/crBar/${this.productData.ItemCode}`).toPromise(),
+    ]).then(([batch, cBDetail, crBars]):any => {
       this.batch = batch;
       this.productData.cBDetail = cBDetail;
+      this.productData.crBars = crBars;
     }).catch((error) => {
       console.log(error)
       this.presentToast(error.error.error, 'danger')
@@ -187,10 +190,69 @@ export class BeefPage implements OnInit {
     }]
 
     this.productData.DeliveryRowDetailList = detalle
+    this.productData.crBarsUpdate = this.crBars;
     console.log(this.productData)
     this.receptionService.setReceptionData(this.productData)
     this.router.navigate(['/members/surtido-sap'])
   }
+
+  public getCodeBarCR(): void {
+
+    let madeByUom = this.productData.Uoms.findIndex((x: any) => x.UomEntry == this.productData.UomEntry);
+
+    let isScanned = this.productData.crBars.findIndex((prod: any) => prod.CodeBar == this.codigoBarra.trim());
+    if (isScanned < 0) {
+      this.presentToast("CR No Esta Registrado", "warning");
+      this.peso = 0
+      document.getElementById('input-codigo').setAttribute('value', '');
+      document.getElementById('input-codigo').focus();
+      return
+    }
+
+    let alreadyScanned = this.detail.findIndex((y:any) => y.CodeBar == this.codigoBarra.trim());
+
+    if(alreadyScanned >= 0) {
+      this.presentToast("CR Ya Fue Escaneado", "warning");
+      this.peso = 0
+      document.getElementById('input-codigo').setAttribute('value', '');
+      document.getElementById('input-codigo').focus();
+      return
+    }
+
+    let foundInBatch = this.batch.findIndex((code:any) => code.U_IL_CodBar == this.codigoBarra.trim());
+
+    if(foundInBatch < 0) {
+      let loteGenerico = this.batch.find((y: any) => y.BatchNum == 'SI');
+
+      if (loteGenerico != undefined) {
+
+        this.detail.push({
+          Code: loteGenerico.BatchNum,
+          Quantity: this.productData.crBars[isScanned].Peso,
+          CodeBar: this.codigoBarra.trim(),
+          uom: this.productData.Uoms[madeByUom].BaseEntry
+        });
+
+        this.presentToast("Se Escaneo Correctamente", "success");
+    }
+  } else {
+    this.detail.push({
+      Code: this.batch[foundInBatch].BatchNum,
+      Quantity: Number(this.batch[foundInBatch].Quantity),
+      CodeBar: this.batch[foundInBatch].U_IL_CodBar.trim(),
+      uom: this.productData.Uoms[madeByUom].BaseEntry,
+      uomCode: this.productData.Uoms[madeByUom].UomCode
+    });
+    this.presentToast("Se Escaneo Correctamente", "success");
+  }
+
+  this.crBars.push({CodeBar: this.codigoBarra.trim(), Active: 1})
+
+  this.cantidadEscaneada = this.detail.length
+  this.cantidadPeso = this.detail.map((x: any) => x.Quantity).reduce((a, b) => a + b, 0);
+  document.getElementById('input-codigo').setAttribute('value', '');
+  document.getElementById('input-codigo').focus();
+}
 
 
   public getDataFromCodeBar(): void {
@@ -198,6 +260,11 @@ export class BeefPage implements OnInit {
     if (this.codigoBarra == '') return
 
     let madeByUom = this.productData.Uoms.findIndex((x: any) => x.UomEntry == this.productData.UomEntry);
+
+    if (this.codigoBarra.trim()[0] == 'C') {
+      this.getCodeBarCR();
+      return
+    }
 
     let codeBarSettingInd;
 
