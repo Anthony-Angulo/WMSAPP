@@ -11,6 +11,8 @@ import { Settings } from '../../interfaces/settings';
 
 declare var parseBarcode: any;
 
+
+
 @Component({
   selector: 'app-full-inventory',
   templateUrl: './full-inventory.page.html',

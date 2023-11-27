@@ -9,6 +9,7 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Platform } from '@ionic/angular';
 import { RecepcionDataService } from 'src/app/services/recepcion-data.service';
 import { getSettingsFileData } from '../../commons';
+
 declare var parseBarcode: any;
 @Component({
   selector: 'app-abarrotes-batch',
@@ -78,7 +79,7 @@ export class AbarrotesBatchPage implements OnInit {
       return
     }
 
-    if(this.cantidad == undefined) {
+    if (this.cantidad == undefined) {
       this.presentToast("Debes agregar cantidad", 'warning');
       return
     }
@@ -140,109 +141,18 @@ export class AbarrotesBatchPage implements OnInit {
 
 
         if (answer.parsedCodeItems[x].ai == '3201' || answer.parsedCodeItems[x].ai == '3202') {
-          prodDetail.quantity = Number(Number(Number(this.cantidad * Number(answer.parsedCodeItems[x].data)).toFixedNoRounding(4)) / 2.2046); 
-        } else if(answer.parsedCodeItems[x].ai == '3101' || answer.parsedCodeItems[x].ai == '3102'){
+          prodDetail.quantity = Number(Number(Number(this.cantidad * Number(answer.parsedCodeItems[x].data)).toFixedNoRounding(4)) / 2.2046);
+        } else if (answer.parsedCodeItems[x].ai == '3101' || answer.parsedCodeItems[x].ai == '3102') {
           prodDetail.quantity = Number(Number(this.cantidad * Number(answer.parsedCodeItems[x].data)).toFixedNoRounding(4));
         } else {
-          prodDetail.quantity = Number(Number(this.cantidad * this.productData.Detail.NumInSale).toFixedNoRounding(4));
+          let validPercent = (Number(this.porcentaje) / 100) * Number(this.productData.OpenInvQty)
+          let validQuantity = Number(validPercent) + Number(this.productData.OpenInvQty)
         }
-
-
       }
-
-      if(this.banderaFaltaFC == true) {
-        this.presentToast("Debes agregar fecha de caducidad","warning");
-        document.getElementById('input-codigo').setAttribute('value', '');
-      document.getElementById('input-codigo').focus();
-        return
-      }
-
-      if(this.banderaFaltaLote == true) {
-        this.presentToast("Debes agregar lote", "warning");
-        document.getElementById('input-codigo').setAttribute('value', '');
-      document.getElementById('input-codigo').focus();
-        return
-      }
-
-      if(this.banderaFaltaFP == true) {
-        this.presentToast("Debes agregar fecha de produccion","warning");
-        document.getElementById('input-codigo').setAttribute('value', '');
-      document.getElementById('input-codigo').focus();
-        return
-      }
-
-      this.lotes.push(prodDetail);
-      document.getElementById('input-codigo').setAttribute('value', '');
-      document.getElementById('input-codigo').focus();
-      this.presentToast("Se agrego Correctamente", "success");
-
-
     } catch (err) {
-      console.log(err);
+      console.log(err)
     }
   }
-
-  async imprimirTarima() {
-    await this.presentLoading('Imprimiendo etiqueta Master...');
-
-    this.http.get(`${environment.apiSAP}/api/Impresion/PruebaReciboTarima?Itemcode=${this.productData.ItemCode}&Total=${Number(this.lotes.map(lote => lote.quantity).reduce((a, b) => a + b, 0))}
-    &UoM=${this.productData.UomEntry}&DocNum=${this.productData.DocNum}&Cajas=${Number(this.cantidad)}&printer=${this.appSettings.IpImpresora}`).toPromise()
-      .then(() => {
-        this.presentToast("Se imprimio Correctamente", "success");
-      }).catch((error) => {
-        this.presentToast(error.error.error, 'danger')
-      }).finally(() => {
-        this.hideLoading()
-      });
-
-
-  }
-
-  eliminar(index) {
-    this.lotes.splice(index, 1)
-  }
-
-  // addLote() {
-
-  //   if (this.FechaCad == undefined || this.cantidad <= 0 || this.lote == undefined || this.lote == '') {
-  //     this.presentToast('Datos faltantes', 'warning')
-  //     return
-  //   }
-
-  //   if (this.productData.Detail.QryGroup2 == "Y") {
-  //     let pedimento = this.navExtras.getPedimento()
-
-  //     if (pedimento == undefined) {
-  //       this.presentToast('Debes agregar pedimento', 'warning')
-  //     } else {
-
-
-  //       if (Number.isInteger(Number(Number(this.cantidad * this.productData.Detail.NumInSale).toFixedNoRounding(4)))) {
-  //         this.lotes.push({
-  //           name: this.lote,
-  //           expirationDate: this.FechaCad,
-  //           quantity: Number(Number(this.cantidad * this.productData.Detail.NumInSale).toFixedNoRounding(4)),
-  //           code: '',
-  //           att1: '',
-  //           pedimento: pedimento
-  //         })
-  //       } else {
-  //         let dif = Math.abs(Number(Number(this.cantidad * this.productData.Detail.NumInSale).toFixedNoRounding(4)) - Number(this.productData.OpenInvQty))
-
-  //         console.log(dif)
-
-  //         if (dif < 2) {
-  //           this.lotes.push({
-  //             name: this.lote,
-  //             expirationDate: this.FechaCad,
-  //             quantity: Number(this.productData.OpenInvQty),
-  //             code: '',
-  //             att1: '',
-  //             pedimento: pedimento
-  //           })
-  //         } else {
-  //           let validPercent = (Number(this.porcentaje) / 100) * Number(this.productData.OpenInvQty)
-  //           let validQuantity = Number(validPercent) + Number(this.productData.OpenInvQty)
 
   //           console.log(validPercent)
   //           console.log(validQuantity)
