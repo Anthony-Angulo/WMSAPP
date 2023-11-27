@@ -6,11 +6,11 @@ export const environment = {
   production: false,
   apiCRM: 'http://crm.ccfnweb.com.mx/apicrm/public/api',
   apiWMS: 'http://crm.ccfnweb.com.mx/apiwms/public/api',
-  apiSAPR: 'http://192.168.115.35:8090', 
+  apiSAPR: 'http://192.168.115.8:8070', 
   apiCCFN: 'http://apiccfn.ccfnweb.com.mx/api', 
   // apiCCFN: 'http://localhost:5005/api',
   // apiSAP: 'http://192.168.0.10:8886',
-  apiSAP: 'http://192.168.0.10:8889',
+  apiSAP: 'http://192.168.115.8:8070',
   update: 'http://crm.ccfnweb.com.mx/update.xml' 
 };
 
