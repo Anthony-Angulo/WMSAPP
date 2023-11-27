@@ -90,6 +90,37 @@ export class FullInventoryPage implements OnInit {
     await alert.present();
   }
 
+  async searchCode() {
+
+    const alert = await this.alertController.create({
+      header: 'CodigoSAP',
+      message: 'Ingresa Codigo SAP',
+      inputs: [
+        {
+          name: 'CodigoSAP',
+          type: 'text',
+        },
+      ],
+      buttons: [
+        {
+          text: 'Aceptar',
+          handler: (data) => {
+            if (data.CodigoSAP == '') {
+              this.presentToast('Debes ingresar un codigo', 'warning')
+              this.searchCode()
+            } else {
+              this.productCode = data.CodigoSAP;
+              this.getProductByCode();
+            }
+          }
+        }
+      ]
+    });
+
+    await alert.present();
+
+  }
+
   goToInventory(index: number) {
     this.headerId = this.inventory_orders[index].ID
     // this.whsType = this.inventory_orders[index].WhsType
@@ -108,7 +139,7 @@ export class FullInventoryPage implements OnInit {
 
 
     Promise.all([
-      this.http.get(`${environment.apiSAPR}/Product/Detail/${this.productCode.toUpperCase()}`).toPromise(),
+      this.http.get(`${environment.apiSAP}/api/Products/Detail/${this.productCode.toUpperCase()}`).toPromise(),
       this.http.get(`${environment.apiCCFN}/codeBar/${this.productCode.toUpperCase()}`).toPromise()
     ]).then(([productDetail, cBDetail]: any) => {
 
@@ -157,10 +188,10 @@ export class FullInventoryPage implements OnInit {
     await this.presentLoading('Buscando Producto...');
 
 
-    this.productDetail = await this.http.get(`${this.appSettings.apiSAP}/api/CodeBar/${this.productCodeScanned}`).toPromise();
+    this.productDetail = await this.http.get(`${environment.apiSAP}/api/CodeBar/${this.productCodeScanned}`).toPromise();
 
 
-    this.productDetail = await this.http.get(`${this.appSettings.apiSAP}/api/CodeBar/${this.search}`).toPromise();
+    // this.productDetail = await this.http.get(`${environment.apiSAP}/api/CodeBar/${this.search}`).toPromise();
 
     if (this.productDetail.Detail.ItemName == null) {
       this.presentToast("No se Encontro Un Producto Con Ese Codigo", "warning");
@@ -169,7 +200,7 @@ export class FullInventoryPage implements OnInit {
     }
 
     Promise.all([
-      this.http.get(`${environment.apiSAPR}/Product/Detail/${this.productDetail.Detail.ItemCode}`).toPromise(),
+      this.http.get(`${environment.apiSAP}/api/Products/Detail/${this.productDetail.Detail.ItemCode}`).toPromise(),
       this.http.get(`${environment.apiCCFN}/codeBar/${this.productDetail.Detail.ItemCode}`).toPromise()
     ]).then(([productDetail, cBDetail]: any) => {
 
@@ -208,7 +239,74 @@ export class FullInventoryPage implements OnInit {
       this.hideLoading();
     })
 
-    this.search = '';
+    this.productCodeScanned = '';
+  }
+
+  async searchProductByCbVariado() {
+    if (this.search == '') return
+
+    try {
+
+      let answer = parseBarcode(this.search);
+
+      await this.presentLoading('Buscando Producto...');
+
+      this.productDetail = await this.http.get(`${environment.apiSAP}/api/Products/GetbyGTIN/${answer.parsedCodeItems[0].data}`).toPromise();
+
+
+      // this.productDetail = await this.http.get(`${environment.apiSAP}/api/CodeBar/${this.search}`).toPromise();
+  
+      if (this.productDetail.Detail.ItemName == null) {
+        this.presentToast("No se Encontro Un Producto Con Ese Codigo", "warning");
+        this.productCodeScanned = '';
+        return
+      }
+  
+      Promise.all([
+        this.http.get(`${environment.apiSAP}/api/Products/Detail/${this.productDetail.Detail.ItemCode}`).toPromise(),
+        this.http.get(`${environment.apiCCFN}/codeBar/${this.productDetail.Detail.ItemCode}`).toPromise()
+      ]).then(([productDetail, cBDetail]: any) => {
+  
+        if (productDetail.Detail.ItemName == null) {
+          this.presentToast("No se Encontre Un Producto Con Ese Codigo", "warning");
+          this.productCodeScanned = '';
+          return
+        }
+  
+        this.productDetail = productDetail;
+        this.productDetail.Detail.busqueda = 0;
+        this.productDetail.codeBar = this.productCodeScanned;
+        this.productDetail.headerId = this.headerId;
+        this.productDetail.location = this.location;
+  
+        if (cBDetail.length != 0) {
+          this.productDetail.cBDetail = cBDetail;
+        } else {
+          this.productDetail.cBDetaiil = [];
+        }
+  
+        this.navExtras.setInventoryProduct(this.productDetail);
+  
+        if (this.productDetail.Detail.U_IL_TipPes == "F") {
+          this.router.navigate(['/members/full-abarrotes']);
+          this.productCodeScanned = '';
+          return
+        }
+  
+        this.router.navigate(['/members/full-beef']);
+        this.productCodeScanned = '';
+  
+      }).catch((err) => {
+        this.presentToast(err.error, "danger");
+      }).finally(() => {
+        this.hideLoading();
+      })
+  
+      this.search = '';
+
+    }catch(err) {
+      console.log(err)
+    }
   }
 
   async presentToast(msg: string, color: string) {

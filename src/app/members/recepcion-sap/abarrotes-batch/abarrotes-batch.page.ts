@@ -147,8 +147,6 @@ export class AbarrotesBatchPage implements OnInit {
           prodDetail.quantity = Number(Number(this.cantidad * this.productData.Detail.NumInSale).toFixedNoRounding(4));
         }
 
-        
-
 
       }
 
@@ -185,7 +183,7 @@ export class AbarrotesBatchPage implements OnInit {
   }
 
   async imprimirTarima() {
-    await this.presentLoading('Imprimiendo etiqueta...');
+    await this.presentLoading('Imprimiendo etiqueta Master...');
 
     this.http.get(`${environment.apiSAP}/api/Impresion/PruebaReciboTarima?Itemcode=${this.productData.ItemCode}&Total=${Number(this.lotes.map(lote => lote.quantity).reduce((a, b) => a + b, 0))}
     &UoM=${this.productData.UomEntry}&DocNum=${this.productData.DocNum}&Cajas=${Number(this.cantidad)}&printer=${this.appSettings.IpImpresora}`).toPromise()
