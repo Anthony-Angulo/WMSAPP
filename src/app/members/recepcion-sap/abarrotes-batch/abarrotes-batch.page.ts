@@ -34,6 +34,8 @@ export class AbarrotesBatchPage implements OnInit {
   banderaFaltaLote: boolean = false;
   banderaFaltaFP: boolean = false;
   banderaFaltaFC: boolean = false;
+  peso: number;
+  cantidadTarimas: number;
 
   constructor(
     private http: HttpClient,
@@ -67,7 +69,13 @@ export class AbarrotesBatchPage implements OnInit {
     }
 
   }
+  eliminar(index) {
+    // this.cantidadEscaneada--
+    // this.cantidadPeso = this.cantidadPeso - Number(this.detail[index].quantity)
+    this.lotes.splice(index, 1)
+    this.cantidadTarimas --
 
+  }
   getGS1Data() {
 
     if (this.codeBar == '') return;
@@ -83,8 +91,27 @@ export class AbarrotesBatchPage implements OnInit {
       this.presentToast("Debes agregar cantidad", 'warning');
       return
     }
+    
 
+    if(this.productData.Detail.PurPackUn == 1) {
+      if(Number(this.cantidad) > 100) {
+        this.presentToast("La cantidad excede maximo de cajas por tarima",'warning');
+        this.codeBar = '';
+        document.getElementById('input-codigo').setAttribute('value', '');
+        document.getElementById('input-codigo').focus();
+        return
+      }
+    }
 
+    if(this.productData.Detail.PurPackUn != 1) {
+      if(Number(this.cantidad) > this.productData.Detail.PurPackUn) {
+        this.presentToast("La cantidad excede maximo de cajas por tarima",'warning');
+        this.codeBar = '';
+        document.getElementById('input-codigo').setAttribute('value', '');
+        document.getElementById('input-codigo').focus();
+        return
+      }
+    }
 
     let prodDetail = {
       name: '',
@@ -93,7 +120,8 @@ export class AbarrotesBatchPage implements OnInit {
       quantity: 0,
       code: '',
       att1: '',
-      pedimento: ''
+      pedimento: '',
+      Location: ''
     }
 
     try {
@@ -140,18 +168,97 @@ export class AbarrotesBatchPage implements OnInit {
         }
 
 
-        if (answer.parsedCodeItems[x].ai == '3201' || answer.parsedCodeItems[x].ai == '3202') {
-          prodDetail.quantity = Number(Number(Number(this.cantidad * Number(answer.parsedCodeItems[x].data)).toFixedNoRounding(4)) / 2.2046);
+        if (answer.parsedCodeItems[x].ai == '3201' || answer.parsedCodeItems[x].ai == '3202' || answer.parsedCodeItems[x].ai == '3200') {
+          prodDetail.quantity = Number(Number(Number(this.cantidad * Number(answer.parsedCodeItems[x].data)) / 2.2046).toFixedNoRounding(7));
+          this.peso = prodDetail.quantity;
+          console.log(Number(Number(answer.parsedCodeItems[x].data)).toFixedNoRounding(4))
         } else if (answer.parsedCodeItems[x].ai == '3101' || answer.parsedCodeItems[x].ai == '3102') {
           prodDetail.quantity = Number(Number(this.cantidad * Number(answer.parsedCodeItems[x].data)).toFixedNoRounding(4));
-        } else {
-          let validPercent = (Number(this.porcentaje) / 100) * Number(this.productData.OpenInvQty)
-          let validQuantity = Number(validPercent) + Number(this.productData.OpenInvQty)
+          this.peso = prodDetail.quantity;
         }
       }
     } catch (err) {
       console.log(err)
     }
+
+    if(this.banderaFaltaLote == true) {
+      this.presentToast("Ingresa Lote.", "warning");
+      this.codeBar = '';
+      document.getElementById('input-codigo').setAttribute('value', '');
+      document.getElementById('input-codigo').focus();
+      return
+    }
+
+    if(this.banderaFaltaFP == true) {
+      this.presentToast("Ingresa fecha de produccion.", "warning");
+      this.codeBar = '';
+      document.getElementById('input-codigo').setAttribute('value', '');
+      document.getElementById('input-codigo').focus();
+      return
+    }
+
+    if(this.banderaFaltaFC == true) {
+      this.presentToast("Ingresa fecha de caducidad.", "warning");
+      this.codeBar = '';
+      document.getElementById('input-codigo').setAttribute('value', '');
+      document.getElementById('input-codigo').focus();
+      return
+    }
+
+    this.codeBar = '';
+    document.getElementById('input-codigo').setAttribute('value', '');
+    document.getElementById('input-codigo').focus();
+    // this.lotes.push(prodDetail);
+    this.imprimirTarima(prodDetail);
+  }
+
+  public addLote() {
+
+  
+    let pedimento = this.navExtras.getPedimento()
+
+    if (pedimento == undefined) {
+      this.presentToast('Debes agregar pedimento', 'warning')
+      return
+    }
+
+    if (this.cantidad == undefined) {
+      this.presentToast("Debes agregar cantidad", 'warning');
+      return
+    }
+
+    if(this.lote == undefined ) {
+      this.presentToast("Debes agregar lote", "warning");
+      return
+    }
+
+    if(this.FechaCad == undefined) {
+      this.presentToast("Debes agregar fecha de expiracion", "warning");
+      return
+    }
+
+    if(this.FechaProd == undefined) {
+      this.presentToast("Debes agregar fecha de produccion", "warning");
+      return
+    }
+
+    let prodDetail = {
+      name: this.lote,
+      expirationDate: this.FechaCad.split('T')[0],
+      manufacturingDate: formatDate(this.FechaProd.split('T')[0], 'yyyy-MM-dd', 'en-US'),
+      quantity:  Number(Number(Number(this.cantidad * Number(this.productData.Detail.NumInSale)) / 2.2046).toFixedNoRounding(7)),
+      code: '',
+      att1: '',
+      pedimento: (pedimento) ? pedimento : '',
+      Location: ''
+    }
+
+    // this.lotes.push(prodDetail);
+
+    // console.log(this.lotes)
+
+    this.imprimirTarima(prodDetail);
+
   }
 
   //           console.log(validPercent)
@@ -221,12 +328,42 @@ export class AbarrotesBatchPage implements OnInit {
   //   }
   // }
 
+  async imprimirTarima(prodDetail:any) {
+    await this.presentLoading('Imprimiendo etiqueta...');
+
+    this.http.get(`${environment.apiSAP}/api/Impresion/PruebaReciboTarima?Itemcode=${this.productData.ItemCode}&Total=${Number(this.peso)}
+    &UoM=${this.productData.UomEntry}&DocNum=${this.productData.DocNum}&Cajas=${Number(this.cantidad)}&printer=Label-Test23`).toPromise()
+      .then((x:any) => {
+        console.log(x)
+        prodDetail.Location = x;
+        this.lotes.push(prodDetail);
+        this.cantidadTarimas = this.lotes.length
+        this.presentToast("Se imprimio Correctamente", "success");
+      }).catch((error) => {
+        this.presentToast(error.error.error, 'danger')
+      }).finally(() => {
+        this.hideLoading()
+        document.getElementById('input-codigo').focus();
+      });
+  }
+
   acceptRecepton() {
 
     if (this.lotes.length == 0) {
       this.presentToast('Falta agregar lote', 'warning');
       return
     }
+
+   
+
+    // let invQty = this.lotes.map(x => x.quantity).reduce((a, b) => a + b, 0);
+    // let dif = Math.abs(Number(Number(invQty).toFixedNoRounding(4)) - Number(this.productData.OpenInvQty))
+
+    // if(dif < 2) {
+    //   this.productData.count = this.productData.OpenInvQty;
+    // }
+
+    // if(invQty !)
 
     if (this.cantidad == 0) {
       this.productData.count = this.cantidad

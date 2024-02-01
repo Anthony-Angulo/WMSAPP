@@ -26,6 +26,11 @@
       <ion-input class="product-scann" [(ngModel)]="cantidad" name="cantidad" type="number"
         placeholder="Ingresa la cantidad" ></ion-input>
     </ion-col>
+        <ion-col>
+        <ion-button size="small" (click)="addLote()">
+          <ion-icon slot="icon-only" name="add-circle"></ion-icon>
+        </ion-button>
+    </ion-col>
   </ion-row>
 
   <h6>Codigo de Barra</h6>
@@ -35,7 +40,7 @@
     </ion-col>
   </ion-row>
 
-  <h6>#Lote</h6>
+  <h6>#Lotes</h6>
   <ion-row>
     <ion-col>
       <ion-input class="product-scann" [(ngModel)] = "lote" name="lote" placeholder = "Ingresa lote"></ion-input>
@@ -58,7 +63,7 @@
 
 
 
-  <h6 *ngIf="lotes">Lotes</h6>
+  <h6 *ngIf="lotes">Lotes agregados {{cantidadTarimas}}</h6>
   <ion-row *ngFor="let lote of lotes; let index = index">
       <ion-col>
         <ion-item lines="none" class="container-item">

@@ -1,6 +1,16 @@
 <ion-content padding class="auth-page">
+  <ion-header>
+    <ion-toolbar class="tool-bar">
+      <ion-buttons slot="start">
+        <ion-icon slot="icon-only" name="wifi" (click)="opciones()"></ion-icon> 
+      </ion-buttons>
+      <ion-title>{{ip}}</ion-title>
+    </ion-toolbar>
+  </ion-header>
 
   <div class="login-content">
+
+    <h2>API</h2>
 
     <div padding-horizontal text-center>
       <div class="logo-ico"></div>

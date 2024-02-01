@@ -169,6 +169,11 @@ export class BeefPage implements OnInit {
     try {
       let answer = parseBarcode(this.codigoBarra);
 
+      if(this.productInfo.Detail.SuppCatNum == null) {
+        this.getDataFromEtiqueta();
+        return
+      }
+      
       if(this.productInfo.Detail.SuppCatNum != answer.parsedCodeItems[0].data) {
         this.presentToast("El codigo de manufactura no coincide con el codigo escaneado. Contactar Datos Maestros.", "warning");
         this.pesoDeEtiqueta = 0;
@@ -335,6 +340,7 @@ export class BeefPage implements OnInit {
         let detail = {
           quantity: this.total,
           zone: this.productInfo.location,
+          codeBar: (this.productInfo.codeBar == undefined) ? 'Codigo Manual': this.productInfo.codeBar,
           userId: user.id,
           inventoryProductId: (res.insertId == 0) ? this.productInfo.productId : res.insertId
         }

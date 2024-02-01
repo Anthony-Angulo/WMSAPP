@@ -6,9 +6,11 @@ import { environment } from 'src/environments/environment';
 import { ToastController, LoadingController } from '@ionic/angular';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
+import { NavExtrasService } from './nav-extras.service';
 
 const TOKEN_KEY = 'auth-token';
 const USER = 'user';
+const IP = 'ip';
 
 @Injectable({
   providedIn: 'root'
@@ -19,6 +21,7 @@ export class AuthenticationService {
   load: any
 
   constructor(private storage: Storage,
+    private navExtras: NavExtrasService,
     private plt: Platform,
     private toastController: ToastController,
     private http: HttpClient,
@@ -37,14 +40,15 @@ export class AuthenticationService {
     })
   }
 
-  async login(value) {
+  async login(value, api) {
 
     await this.presentLoading('Inciando Session.....');
 
-    this.http.post(`${environment.apiSAP}/api/Account/Login`,value).toPromise().then((data: any) => {
+    this.http.post(`http://${api}/api/Account/Login`,value).toPromise().then((data: any) => {
       console.log(data)
         this.authenticationState.next(true);
         this.storage.set(USER,data.AppLogin);
+        this.navExtras.setIp(api);
         return this.storage.set(TOKEN_KEY, data.token)
       }).catch(error => {
       if(error.status == 400){

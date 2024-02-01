@@ -21,6 +21,7 @@ export class NavExtrasService {
   Entry: any;
 
   pedimento: any;
+  iP: any;
 
   constructor() { }
 
@@ -118,6 +119,14 @@ export class NavExtrasService {
 
   public getPedimento(){
     return this.pedimento;
+  }
+
+  public setIp(data:any) {
+    this.iP = data;
+  }
+
+  public getIp() {
+    return this.iP;
   }
 
 }

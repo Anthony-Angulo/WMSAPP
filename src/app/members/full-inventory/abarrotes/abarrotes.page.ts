@@ -50,8 +50,13 @@ export class AbarrotesPage implements OnInit {
     this.productInfo = this.navExtras.getInventoryProduct();
     
     if(this.productInfo.Detail.busqueda == 0){
-      let index = this.productInfo.CodeBars.findIndex(x => x.BcdCode == this.productInfo.codeBar);
-      this.uom = this.productInfo.uom.find(x => this.productInfo.CodeBars[index].UomEntry == x.UomEntry);
+      console.log(this.productInfo)
+      let index = this.productInfo.Codebars.findIndex(x => x.BcdCode == this.productInfo.codeBar);
+      // if(index < 0) {
+      //   this.presentToast("Unidad de medida no esta ligada a codigo de barra/GTIN", "warning");
+      // }
+      this.uom = this.productInfo.uom.find(x => this.productInfo.Codebars[index].UomEntry == x.UomEntry);
+      // console.log(this.uom)
     }
 
     console.log(this.productInfo)
@@ -116,6 +121,8 @@ export class AbarrotesPage implements OnInit {
         quantity: this.total,
         zone: this.productInfo.location,
         userId: user.id,
+        codeBar: (this.productInfo.codeBar == undefined) ? 'Codigo Manual': this.productInfo.codeBar,
+        uomCode: this.uom.UomCode,
         inventoryProductId: (res.insertId == 0) ? this.productInfo.productId : res.insertId
       }
 

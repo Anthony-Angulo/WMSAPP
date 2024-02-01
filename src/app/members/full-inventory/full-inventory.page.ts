@@ -34,6 +34,7 @@ export class FullInventoryPage implements OnInit {
   whsType:any;
   location: string;
   answer:any;
+  ip:any;
 
   constructor(
     private http: HttpClient,
@@ -49,6 +50,8 @@ export class FullInventoryPage implements OnInit {
   async ngOnInit() {
 
     await this.presentLoading('Buscando..');
+
+    this.ip = this.navExtras.getIp();
 
 
     this.http.get(`${environment.apiCCFN}/inventory/fullInventory`)
@@ -132,16 +135,12 @@ export class FullInventoryPage implements OnInit {
 
   async getProductByCode() {
 
-    // if(this.whsType == 1) {
-    //   this.getProductRetail();
-    //   return
-    // }
 
     await this.presentLoading('Buscando Producto...');
 
 
     Promise.all([
-      this.http.get(`${environment.apiSAP}/api/Products/Detail/${this.productCode.toUpperCase()}`).toPromise(),
+      this.http.get(`http://${this.ip}/api/Products/Detail/${this.productCode.toUpperCase()}`).toPromise(),
       this.http.get(`${environment.apiCCFN}/codeBar/${this.productCode.toUpperCase()}`).toPromise()
     ]).then(([productDetail, cBDetail]: any) => {
 
@@ -190,31 +189,39 @@ export class FullInventoryPage implements OnInit {
     await this.presentLoading('Buscando Producto...');
 
 
-    this.productDetail = await this.http.get(`${environment.apiSAP}/api/CodeBar/${this.productCodeScanned}`).toPromise();
-
+    this.productDetail = await this.http.get(`http://${this.ip}/api/Products/CodeBar/${this.productCodeScanned}`).toPromise().finally(() => this.hideLoading());
+    
 
     // this.productDetail = await this.http.get(`${environment.apiSAP}/api/CodeBar/${this.search}`).toPromise();
 
-    if (this.productDetail.Detail.ItemName == null) {
-      this.presentToast("No se Encontro Un Producto Con Ese Codigo", "warning");
+    if (this.productDetail == null) {
+      this.presentToast("No se Encontro Un Producto Con Ese Codigo. Debe registrarlo", "warning");
       this.productCodeScanned = '';
       return
     }
 
+    this.productDetail.codeBar = this.productCodeScanned;
+
+    console.log(this.productCodeScanned)
+
     Promise.all([
-      this.http.get(`${environment.apiSAP}/api/Products/Detail/${this.productDetail.Detail.ItemCode}`).toPromise(),
+      // this.http.get(`${environment.apiSAP}/api/Products/Detail/${this.productDetail.Detail.ItemCode}`).toPromise(),
       this.http.get(`${environment.apiCCFN}/codeBar/${this.productDetail.Detail.ItemCode}`).toPromise()
-    ]).then(([productDetail, cBDetail]: any) => {
+    ]).then(([cBDetail]: any) => {
 
-      if (productDetail.Detail.ItemName == null) {
-        this.presentToast("No se Encontre Un Producto Con Ese Codigo", "warning");
-        this.productCodeScanned = '';
-        return
-      }
+      console.log(this.productCodeScanned)
 
-      this.productDetail = productDetail;
+      // if (productDetail.Detail.ItemName == null) {
+      //   this.presentToast("No se Encontre Un Producto Con Ese Codigo", "warning");
+      //   this.productCodeAScanned = '';
+      //   return
+      // }
+
+      console.log(this.productCodeScanned)
+
+      // this.productDetail = productDetail;
       this.productDetail.Detail.busqueda = 0;
-      this.productDetail.codeBar = this.productCodeScanned;
+      //this.productDetail.codeBar = this.productCodeScanned;
       this.productDetail.headerId = this.headerId;
       this.productDetail.location = this.location;
 
@@ -223,15 +230,15 @@ export class FullInventoryPage implements OnInit {
       } else {
         this.productDetail.cBDetaiil = [];
       }
-
+      console.log(this.productDetail)
       this.navExtras.setInventoryProduct(this.productDetail);
 
-      if (this.productDetail.Detail.U_IL_TipPes == "F") {
+      if (this.productDetail.Detail.U_IL_TipPes == "F" || this.productDetail.Detail.U_IL_TipPes == null) {
         this.router.navigate(['/members/full-abarrotes']);
         this.productCodeScanned = '';
         return
       }
-
+      // this.router.navigate(['/members/full-abarrotes']);
       this.router.navigate(['/members/full-beef']);
       this.productCodeScanned = '';
 
@@ -277,7 +284,7 @@ export class FullInventoryPage implements OnInit {
   
         this.productDetail = productDetail;
         this.productDetail.Detail.busqueda = 0;
-        this.productDetail.codeBar = this.productCodeScanned;
+        this.productDetail.codeBar = answer.parsedCodeItems[0].data;
         this.productDetail.headerId = this.headerId;
         this.productDetail.location = this.location;
   

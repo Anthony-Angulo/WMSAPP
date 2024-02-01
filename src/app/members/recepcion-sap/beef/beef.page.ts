@@ -29,6 +29,8 @@ export class BeefPage implements OnInit {
   FechaCad: String
   FechaProd: String
   detail = []
+  detailAux = []
+  detailFinal = []
   crBars = [];
   cantidadEscaneada: number = 0
   cantidadPeso: number = 0
@@ -41,6 +43,11 @@ export class BeefPage implements OnInit {
   inputs = [];
   selectedDesc: any;
   token: any;
+  banderaFaltaFP: boolean;
+  banderaFaltaFC: boolean;
+  banderaFaltaLote: boolean;
+  detailGS1: { name: string; code: string; attr1: string; expirationDate: string; manufacturingDate: string; quantity: number; };
+  pesoBand: boolean = false;
 
   constructor(
     private http: HttpClient,
@@ -63,8 +70,16 @@ export class BeefPage implements OnInit {
 
     this.appSettings = getSettingsFileData(this.platform, this.settings);
 
-
-
+    this.detailGS1 = {
+      name: '',
+      code: '',
+      attr1: '',
+      expirationDate: '',
+      manufacturingDate: '',
+      quantity: 0,
+      // pedimento: (pedimento) ? '' : pedimento
+    };
+    console.log(this.detailGS1)
     // var date = new Date();
     // date = new Date(date.setFullYear(date.getFullYear() + 1));
     // this.FechaCad = date.toISOString();
@@ -142,7 +157,7 @@ export class BeefPage implements OnInit {
       this.presentToast('Debe igresar una cantidad valida', 'warning')
     } else if (this.productData.Detail.QryGroup41 == 'Y') {
       this.productData.count = this.cantidadEscaneada
-      this.productData.detalle = this.detail
+      this.productData.detalle = this.detailFinal
       this.productData.crBars = this.crBars
       this.productData.SupplierCode = this.productData.Detail.SuppCatNum;
       this.receptionService.setReceptionData(this.productData)
@@ -157,6 +172,7 @@ export class BeefPage implements OnInit {
       if (this.productData.count > Number(validQuantity)) {
         this.presentToast('Cantidad Excede a la cantidad solicitada', 'warning')
       } else {
+        // this.productData.count = this.cantidadEscaneada
         this.productData.detalle = this.detail
         this.productData.crBars = this.crBars
         this.productData.SupplierCode = this.productData.Detail.SuppCatNum;
@@ -307,14 +323,36 @@ export class BeefPage implements OnInit {
       pedimento = this.navExtras.getPedimento();
     }
 
+    if (this.codigoBarra.trim()[0] == 'C') {
+      let isScanned = this.productData.crBars.findIndex((prod: any) => prod.CodeBar == this.codigoBarra.trim());
+      if (isScanned >= 0) {
+        this.presentToast("Este Codigo de Barra Ya Fue Registrado", "warning");
+        this.peso = 0
+        document.getElementById('input-codigo').setAttribute('value', '');
+        document.getElementById('input-codigo').focus();
+        return
+      }
+    }
+
+    let isScanned = this.detail.findIndex(prod => prod.code == this.codigoBarra.trim());
+    let availableBatch = this.productData.batchs.findIndex(prod => prod.U_IL_CodBar == this.codigoBarra.trim());
+
+
+    if (isScanned >= 0 || availableBatch >= 0) {
+      this.presentToast("Este Codigo de Barra Ya Fue Registrado", "warning");
+      this.peso = 0
+      document.getElementById('input-codigo').setAttribute('value', '');
+      document.getElementById('input-codigo').focus();
+      return
+    }
 
     try {
 
       let answer = parseBarcode(this.codigoBarra);
 
       console.log(this.productData.Detail.SuppCatNum)
+      // console.log(answer)
       console.log(answer)
-
       if (this.productData.Detail.SuppCatNum == null) {
         this.productData.Detail.SuppCatNum = answer.parsedCodeItems[0].data
         // this.getDataFromCodeBar();
@@ -329,58 +367,116 @@ export class BeefPage implements OnInit {
         return
       }
 
-      let detailGS1 = {
-        name: '',
-        code: '',
-        attr1: '',
-        expirationDate: '',
-        manufacturingDate: '',
-        quantity: 0,
-        pedimento: (pedimento) ? '' : pedimento
-      };
 
-      if (answer.parsedCodeItems[2].ai == '13' || answer.parsedCodeItems[2].ai == '11') {
-        detailGS1.manufacturingDate = formatDate(answer.parsedCodeItems[2].data, 'yyyy-MM-dd', 'en-US');
-        this.FechaProd = formatDate(answer.parsedCodeItems[2].data, 'yyyy-MM-dd', 'en-US');
-      } else if (this.FechaProd == undefined) {
-        this.presentToast("Ingresa fecha de produccion", "warning")
+
+      // console.log(answer.parsedCodeItems.length)
+      for (var x = 0; x < answer.parsedCodeItems.length; x++) {
+
+        console.log(this.detailGS1)
+
+        if (answer.parsedCodeItems[x].ai == '10') {
+          this.detailGS1.name = answer.parsedCodeItems[x].data;
+          this.lote = answer.parsedCodeItems[x].data;
+        } else if (this.lote == undefined) {
+          this.banderaFaltaLote = true;
+        } else if (this.lote != undefined) {
+          this.detailGS1.name = this.lote;
+          this.banderaFaltaLote = false;
+        }
+
+        if (answer.parsedCodeItems[x].ai == 13 || answer.parsedCodeItems[x].ai == 11) {
+          this.detailGS1.manufacturingDate = formatDate(answer.parsedCodeItems[x].data, 'yyyy-MM-dd', 'en-US');
+          this.FechaProd = formatDate(answer.parsedCodeItems[x].data, 'yyyy-MM-dd', 'en-US');
+        } else if (this.FechaProd == undefined) {
+          this.banderaFaltaFP = true;
+          this.presentToast("Ingresa fecha de produccion", "warning")
+          document.getElementById('input-codigo').setAttribute('value', '');
+          document.getElementById('input-codigo').focus();
+        } else if (this.FechaProd != undefined) {
+          this.detailGS1.manufacturingDate = this.FechaProd.split('T')[0];
+          this.FechaProd = formatDate(this.FechaProd.split('T')[0], 'yyyy-MM-dd', 'en-US');
+          this.banderaFaltaFP = false;
+        }
+
+
+        if (answer.parsedCodeItems[x].ai == '12') {
+          this.detailGS1.expirationDate = formatDate(answer.parsedCodeItems[x].data, 'yyyy-MM-dd', 'en-US');
+          this.FechaCad = formatDate(answer.parsedCodeItems[x].data, 'yyyy-MM-dd', 'en-US');
+        } else if (this.productData.Detail.U_IL_DiasCad > 0 && answer.parsedCodeItems[x].ai == '11') {
+          console.log(this.productData.Detail.U_IL_DiasCad)
+          this.detailGS1.expirationDate = new Date(answer.parsedCodeItems[x].data.setDate(answer.parsedCodeItems[x].data.getDate() + Number(this.productData.Detail.U_IL_DiasCad))).toISOString()
+          this.detailGS1.expirationDate = formatDate(this.detailGS1.expirationDate, 'yyyy-MM-dd', 'en-US');
+          this.FechaCad = formatDate(answer.parsedCodeItems[x].data, 'yyyy-MM-dd', 'en-US');
+        } else if (this.productData.Detail.U_IL_DiasCad > 0 && answer.parsedCodeItems[x].ai == '13') {
+          console.log(this.productData.Detail.U_IL_DiasCad)
+          this.detailGS1.expirationDate = new Date(answer.parsedCodeItems[x].data.setDate(answer.parsedCodeItems[x].data.getDate() + Number(this.productData.Detail.U_IL_DiasCad))).toISOString()
+          this.detailGS1.expirationDate = formatDate(this.detailGS1.expirationDate, 'yyyy-MM-dd', 'en-US');
+          this.FechaCad = formatDate(answer.parsedCodeItems[x].data, 'yyyy-MM-dd', 'en-US');
+        } else if (this.FechaCad == undefined) {
+          this.banderaFaltaFC = true;
+          this.presentToast("Ingresa fecha de vencimiento", "warning")
+          document.getElementById('input-codigo').setAttribute('value', '');
+          document.getElementById('input-codigo').focus();
+        } else if (this.FechaCad != undefined) {
+          this.banderaFaltaFC = false;
+          this.detailGS1.expirationDate = this.FechaCad.split('T')[0];
+        }
+
+        
+          if (answer.parsedCodeItems[x].ai == '3201' || answer.parsedCodeItems[x].ai == '3202') {
+            console.log(answer.parsedCodeItems[x].data)
+            this.detailGS1.quantity = Number(Number(answer.parsedCodeItems[x].data / 2.2046).toFixed(2));
+            console.log(this.detailGS1.quantity)
+            this.pesoBand = true;
+          } else if(answer.parsedCodeItems[x].ai == '3101' || answer.parsedCodeItems[x].ai == '3102') {
+            this.detailGS1.quantity = Number(Number(answer.parsedCodeItems[x].data).toFixed(2));
+            this.pesoBand = true;
+          }
+        
+
+
+
+      }
+
+      console.log(this.detailGS1)
+
+      if (this.banderaFaltaLote == true) {
+        this.presentToast("Ingresa Lote.", "warning");
+        this.codigoBarra = '';
         document.getElementById('input-codigo').setAttribute('value', '');
         document.getElementById('input-codigo').focus();
         return
-      } else if (this.FechaProd != undefined) {
-        detailGS1.manufacturingDate = this.FechaProd.split('T')[0];
-        this.FechaProd = formatDate(this.FechaProd.split('T')[0], 'yyyy-MM-dd', 'en-US');
       }
 
-      if (answer.parsedCodeItems[2].ai == '12') {
-        detailGS1.expirationDate = formatDate(answer.parsedCodeItems[2].data, 'yyyy-MM-dd', 'en-US');
-        this.FechaCad = formatDate(answer.parsedCodeItems[2].data, 'yyyy-MM-dd', 'en-US');
-      } else if (this.productData.Detail.U_IL_DiasCad != '0' && answer.parsedCodeItems[2].ai == '13' || answer.parsedCodeItems[2].ai == '11') {
-        detailGS1.expirationDate = new Date(answer.parsedCodeItems[2].data.setDate(answer.parsedCodeItems[2].data.getDate() + Number(this.productData.Detail.U_IL_DiasCad))).toISOString()
-        detailGS1.expirationDate = formatDate(detailGS1.expirationDate, 'yyyy-MM-dd', 'en-US');
-        this.FechaCad = formatDate(answer.parsedCodeItems[2].data, 'yyyy-MM-dd', 'en-US');
-      } else if(this.FechaCad == undefined){
-        this.presentToast("Ingresa fecha de vencimiento", "warning")
+      if (this.banderaFaltaFP == true) {
+        this.presentToast("Ingresa fecha de produccion.", "warning");
+        this.codigoBarra = '';
         document.getElementById('input-codigo').setAttribute('value', '');
         document.getElementById('input-codigo').focus();
         return
-      } else if(this.FechaCad != undefined){
-        detailGS1.expirationDate = this.FechaCad.split('T')[0];
       }
 
-      if (answer.parsedCodeItems[1].ai == '3201' || answer.parsedCodeItems[1].ai == '3202') {
-        detailGS1.quantity = Number(Number(answer.parsedCodeItems[1].data / 2.2046).toFixed(2))
-      } else {
-        detailGS1.quantity = Number(Number(answer.parsedCodeItems[1].data).toFixed(2));
+      if (this.banderaFaltaFC == true) {
+        this.presentToast("Ingresa fecha de caducidad.", "warning");
+        this.codigoBarra = '';
+        document.getElementById('input-codigo').setAttribute('value', '');
+        document.getElementById('input-codigo').focus();
+        return
       }
 
-      detailGS1.name = this.codigoBarra.substr(this.codigoBarra.length - 36);
-      detailGS1.code = this.codigoBarra.trim();
-      detailGS1.attr1 = this.lote;
+      // this.codigoBarra = '';
+      // document.getElementById('input-codigo').setAttribute('value', '');
+      // document.getElementById('input-codigo').focus();
 
+      this.detailGS1.name = this.codigoBarra.substr(this.codigoBarra.length - 36);
+      this.detailGS1.code = this.codigoBarra.trim();
+      this.detailGS1.attr1 = this.lote;
 
+      console.log(this.detailGS1)
+
+      this.detailAux.push(this.detailGS1);
       this.detail.push(
-        detailGS1
+        this.detailGS1
       );
 
       console.log(this.detail)
@@ -388,6 +484,15 @@ export class BeefPage implements OnInit {
       this.cantidadEscaneada = this.detail.length;
       this.cantidadPeso = this.detail.map(x => x.quantity).reduce((a, b) => a + b, 0);
       this.peso = 0;
+      this.detailGS1 = {
+        name: '',
+        code: '',
+        attr1: '',
+        expirationDate: '',
+        manufacturingDate: '',
+        quantity: 0,
+        // pedimento: (pedimento) ? '' : pedimento
+      };
       document.getElementById('input-codigo').setAttribute('value', '');
       document.getElementById('input-codigo').focus();
       this.presentToast("Se Escaneo Correctamente", "success");
@@ -509,8 +614,23 @@ export class BeefPage implements OnInit {
     await this.presentLoading('Imprimiendo etiqueta...');
 
     this.http.get(`${environment.apiSAP}/api/Impresion/PruebaReciboTarima?Itemcode=${this.productData.ItemCode}&Total=${Number(this.cantidadPeso)}
-    &UoM=${this.productData.UomEntry}&DocNum=${this.productData.DocNum}&Cajas=${Number(this.cantidadEscaneada)}&printer=${this.appSettings.IpImpresora}`).toPromise()
-      .then(() => {
+    &UoM=${this.productData.UomEntry}&DocNum=${this.productData.DocNum}&Cajas=${Number(this.cantidadEscaneada)}&printer=Label-Test23`).toPromise()
+      .then((lo:any) => {
+        let detailMap = []
+        detailMap = this.detailAux.map((x:any) => {
+          return {
+            name: x.name,
+            code: x.code,
+            attr1: x.attr1,
+            expirationDate: x.expirationDate,
+            manufacturingDate: x.manufacturingDate,
+            quantity: x.quantity,
+            Location: lo
+          }
+        });
+        this.detailFinal = this.detailFinal.concat(detailMap)
+        console.log(this.detailFinal)
+        this.detailAux = [];
         this.presentToast("Se imprimio Correctamente", "success");
       }).catch((error) => {
         this.presentToast(error.error.error, 'danger')

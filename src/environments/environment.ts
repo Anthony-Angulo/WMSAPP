@@ -9,17 +9,10 @@ export const environment = {
   // apiSAP: 'http://192.168.101.103:1500', 
   apiCCFN: 'http://apiccfn.ccfnweb.com.mx/api', 
   // apiCCFN: 'http://localhost:5005/api',
-  apiSAP: 'http://192.168.0.10:8889',
-  // apiSAP: 'http://192.168.0.10:8889',
+  apiSAP: 'http://192.168.0.32:8886',
+  // apiSAP: 'http://192.168.0.10:8886',
   update: 'http://crm.ccfnweb.com.mx/update.xml' 
 };
 
-/*
- * For easier debugging in development mode, you can import the following file
- * to ignore zone related error stack frames such as `zone.run`, `zoneDelegate.invokeTask`.
- *
- * This import should be commented out in production mode because it will have a negative impact
- * on performance if an error is thrown.
- */
-// import 'zone.js/dist/zone-error';  // Included with Angular CLI.
+
  

@@ -269,7 +269,7 @@ export class RecepcionSapPage implements OnInit {
       pedimento = this.navExtras.getPedimento()
     }
 
-    // this.createCrBars();
+    this.createCrBars();
     
 
     if (products.length != 0) {
@@ -280,8 +280,6 @@ export class RecepcionSapPage implements OnInit {
       }
 
       console.log(recepcionData)
-
-      
 
 
       this.http.post(`${this.appSettings.apiSAP}/api/PurchaseDelivery`, recepcionData).toPromise().then((data: any) => {
