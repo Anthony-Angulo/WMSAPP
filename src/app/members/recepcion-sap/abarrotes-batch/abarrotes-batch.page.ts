@@ -181,85 +181,85 @@ export class AbarrotesBatchPage implements OnInit {
       console.log(err)
     }
 
-    if(this.banderaFaltaLote == true) {
-      this.presentToast("Ingresa Lote.", "warning");
-      this.codeBar = '';
-      document.getElementById('input-codigo').setAttribute('value', '');
-      document.getElementById('input-codigo').focus();
-      return
-    }
+    // if(this.banderaFaltaLote == true) {
+    //   this.presentToast("Ingresa Lote.", "warning");
+    //   this.codeBar = '';
+    //   document.getElementById('input-codigo').setAttribute('value', '');
+    //   document.getElementById('input-codigo').focus();
+    //   return
+    // }
 
-    if(this.banderaFaltaFP == true) {
-      this.presentToast("Ingresa fecha de produccion.", "warning");
-      this.codeBar = '';
-      document.getElementById('input-codigo').setAttribute('value', '');
-      document.getElementById('input-codigo').focus();
-      return
-    }
+    // if(this.banderaFaltaFP == true) {
+    //   this.presentToast("Ingresa fecha de produccion.", "warning");
+    //   this.codeBar = '';
+    //   document.getElementById('input-codigo').setAttribute('value', '');
+    //   document.getElementById('input-codigo').focus();
+    //   return
+    // }
 
-    if(this.banderaFaltaFC == true) {
-      this.presentToast("Ingresa fecha de caducidad.", "warning");
-      this.codeBar = '';
-      document.getElementById('input-codigo').setAttribute('value', '');
-      document.getElementById('input-codigo').focus();
-      return
-    }
+    // if(this.banderaFaltaFC == true) {
+    //   this.presentToast("Ingresa fecha de caducidad.", "warning");
+    //   this.codeBar = '';
+    //   document.getElementById('input-codigo').setAttribute('value', '');
+    //   document.getElementById('input-codigo').focus();
+    //   return
+    // }
 
     this.codeBar = '';
     document.getElementById('input-codigo').setAttribute('value', '');
     document.getElementById('input-codigo').focus();
     // this.lotes.push(prodDetail);
-    this.imprimirTarima(prodDetail);
+    // this.imprimirTarima(prodDetail);
   }
 
-  public addLote() {
+  // public addLote() {
 
   
-    let pedimento = this.navExtras.getPedimento()
+  //   let pedimento = this.navExtras.getPedimento()
 
-    if (pedimento == undefined) {
-      this.presentToast('Debes agregar pedimento', 'warning')
-      return
-    }
+  //   if (pedimento == undefined) {
+  //     this.presentToast('Debes agregar pedimento', 'warning')
+  //     return
+  //   }
 
-    if (this.cantidad == undefined) {
-      this.presentToast("Debes agregar cantidad", 'warning');
-      return
-    }
+  //   if (this.cantidad == undefined) {
+  //     this.presentToast("Debes agregar cantidad", 'warning');
+  //     return
+  //   }
 
-    if(this.lote == undefined ) {
-      this.presentToast("Debes agregar lote", "warning");
-      return
-    }
+  //   if(this.lote == undefined ) {
+  //     this.presentToast("Debes agregar lote", "warning");
+  //     return
+  //   }
 
-    if(this.FechaCad == undefined) {
-      this.presentToast("Debes agregar fecha de expiracion", "warning");
-      return
-    }
+  //   if(this.FechaCad == undefined) {
+  //     this.presentToast("Debes agregar fecha de expiracion", "warning");
+  //     return
+  //   }
 
-    if(this.FechaProd == undefined) {
-      this.presentToast("Debes agregar fecha de produccion", "warning");
-      return
-    }
+  //   if(this.FechaProd == undefined) {
+  //     this.presentToast("Debes agregar fecha de produccion", "warning");
+  //     return
+  //   }
 
-    let prodDetail = {
-      name: this.lote,
-      expirationDate: this.FechaCad.split('T')[0],
-      manufacturingDate: formatDate(this.FechaProd.split('T')[0], 'yyyy-MM-dd', 'en-US'),
-      quantity:  Number(Number(Number(this.cantidad * Number(this.productData.Detail.NumInSale)) / 2.2046).toFixedNoRounding(7)),
-      code: '',
-      att1: '',
-      pedimento: (pedimento) ? pedimento : '',
-      Location: ''
-    }
+  //   let prodDetail = {
+  //     name: this.lote,
+  //     expirationDate: this.FechaCad.split('T')[0],
+  //     manufacturingDate: formatDate(this.FechaProd.split('T')[0], 'yyyy-MM-dd', 'en-US'),
+  //     quantity:  Number(Number(Number(this.cantidad * Number(this.productData.Detail.NumInSale)) / 2.2046).toFixedNoRounding(7)),
+  //     code: '',
+  //     att1: '',
+  //     pedimento: (pedimento) ? pedimento : '',
+  //     Location: ''
+  //   }
 
-    // this.lotes.push(prodDetail);
+  //   // this.lotes.push(prodDetail);
 
-    // console.log(this.lotes)
+  //   // console.log(this.lotes)
 
-    this.imprimirTarima(prodDetail);
+  //   this.imprimirTarima(prodDetail);
 
-  }
+  // }
 
   //           console.log(validPercent)
   //           console.log(validQuantity)
@@ -349,10 +349,10 @@ export class AbarrotesBatchPage implements OnInit {
 
   acceptRecepton() {
 
-    if (this.lotes.length == 0) {
-      this.presentToast('Falta agregar lote', 'warning');
-      return
-    }
+    // if (this.lotes.length == 0) {
+    //   this.presentToast('Falta agregar lote', 'warning');
+    //   return
+    // }
 
    
 
@@ -374,11 +374,12 @@ export class AbarrotesBatchPage implements OnInit {
 
     if (this.productData.Detail.QryGroup41 == 'Y') {
       this.productData.count = this.cantidad
-      this.productData.detalle = this.lotes
+      // this.productData.detalle = this.lotes
       this.receptionService.setReceptionData(this.productData)
       this.router.navigate(['/members/recepcion-sap'])
     } else {
-      this.productData.count = this.lotes.map(lote => lote.quantity).reduce((a, b) => a + b, 0)
+      this.productData.count = this.peso;
+      // this.productData.count = this.lotes.map(lote => lote.quantity).reduce((a, b) => a + b, 0)
       this.productData.detalle = this.lotes
       this.receptionService.setReceptionData(this.productData)
       this.router.navigate(['/members/recepcion-sap'])

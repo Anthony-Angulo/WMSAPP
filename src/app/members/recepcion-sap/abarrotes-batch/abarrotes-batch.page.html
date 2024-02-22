@@ -26,11 +26,11 @@
       <ion-input class="product-scann" [(ngModel)]="cantidad" name="cantidad" type="number"
         placeholder="Ingresa la cantidad" ></ion-input>
     </ion-col>
-        <ion-col>
-        <ion-button size="small" (click)="addLote()">
+        <!-- <ion-col> -->
+        <!-- <ion-button size="small" (click)="addLote()">
           <ion-icon slot="icon-only" name="add-circle"></ion-icon>
-        </ion-button>
-    </ion-col>
+        </ion-button> -->
+    <!-- </ion-col> -->
   </ion-row>
 
   <h6>Codigo de Barra</h6>
@@ -40,14 +40,14 @@
     </ion-col>
   </ion-row>
 
-  <h6>#Lotes</h6>
+  <!-- <h6>#Lotes</h6>
   <ion-row>
     <ion-col>
       <ion-input class="product-scann" [(ngModel)] = "lote" name="lote" placeholder = "Ingresa lote"></ion-input>
     </ion-col>
-  </ion-row>
+  </ion-row> -->
 
-  <ion-row>
+  <!-- <ion-row>
     <ion-col>
       <h6>Fecha de Expiración</h6>
       <ion-datetime class="product-scann" displayFormat="DD-MM-YYYY" max="2030" [(ngModel)]="FechaCad" ></ion-datetime>
@@ -59,12 +59,19 @@
       <h6>Fecha de Produccion</h6>
       <ion-datetime class="product-scann" displayFormat="DD-MM-YYYY" max="2030" [(ngModel)]="FechaProd" ></ion-datetime>
     </ion-col>
+  </ion-row> -->
+
+  <ion-row>
+    <ion-col>
+      <h6>Cantidad a Enviar: {{peso}} KG</h6>
+      <!-- <ion-datetime class="product-scann" displayFormat="DD-MM-YYYY" max="2030" [(ngModel)]="FechaProd" ></ion-datetime> -->
+    </ion-col>
   </ion-row>
 
 
 
-  <h6 *ngIf="lotes">Lotes agregados {{cantidadTarimas}}</h6>
-  <ion-row *ngFor="let lote of lotes; let index = index">
+  <!-- <h6 *ngIf="lotes">Lotes agregados {{cantidadTarimas}}</h6> -->
+  <!-- <ion-row *ngFor="let lote of lotes; let index = index">
       <ion-col>
         <ion-item lines="none" class="container-item">
           Lote: {{lote.name}}<br>
@@ -75,7 +82,7 @@
           </ion-button>
         </ion-item>
       </ion-col>
-    </ion-row>
+    </ion-row> -->
 
 
   <ion-row>

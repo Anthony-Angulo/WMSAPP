@@ -64,21 +64,21 @@ export class AbarrotesBatchPage implements OnInit {
     }
 
 
-    Promise.all([
-      this.http.get(`${this.appSettings.apiSAP}/api/batch/${this.productData.FromWhsCod}/${this.productData.ItemCode}`).toPromise(),
-      // this.http.get(`${this.appSettings.apiSAP}/api/InventoryTransfer/lastUOM/${this.productData.ItemCode}`).toPromise()
-    ]).then(([data]:any) => {
+    // Promise.all([
+    //   this.http.get(`${this.appSettings.apiSAP}/api/batch/${this.productData.FromWhsCod}/${this.productData.ItemCode}`).toPromise(),
+    //   // this.http.get(`${this.appSettings.apiSAP}/api/InventoryTransfer/lastUOM/${this.productData.ItemCode}`).toPromise()
+    // ]).then(([data]:any) => {
 
-      if(data[0].BatchNum == null) {
-        this.presentToast('Producto Sin Lotes Disponibles. Notificar A Adutoria.', 'danger');
-        return;
-      }
-      this.batchs = data;
-      // this.uom = this.productData.Uoms.filter(x => x.UomEntry == lastU)[0];
+    //   if(data[0].BatchNum == null) {
+    //     this.presentToast('Producto Sin Lotes Disponibles. Notificar A Adutoria.', 'danger');
+    //     return;
+    //   }
+    //   this.batchs = data;
+    //   // this.uom = this.productData.Uoms.filter(x => x.UomEntry == lastU)[0];
       
-    }).catch(() => {
-      this.presentToast('Error al traer lotes de producto', 'danger')
-    });
+    // }).catch(() => {
+    //   this.presentToast('Error al traer lotes de producto', 'danger')
+    // });
 
   }
 
@@ -97,10 +97,10 @@ export class AbarrotesBatchPage implements OnInit {
       return;
     }
 
-    if (this.batchNum == undefined || this.batchNum == '') {
-      this.presentToast("Debes Elegir Un Lote A Transferir", "warning");
-      return;
-    }
+    // if (this.batchNum == undefined || this.batchNum == '') {
+    //   this.presentToast("Debes Elegir Un Lote A Transferir", "warning");
+    //   return;
+    // }
 
     let unitBase = this.productData.Uoms.findIndex((x: any) => x.UomEntry == this.productData.UomEntry)
 

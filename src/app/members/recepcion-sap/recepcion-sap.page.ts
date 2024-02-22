@@ -120,8 +120,6 @@ export class RecepcionSapPage implements OnInit {
 
     let index = this.order.POR1.findIndex(x => x.ItemCode == this.search.toUpperCase())
 
-
-
     if (index >= 0) {
       if (this.order.POR1[index].LineStatus == 'O') {
         this.order.POR1[index].DocNum = this.number;
@@ -202,7 +200,7 @@ export class RecepcionSapPage implements OnInit {
 
     if (this.order.POR1[index].Detail.U_IL_TipPes == 'V') {
       this.router.navigate(['members/beef'])
-    } else if (this.order.POR1[index].Detail.ManBtchNum == 'Y') {
+    } else if (this.order.POR1[index].Detail.QryGroup51 == 'Y' && this.order.POR1[index].Detail.U_IL_TipPes == 'F') {
       this.router.navigate(['members/abarrotes-batch'])
     } else {
       this.router.navigate(['/members/abarrotes'])

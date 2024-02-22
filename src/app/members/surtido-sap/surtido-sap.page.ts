@@ -174,7 +174,7 @@ export class SurtidoSapPage implements OnInit {
 
     if (this.order.Lines[index].U_IL_TipPes == 'V') {
       this.router.navigate(['members/surtido-beef'])
-    } else if (this.order.Lines[index].ManBtchNum == 'Y') {
+    } else if (this.order.Lines[index].U_IL_TipPes== 'F' && this.order.Lines[index].QryGroup51 == 'Y') {
       this.router.navigate(['members/surtido-abarrotes-batch'])
     } else {
       this.router.navigate(['/members/surtido-abarrotes'])

@@ -136,8 +136,8 @@ export class BeefPage implements OnInit {
         })
       })
 
-      this.promptCodeDesc()
-      this.presentToast("Selecciona una configuracion", "warning")
+      // this.promptCodeDesc()
+      // this.presentToast("Selecciona una configuracion", "warning")
     }
 
     console.log(this.productData)
@@ -187,7 +187,6 @@ export class BeefPage implements OnInit {
     this.cantidadEscaneada--
     this.cantidadPeso = this.cantidadPeso - Number(this.detail[index].quantity)
     this.detail.splice(index, 1)
-
   }
 
 

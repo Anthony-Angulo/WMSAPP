@@ -231,7 +231,7 @@ export class TransferenciaSapPage implements OnInit {
 
     if (this.transferData.Lines[indexOfProduct].U_IL_TipPes == 'V') {
       this.router.navigate(['members/transferencia-beef'])
-    } else if (this.transferData.Lines[indexOfProduct].ManBtchNum == 'Y') {
+    } else if (this.transferData.Lines[indexOfProduct].QryGroup51 == 'Y' && this.transferData.Lines[indexOfProduct].U_IL_TipPes == 'F') {
       this.router.navigate(['members/transferencia-abarrotes-batch'])
     } else {
       this.router.navigate(['/members/transferencia-abarrotes'])
@@ -259,6 +259,7 @@ export class TransferenciaSapPage implements OnInit {
     if (TransferRows.length != 0) {
       const recepcionData = {
         DocEntry: this.transferData.DocEntry,
+        serie: this.transferData.Filler,
         TransferRows
       };
       this.http.post(this.appSettings.apiSAP + '/api/inventorytransfer/SAP', recepcionData).toPromise().then((data: any) => {
