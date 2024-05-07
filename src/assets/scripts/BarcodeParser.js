@@ -1106,7 +1106,7 @@ var parseBarcode = (function () {
                     throw "30";
                 }
                 break;
-            case "9":
+            case "00000":
                 switch (secondNumber) {
                 case "0":
                     // Information Mutually Agreed Between Trading Partners

@@ -185,6 +185,7 @@ export class BeefPage implements OnInit {
     let detalle = [{
       BatchList,
       total: this.cantidadPeso,
+      ItemCode: this.productData.ItemCode,
       Count: this.cantidadPeso,
       UomEntry: this.productData.UomEntry
     }]
@@ -228,9 +229,10 @@ export class BeefPage implements OnInit {
 
         this.detail.push({
           Code: loteGenerico.BatchNum,
-          Quantity: this.productData.crBars[isScanned].Peso,
+          Quantity: Number(this.productData.crBars[isScanned].Peso),
           CodeBar: this.codigoBarra.trim(),
-          uom: this.productData.Uoms[madeByUom].BaseEntry
+          uom: this.productData.Uoms[madeByUom].BaseEntry,
+          uomCode: this.productData.Uoms[madeByUom].UomCode
         });
 
         this.presentToast("Se Escaneo Correctamente", "success");
@@ -302,8 +304,6 @@ export class BeefPage implements OnInit {
     }
 
     let isScanned = this.detail.findIndex((codeBar: any) => codeBar.CodeBar == this.codigoBarra.trim());
-    let isCodeBarExist = this.batch.findIndex((codeBar: any) => codeBar.U_IL_CodBar == this.codigoBarra.trim());
-
     if (isScanned >= 0) {
       this.presentToast("Este Codigo De Barra Ya Fue Escaneado", "warning");
       this.peso = 0;
@@ -312,37 +312,49 @@ export class BeefPage implements OnInit {
       return
     }
 
+    if(this.productData.QryGroup51 == 'N') {
 
-    if (isCodeBarExist >= 0) {
-
-      this.detail.push({
-        Code: this.batch[isCodeBarExist].BatchNum,
-        Quantity: Number(this.batch[isCodeBarExist].Quantity),
-        CodeBar: this.batch[isCodeBarExist].U_IL_CodBar.trim(),
-        uom: this.productData.Uoms[madeByUom].BaseEntry,
-        uomCode: this.productData.Uoms[madeByUom].UomCode
-      });
-
-      this.batch.splice(isCodeBarExist, 1);
-      this.presentToast("Se Escaneo Correctamente", "success");
-    } else {
-
-      let loteGenerico = this.batch.find((y: any) => y.BatchNum == 'SI');
-
-      if (loteGenerico != undefined) {
-
+      let isCodeBarExist = this.batch.findIndex((codeBar: any) => codeBar.U_IL_CodBar == this.codigoBarra.trim());
+  
+      if (isCodeBarExist >= 0) {
+  
         this.detail.push({
-          Code: loteGenerico.BatchNum,
-          Quantity: this.peso,
-          CodeBar: this.codigoBarra.trim(),
-          uom: this.productData.Uoms[madeByUom].BaseEntry
+          Code: this.batch[isCodeBarExist].BatchNum,
+          Quantity: Number(this.batch[isCodeBarExist].Quantity),
+          CodeBar: this.batch[isCodeBarExist].U_IL_CodBar.trim(),
+          uom: this.productData.Uoms[madeByUom].BaseEntry,
+          uomCode: this.productData.Uoms[madeByUom].UomCode
         });
-
+  
+        this.batch.splice(isCodeBarExist, 1);
         this.presentToast("Se Escaneo Correctamente", "success");
       } else {
-        this.presentToast("El Codigo de Barra No Fue Encontrado En Inventario O No Hay Cantidad Suficiente En Lote Generico. Revisar Con Auditoria.", "warning");
+  
+        let loteGenerico = this.batch.find((y: any) => y.BatchNum == 'SI');
+  
+        if (loteGenerico != undefined) {
+  
+          this.detail.push({
+            Code: loteGenerico.BatchNum,
+            Quantity: this.peso,
+            CodeBar: this.codigoBarra.trim(),
+            uom: this.productData.Uoms[madeByUom].BaseEntry
+          });
+  
+          this.presentToast("Se Escaneo Correctamente", "success");
+        } else {
+          this.presentToast("El Codigo de Barra No Fue Encontrado En Inventario O No Hay Cantidad Suficiente En Lote Generico. Revisar Con Auditoria.", "warning");
+        }
       }
+    } else {
+      this.detail.push({
+        Code: 'SI',
+        Quantity: this.peso,
+        CodeBar: this.codigoBarra.trim(),
+        uom: this.productData.Uoms[madeByUom].BaseEntry
+      });
     }
+
 
 
 

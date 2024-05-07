@@ -238,8 +238,6 @@ export class BeefPage implements OnInit {
     }
 
     let isScanned = this.batchDetail.findIndex((codeBar: any) => codeBar.CodeBar == this.codeBarInput.trim());
-    let isCodeBarExist = this.availableBatchs.findIndex((codeBar: any) => codeBar.U_IL_CodBar == this.codeBarInput.trim());
-
     if (isScanned >= 0) {
       this.presentToast("Este Codigo De Barra Ya Fue Escaneado", "warning");
       this.peso = 0;
@@ -248,33 +246,45 @@ export class BeefPage implements OnInit {
       return
     }
 
-    if (isCodeBarExist >= 0) {
+    if(this.productData.QryGroup51 == 'N') { 
 
-      this.batchDetail.push({
-        Code: this.availableBatchs[isCodeBarExist].BatchNum,
-        Quantity: Number(this.availableBatchs[isCodeBarExist].Quantity),
-        CodeBar: this.codeBarInput.trim()
-      });
+      let isCodeBarExist = this.availableBatchs.findIndex((codeBar: any) => codeBar.U_IL_CodBar == this.codeBarInput.trim());
 
-      this.availableBatchs.splice(isCodeBarExist, 1);
-      this.presentToast("Se Escaneo Correctamente", "success");
-    } else {
-
-      let loteGenerico = this.availableBatchs.find((y: any) => y.BatchNum == 'SI');
-
-      if (loteGenerico != undefined) {
-
+      if (isCodeBarExist >= 0) {
+  
         this.batchDetail.push({
-          Code: loteGenerico.BatchNum,
-          Quantity: this.peso,
+          Code: this.availableBatchs[isCodeBarExist].BatchNum,
+          Quantity: Number(this.availableBatchs[isCodeBarExist].Quantity),
           CodeBar: this.codeBarInput.trim()
         });
-
+  
+        this.availableBatchs.splice(isCodeBarExist, 1);
         this.presentToast("Se Escaneo Correctamente", "success");
       } else {
-        this.presentToast("El Codigo de Barra No Fue Encontrado En Inventario O No Hay Cantidad Suficiente En Lote Generico. Revisar Con Auditoria.", "warning");
+  
+        let loteGenerico = this.availableBatchs.find((y: any) => y.BatchNum == 'SI' || y.BatchNum == 'si');
+  
+        if (loteGenerico != undefined) {
+  
+          this.batchDetail.push({
+            Code: loteGenerico.BatchNum,
+            Quantity: this.peso,
+            CodeBar: this.codeBarInput.trim()
+          });
+  
+          this.presentToast("Se Escaneo Correctamente", "success");
+        } else {
+          this.presentToast("El Codigo de Barra No Fue Encontrado En Inventario O No Hay Cantidad Suficiente En Lote Generico. Revisar Con Auditoria.", "warning");
+        }
       }
+    } else {
+      this.batchDetail.push({
+        Code: this.codeBarInput.substr(this.codeBarInput.length - 36),
+        Quantity: this.peso,
+        CodeBar: this.codeBarInput.trim()
+      });
     }
+
 
 
     this.cantidadEscaneada = this.batchDetail.length

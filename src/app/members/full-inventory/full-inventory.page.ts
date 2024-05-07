@@ -188,8 +188,15 @@ export class FullInventoryPage implements OnInit {
 
     await this.presentLoading('Buscando Producto...');
 
+    console.log(this.ip)
 
-    this.productDetail = await this.http.get(`http://${this.ip}/api/Products/CodeBar/${this.productCodeScanned}`).toPromise().finally(() => this.hideLoading());
+    if(this.ip == '192.168.0.32:8886') {
+      this.productDetail = await this.http.get(`http://${this.ip}/api/CodeBar/${this.productCodeScanned}`).toPromise().finally(() => this.hideLoading());
+    } else {
+      this.productDetail = await this.http.get(`http://${this.ip}/api/Products/CodeBar/${this.productCodeScanned}`).toPromise().finally(() => this.hideLoading());
+    }
+
+
     
 
     // this.productDetail = await this.http.get(`${environment.apiSAP}/api/CodeBar/${this.search}`).toPromise();
@@ -260,7 +267,13 @@ export class FullInventoryPage implements OnInit {
 
       await this.presentLoading('Buscando Producto...');
 
-      this.productDetail = await this.http.get(`${environment.apiSAP}/api/Products/GetbyGTIN/${answer.parsedCodeItems[0].data}`).toPromise();
+      if(this.ip == '192.168.0.32:8886') {
+        this.productDetail = await this.http.get(`${environment.apiSAP}/api/Products/GetbyGTIN/${answer.parsedCodeItems[0].data}`).toPromise();
+      } else {
+        this.presentToast("Buscar por Codigo de Producto", "warning");
+      }
+
+      
 
 
       // this.productDetail = await this.http.get(`${environment.apiSAP}/api/CodeBar/${this.search}`).toPromise();

@@ -28,14 +28,14 @@
     </ion-col>
   </ion-row>
   
-  <h6>Seleccionar Lote</h6>
+  <!-- <h6>Seleccionar Lote</h6>
     <ion-row>
       <ion-col>
         <ion-select class="product-scann" [(ngModel)]="lote">
           <ion-select-option  *ngFor="let lote of batch" value= "{{lote.BatchNum}}">{{lote.BatchNum}} - {{lote.Quantity | number}}</ion-select-option>
         </ion-select> 
       </ion-col>
-    </ion-row>
+    </ion-row> -->
 
 
   <h6>Ingresar cantidad a surtir.</h6>
@@ -53,9 +53,9 @@
 
   <h6>Surtiendo</h6> 
   <ion-row class="table">
-    <ion-col size="3.5">
+    <!-- <ion-col size="3.5">
       Lote
-    </ion-col>
+    </ion-col> -->
     <ion-col size="3">
       Cantidad
     </ion-col>
@@ -68,9 +68,9 @@
   </ion-row>
 
   <ion-row class="text-content" *ngFor="let delivery of productsToDeliver; let index of index">
-    <ion-col size="3.5">
+    <!-- <ion-col size="3.5">
       {{delivery.lote}}
-    </ion-col>
+    </ion-col> -->
     <ion-col size="3">
       {{delivery.Count | number }}
     </ion-col>
@@ -84,11 +84,11 @@
     </ion-col>
   </ion-row>
 
-  <ion-row *ngIf="uom">
+  <!-- <ion-row *ngIf="uom">
     <ion-col>
       Total: {{totalUnitBase}} {{uom.BaseUom}}
     </ion-col>
-  </ion-row>
+  </ion-row> -->
 
   <!-- <ion-row *ngFor="let prod of productsToDeliver; let index = index">
       <ion-col>

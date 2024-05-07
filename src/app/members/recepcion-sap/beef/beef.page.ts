@@ -333,18 +333,26 @@ export class BeefPage implements OnInit {
       }
     }
 
-    let isScanned = this.detail.findIndex(prod => prod.code == this.codigoBarra.trim());
-    let availableBatch = this.productData.batchs.findIndex(prod => prod.U_IL_CodBar == this.codigoBarra.trim());
-
-
-    if (isScanned >= 0 || availableBatch >= 0) {
-      this.presentToast("Este Codigo de Barra Ya Fue Registrado", "warning");
-      this.peso = 0
-      document.getElementById('input-codigo').setAttribute('value', '');
-      document.getElementById('input-codigo').focus();
-      return
+    if(this.productData.QryGroup51 == 'N') {
+      let isScanned = this.detail.findIndex(prod => prod.code == this.codigoBarra.trim());
+      let availableBatch = this.productData.batchs.findIndex(prod => prod.U_IL_CodBar == this.codigoBarra.trim());
+  
+  
+      if (isScanned >= 0 || availableBatch >= 0) {
+        this.presentToast("Este Codigo de Barra Ya Fue Registrado", "warning");
+        this.peso = 0
+        document.getElementById('input-codigo').setAttribute('value', '');
+        document.getElementById('input-codigo').focus();
+        return
+      }
     }
 
+    // if(this.productData.QryGroup52 == 'N') {
+    //   this.getDataFromCodeBar();
+    //   return;
+    // }
+
+    
     try {
 
       let answer = parseBarcode(this.codigoBarra);
@@ -353,18 +361,19 @@ export class BeefPage implements OnInit {
       // console.log(answer)
       console.log(answer)
       if (this.productData.Detail.SuppCatNum == null) {
-        this.productData.Detail.SuppCatNum = answer.parsedCodeItems[0].data
+        this.productData.Detail.SuppCatNum = '';
+        // this.productData.Detail.SuppCatNum = answer.parsedCodeItems[0].data
         // this.getDataFromCodeBar();
         // return
       }
 
-      if (this.productData.Detail.SuppCatNum != answer.parsedCodeItems[0].data) {
-        this.presentToast("El codigo de manufactura no coincide con el codigo escaneado. Contactar Datos Maestros.", "warning");
-        this.peso = 0;
-        document.getElementById('input-codigo').setAttribute('value', '');
-        document.getElementById('input-codigo').focus();
-        return
-      }
+      // if (this.productData.Detail.SuppCatNum != answer.parsedCodeItems[0].data) {
+      //   this.presentToast("El codigo de manufactura no coincide con el codigo escaneado. Contactar Datos Maestros.", "warning");
+      //   this.peso = 0;
+      //   document.getElementById('input-codigo').setAttribute('value', '');
+      //   document.getElementById('input-codigo').focus();
+      //   return
+      // }
 
 
 
@@ -431,10 +440,12 @@ export class BeefPage implements OnInit {
             this.detailGS1.quantity = Number(Number(answer.parsedCodeItems[x].data).toFixed(2));
             this.pesoBand = true;
           }
-        
 
-
-
+          if(this.detailGS1.quantity == 0) {
+            this.getDataFromCodeBar();
+            return;
+          }
+      
       }
 
       console.log(this.detailGS1)
@@ -576,18 +587,30 @@ export class BeefPage implements OnInit {
       return
     }
 
-
     let isScanned = this.detail.findIndex(prod => prod.code == this.codigoBarra.trim());
-    let availableBatch = this.productData.batchs.findIndex(prod => prod.U_IL_CodBar == this.codigoBarra.trim());
-
-
-    if (isScanned >= 0 || availableBatch >= 0) {
+    if (isScanned >= 0) {
       this.presentToast("Este Codigo de Barra Ya Fue Registrado", "warning");
       this.peso = 0
       document.getElementById('input-codigo').setAttribute('value', '');
       document.getElementById('input-codigo').focus();
       return
     }
+
+    if(this.productData.QryGroup51 == 'N') {
+
+      let availableBatch = this.productData.batchs.findIndex(prod => prod.U_IL_CodBar == this.codigoBarra.trim());
+  
+  
+      if (availableBatch >= 0) {
+        this.presentToast("Este Codigo de Barra Ya Fue Registrado", "warning");
+        this.peso = 0
+        document.getElementById('input-codigo').setAttribute('value', '');
+        document.getElementById('input-codigo').focus();
+        return
+      }
+    }
+
+
 
     this.detail.push({
       name: this.codigoBarra.substr(this.codigoBarra.length - 36),

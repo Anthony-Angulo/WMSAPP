@@ -29,6 +29,7 @@ export class AbarrotesBatchPage implements OnInit {
   data: any;
   load: any;
   porcentaje: any;
+  uom: any;
   codeBar: any;
 
   banderaFaltaLote: boolean = false;
@@ -57,7 +58,7 @@ export class AbarrotesBatchPage implements OnInit {
     // var date = new Date();
     // date = new Date(date.setFullYear(date.getFullYear() + 1)); 
     // this.FechaCad = date.toISOString();
-
+    // this.uoms = this.productData.Uoms;
     if (this.productData.count) {
       this.cantidad = this.productData.count
     }
@@ -73,7 +74,7 @@ export class AbarrotesBatchPage implements OnInit {
     // this.cantidadEscaneada--
     // this.cantidadPeso = this.cantidadPeso - Number(this.detail[index].quantity)
     this.lotes.splice(index, 1)
-    this.cantidadTarimas --
+    this.cantidadTarimas--
 
   }
   getGS1Data() {
@@ -91,11 +92,11 @@ export class AbarrotesBatchPage implements OnInit {
       this.presentToast("Debes agregar cantidad", 'warning');
       return
     }
-    
 
-    if(this.productData.Detail.PurPackUn == 1) {
-      if(Number(this.cantidad) > 100) {
-        this.presentToast("La cantidad excede maximo de cajas por tarima",'warning');
+
+    if (this.productData.Detail.PurPackUn == 1) {
+      if (Number(this.cantidad) > 100) {
+        this.presentToast("La cantidad excede maximo de cajas por tarima", 'warning');
         this.codeBar = '';
         document.getElementById('input-codigo').setAttribute('value', '');
         document.getElementById('input-codigo').focus();
@@ -103,9 +104,9 @@ export class AbarrotesBatchPage implements OnInit {
       }
     }
 
-    if(this.productData.Detail.PurPackUn != 1) {
-      if(Number(this.cantidad) > this.productData.Detail.PurPackUn) {
-        this.presentToast("La cantidad excede maximo de cajas por tarima",'warning');
+    if (this.productData.Detail.PurPackUn != 1) {
+      if (Number(this.cantidad) > this.productData.Detail.PurPackUn) {
+        this.presentToast("La cantidad excede maximo de cajas por tarima", 'warning');
         this.codeBar = '';
         document.getElementById('input-codigo').setAttribute('value', '');
         document.getElementById('input-codigo').focus();
@@ -214,7 +215,7 @@ export class AbarrotesBatchPage implements OnInit {
 
   // public addLote() {
 
-  
+
   //   let pedimento = this.navExtras.getPedimento()
 
   //   if (pedimento == undefined) {
@@ -328,12 +329,12 @@ export class AbarrotesBatchPage implements OnInit {
   //   }
   // }
 
-  async imprimirTarima(prodDetail:any) {
+  async imprimirTarima(prodDetail: any) {
     await this.presentLoading('Imprimiendo etiqueta...');
 
     this.http.get(`${environment.apiSAP}/api/Impresion/PruebaReciboTarima?Itemcode=${this.productData.ItemCode}&Total=${Number(this.peso)}
     &UoM=${this.productData.UomEntry}&DocNum=${this.productData.DocNum}&Cajas=${Number(this.cantidad)}&printer=Label-Test23`).toPromise()
-      .then((x:any) => {
+      .then((x: any) => {
         console.log(x)
         prodDetail.Location = x;
         this.lotes.push(prodDetail);
@@ -347,6 +348,37 @@ export class AbarrotesBatchPage implements OnInit {
       });
   }
 
+  captureData() {
+
+    console.log(this.productData)
+    if (this.cantidad == 0) {
+      this.productData.count = this.cantidad
+      this.receptionService.setReceptionData(this.productData)
+      this.router.navigate(['/members/recepcion-sap'])
+      return
+    }
+
+    let qtyLote;
+
+    if(this.productData.UomEntry == this.uom.UomEntry) {
+      this.productData.count = this.cantidad
+    } else {
+      let factor = this.productData.Uoms.find((x: any) => x.UomEntry == this.productData.UomEntry);
+      console.log(factor);
+      this.productData.count = Number(this.cantidad / factor.BaseQty)
+      qtyLote = Number(this.cantidad / factor.BaseQty)
+    }
+
+    this.lotes.push({
+      name: 'SI',
+      expirationDate: '2024-01-01',
+      quantity:  this.productData.count.toFixedNoRounding(4),
+      code: '',
+      att1: '',
+      pedimento: ''
+    });
+
+  }
   acceptRecepton() {
 
     // if (this.lotes.length == 0) {
@@ -354,7 +386,7 @@ export class AbarrotesBatchPage implements OnInit {
     //   return
     // }
 
-   
+
 
     // let invQty = this.lotes.map(x => x.quantity).reduce((a, b) => a + b, 0);
     // let dif = Math.abs(Number(Number(invQty).toFixedNoRounding(4)) - Number(this.productData.OpenInvQty))
@@ -365,25 +397,65 @@ export class AbarrotesBatchPage implements OnInit {
 
     // if(invQty !)
 
+    console.log(this.productData)
     if (this.cantidad == 0) {
       this.productData.count = this.cantidad
       this.receptionService.setReceptionData(this.productData)
       this.router.navigate(['/members/recepcion-sap'])
       return
     }
-
-    if (this.productData.Detail.QryGroup41 == 'Y') {
+    let qtyLote;
+    if (this.productData.UomEntry == this.uom.UomEntry) {
       this.productData.count = this.cantidad
-      // this.productData.detalle = this.lotes
-      this.receptionService.setReceptionData(this.productData)
-      this.router.navigate(['/members/recepcion-sap'])
+      qtyLote = this.cantidad
     } else {
-      this.productData.count = this.peso;
-      // this.productData.count = this.lotes.map(lote => lote.quantity).reduce((a, b) => a + b, 0)
-      this.productData.detalle = this.lotes
-      this.receptionService.setReceptionData(this.productData)
-      this.router.navigate(['/members/recepcion-sap'])
+      let factor = this.productData.Uoms.find((x: any) => x.UomEntry == this.productData.UomEntry);
+      console.log(factor);
+      this.productData.count = Number(this.cantidad / factor.BaseQty)
+      qtyLote = Number(this.cantidad / factor.BaseQty)
     }
+
+    // if (this.productData.Detail.ManBtchNum == 'Y') {
+
+    if (this.productData.UomEntry == '486' || this.productData.UomEntry == '485') {
+      this.lotes.push({
+        name: 'SI',
+        expirationDate: '2024-01-01',
+        quantity: Number(this.productData.OpenInvQty),
+        code: '',
+        att1: '',
+        pedimento: ''
+      });
+    } else {
+      this.lotes.push({
+        name: this.lote,
+        expirationDate: '2024-01-01',
+        quantity: Number(qtyLote).toFixedNoRounding(4),
+        code: '',
+        att1: '',
+        pedimento: ''
+      });
+    }
+    // let factor = this.productData.Uoms.find((x:any) => x.UomEntry == this.productData.UomEntry);
+
+    // }
+
+    this.productData.detalle = this.lotes
+    this.receptionService.setReceptionData(this.productData)
+    this.router.navigate(['/members/recepcion-sap'])
+
+
+    // if (this.productData.Detail.QryGroup41 == 'Y') {
+    //   this.productData.count = this.cantidad
+    //   this.receptionService.setReceptionData(this.productData)
+    //   this.router.navigate(['/members/recepcion-sap'])
+    // } else {
+    //   this.productData.count = this.peso;
+    //   // this.productData.count = this.lotes.map(lote => lote.quantity).reduce((a, b) => a + b, 0)
+    //   this.productData.detalle = this.lotes
+    //   this.receptionService.setReceptionData(this.productData)
+    //   this.router.navigate(['/members/recepcion-sap'])
+    // }
 
   }
 

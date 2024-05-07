@@ -50,11 +50,11 @@ export class AbarrotesBatchPage implements OnInit {
     }
 
 
-    this.http.get(`${this.appSettings.apiSAP}/api/batch/${this.productData.WhsCode}/${this.productData.ItemCode}`).toPromise().then((data) => {
-      this.batch = data;
-    }).catch(() => {
-      this.presentToast('Error al traer lotes de producto', 'danger')
-    })
+    // this.http.get(`${this.appSettings.apiSAP}/api/batch/${this.productData.WhsCode}/${this.productData.ItemCode}`).toPromise().then((data) => {
+    //   this.batch = data;
+    // }).catch(() => {
+    //   this.presentToast('Error al traer lotes de producto', 'danger')
+    // })
 
 
   }
@@ -63,10 +63,10 @@ export class AbarrotesBatchPage implements OnInit {
 
     if (this.cantidad == undefined || this.cantidad == 0) return
 
-    if (this.lote == undefined || this.lote == '') {
-      this.presentToast('Datos faltantes', 'warning');
-      return
-    }
+    // if (this.lote == undefined || this.lote == '') {
+    //   this.presentToast('Datos faltantes', 'warning');
+    //   return
+    // }
 
 
     console.log(this.uom)
@@ -74,49 +74,108 @@ export class AbarrotesBatchPage implements OnInit {
     let dif = Math.abs(Number(Number(this.cantidad * this.uom.BaseQty).toFixedNoRounding(4)) - Number(this.productData.OpenInvQty))
     let count = 0;
 
-    if(dif < 2) {
+    if (dif < 2) {
       count = Number(this.productData.OpenInvQty)
     } else {
       count = Number(Number(this.cantidad * this.uom.BaseQty).toFixedNoRounding(4))
     }
 
-    if (this.uom.UomEntry == this.uom.BaseEntry) {
+    console.log(this.productData)
 
+    let madeByUom = this.productData.Uoms.findIndex((x: any) => x.UomEntry == this.productData.UomEntry);
 
-        let BatchList = [{
-          Quantity: Number(count),
-          Code: this.lote,
-        }]
-
-        this.productsToDeliver.push({
-          BatchList,
-          Count: Number(this.productData.OpenInvQty),
-          uom: this.uom.UomCode,
-          UomEntry: this.uom.UomEntry,
-          total: Number(this.productData.OpenInvQty),
-          lote: this.lote
-        })
-
-    } else {
-
+    if (this.productData.UomEntry == this.productData.Uoms[madeByUom].BaseEntry) {
       let BatchList = [{
-        Quantity: Number(count),
-        Code: this.lote,
+        Quantity: Number(this.cantidad * this.uom.BaseQty),
+        Code: 'SI',
       }]
-
       this.productsToDeliver.push({
         BatchList,
         Count: Number(this.cantidad),
-        total: Number(Number(this.cantidad * this.uom.BaseQty).toFixedNoRounding(4)),
-        uom: this.uom.UomCode,
+        ItemCode: this.productData.ItemCode,
         UomEntry: this.uom.UomEntry,
-        lote: this.lote
-      });
-
-      
+        Cajas: Number(this.cantidad)
+      })
+    } else {
+      let BatchList = [{
+        Quantity: Number(this.cantidad * this.uom.BaseQty),
+        Code: 'SI',
+      }]
+      this.productsToDeliver.push({
+        BatchList,
+        Count: Number(this.cantidad),
+        ItemCode: this.productData.ItemCode,
+        UomEntry: this.uom.UomEntry,
+        Cajas: Number(this.cantidad)
+      })
     }
 
-    this.totalUnitBase = this.productsToDeliver.map(prod => prod.total).reduce((a, b) => a + b, 0);
+    console.log(this.productsToDeliver)
+
+    // if (this.productData.QryGroup42 == 'Y') {
+      // let BatchList = [{
+      //   Quantity: Number(count),
+      //   Code: 'SI',
+      // }]
+      // this.productsToDeliver.push({
+      //   BatchList,
+      //   Count: Number(this.cantidad),
+      //   ItemCode: this.productData.ItemCode,
+      //   UomEntry: this.uom.UomEntry,
+      //   Cajas: Number(this.cantidad)
+      // })
+    // } else {
+      // let BatchList = [{
+      //   Quantity: Number(count),
+      //   Code: this.lote,
+      // }]
+      // this.productsToDeliver.push({
+      //   BatchList,
+      //   Count: Number(count),
+      //   ItemCode: this.productData.ItemCode,
+      //   UomEntry: this.uom.UomEntry,
+      //   Cajas: Number(this.cantidad)
+      // })
+    // }
+
+
+    // if (this.uom.UomEntry == this.uom.BaseEntry) {
+
+
+    //     let BatchList = [{
+    //       Quantity: Number(count),
+    //       Code: this.lote,
+    //     }]
+
+    //     this.productsToDeliver.push({
+    //       BatchList,
+    //       Count: Number(this.productData.OpenInvQty),
+    //       uom: this.uom.UomCode,
+    //       UomEntry: this.uom.UomEntry,
+    //       total: Number(this.productData.OpenInvQty),
+    //       lote: this.lote
+    //     })
+
+    // } else {
+
+    //   let BatchList = [{
+    //     Quantity: Number(count),
+    //     Code: this.lote,
+    //   }]
+
+    //   this.productsToDeliver.push({
+    //     BatchList,
+    //     Count: Number(this.cantidad),
+    //     total: Number(Number(this.cantidad * this.uom.BaseQty).toFixedNoRounding(4)),
+    //     uom: this.uom.UomCode,
+    //     UomEntry: this.uom.UomEntry,
+    //     lote: this.lote
+    //   });
+
+
+    // }
+
+    // this.totalUnitBase = this.productsToDeliver.map(prod => prod.total).reduce((a, b) => a + b, 0);
 
   }
 
@@ -132,6 +191,7 @@ export class AbarrotesBatchPage implements OnInit {
       this.router.navigate(['/members/surtido-sap'])
       return
     }
+
 
     this.productData.DeliveryRowDetailList = this.productsToDeliver
     this.receptionService.setReceptionData(this.productData)

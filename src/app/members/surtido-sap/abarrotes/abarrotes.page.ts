@@ -61,13 +61,17 @@ export class AbarrotesPage implements OnInit {
     if(findProd < 0) {
       this.DeliveryRowDetailList.push({
         Count: this.cantidad,
+        Cajas: Number(this.cantidad),
         UomEntry: this.uom.UomEntry,
+        ItemCode: this.productData.ItemCode,
         total: this.totalConvertido,
         uom: this.uom.UomCode,
         BatchList: []
       })
     } else {
       this.DeliveryRowDetailList[findProd].Count = this.cantidad
+      this.DeliveryRowDetailList[findProd].Cajas = Number(this.cantidad)
+      this.DeliveryRowDetailList[findProd].ItemCode = this.productData.ItemCode
       this.DeliveryRowDetailList[findProd].total = this.totalConvertido
     }
 

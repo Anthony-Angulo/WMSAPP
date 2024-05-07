@@ -200,7 +200,7 @@ export class RecepcionSapPage implements OnInit {
 
     if (this.order.POR1[index].Detail.U_IL_TipPes == 'V') {
       this.router.navigate(['members/beef'])
-    } else if (this.order.POR1[index].Detail.QryGroup51 == 'Y' && this.order.POR1[index].Detail.U_IL_TipPes == 'F') {
+    } else if (this.order.POR1[index].Detail.U_IL_TipPes == 'F') {
       this.router.navigate(['members/abarrotes-batch'])
     } else {
       this.router.navigate(['/members/abarrotes'])
@@ -249,12 +249,12 @@ export class RecepcionSapPage implements OnInit {
         WarehouseCode: product.WhsCode,
         Line: product.LineNum,
         Count: product.count,
-        ItemType: product.Detail.U_IL_TipPes,
+        ItemType: (product.Detail.U_IL_TipPes == null) ? 'F' : product.Detail.U_IL_TipPes,
         SupplierCode: product.SupplierCode,
         Group: (product.Detail.QryGroup43 == "Y") ? 43 : 0,
         Batch: (product.detalle) ? product.detalle : []
       }
-    })
+    });
 
 
     console.log(this.crbarras);

@@ -56,7 +56,15 @@ export class SurtidoSapPage implements OnInit {
 
     if (productsScanned.DeliveryRowDetailList) {
       let index = this.order.Lines.findIndex(product => product.ItemCode == productsScanned.ItemCode)
-      this.order.Lines[index].count = productsScanned.DeliveryRowDetailList.map(prod => prod.Count).reduce((a, b) => a + b, 0)
+      
+      if(this.order.Lines[index].QryGroup42 == 'Y') {
+        console.log(this.order.Lines[index])
+        this.order.Lines[index].count = productsScanned.DeliveryRowDetailList.map(prod => prod.Cajas).reduce((a, b) => a + b, 0)
+      } else {
+        console.log(this.order.Lines[index])
+        this.order.Lines[index].count = productsScanned.DeliveryRowDetailList.map(prod => prod.Count).reduce((a, b) => a + b, 0)
+      }
+
       let isScanned = this.products.findIndex(prd => prd.ItemCode == productsScanned.ItemCode)
       if (isScanned < 0) {
         this.products.push(productsScanned)
@@ -174,7 +182,7 @@ export class SurtidoSapPage implements OnInit {
 
     if (this.order.Lines[index].U_IL_TipPes == 'V') {
       this.router.navigate(['members/surtido-beef'])
-    } else if (this.order.Lines[index].U_IL_TipPes== 'F' && this.order.Lines[index].QryGroup51 == 'Y') {
+    } else if (this.order.Lines[index].U_IL_TipPes== 'F') {
       this.router.navigate(['members/surtido-abarrotes-batch'])
     } else {
       this.router.navigate(['/members/surtido-abarrotes'])
@@ -190,6 +198,7 @@ export class SurtidoSapPage implements OnInit {
     const DeliveryRowDetailList = this.products.map(product => {
       return {
         LineNum: product.LineNum,
+        whsCode: product.WhsCode,
         DeliveryRowDetailList: (product.DeliveryRowDetailList) ? product.DeliveryRowDetailList : []
       };
     });
@@ -199,6 +208,7 @@ export class SurtidoSapPage implements OnInit {
     if (DeliveryRowDetailList.length != 0) {
       const recepcionData = {
         DocEntry: this.order.DocEntry,
+        whsCode: DeliveryRowDetailList[0].whsCode,
         DeliveryRows: DeliveryRowDetailList
       };
 

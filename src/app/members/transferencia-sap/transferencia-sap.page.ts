@@ -231,7 +231,7 @@ export class TransferenciaSapPage implements OnInit {
 
     if (this.transferData.Lines[indexOfProduct].U_IL_TipPes == 'V') {
       this.router.navigate(['members/transferencia-beef'])
-    } else if (this.transferData.Lines[indexOfProduct].QryGroup51 == 'Y' && this.transferData.Lines[indexOfProduct].U_IL_TipPes == 'F') {
+    } else if (this.transferData.Lines[indexOfProduct].U_IL_TipPes == 'F') {
       this.router.navigate(['members/transferencia-abarrotes-batch'])
     } else {
       this.router.navigate(['/members/transferencia-abarrotes'])

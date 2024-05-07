@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='utf-8'?>
-<widget id="io.wms.ccfnversion10" version="21.05.47" xmlns="http://www.w3.org/ns/widgets" xmlns:android="http://schemas.android.com/apk/res/android" xmlns:cdv="http://cordova.apache.org/ns/1.0">
+<widget id="io.wms.ccfnversion10" version="21.05.53" xmlns="http://www.w3.org/ns/widgets" xmlns:android="http://schemas.android.com/apk/res/android" xmlns:cdv="http://cordova.apache.org/ns/1.0">
     <name>CCFN-WMS-10</name>
     <description>WMS para almacenes de CCFN.</description>
     <author email="anthony.angulo@superchivas.com.mx" href="http://ionicframework.com/">Anthony E Angulo G</author>

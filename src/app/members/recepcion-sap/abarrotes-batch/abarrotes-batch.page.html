@@ -20,6 +20,15 @@
     </ion-col>
   </ion-row>
 
+  <ion-row>
+    <ion-col>
+      <h6>Selecciona Una Unidad de Medida</h6>
+      <ion-select class="product-scann" [(ngModel)]="uom" name="uom">
+        <ion-select-option *ngFor="let um of productData.Uoms" [value]="um">{{um.UomCode}}</ion-select-option>
+      </ion-select>
+    </ion-col>
+  </ion-row>
+
   <h6>Ingresar cantidad a recibir.</h6>
   <ion-row>
     <ion-col size="9">
@@ -33,12 +42,12 @@
     <!-- </ion-col> -->
   </ion-row>
 
-  <h6>Codigo de Barra</h6>
+  <!-- <h6>Codigo de Barra</h6>
   <ion-row>
     <ion-col>
       <ion-input class="product-scann" id="input-codigo" [(ngModel)] = "codeBar" name="codeBar" placeholder = "Codigo de Barra" (ionChange)="getGS1Data()" clearInput debounce="100"></ion-input>
     </ion-col>
-  </ion-row>
+  </ion-row> -->
 
   <!-- <h6>#Lotes</h6>
   <ion-row>
@@ -63,7 +72,7 @@
 
   <ion-row>
     <ion-col>
-      <h6>Cantidad a Enviar: {{peso}} KG</h6>
+      <!-- <h6>Cantidad a Enviar: {{cantidad * uoi}} KG</h6> -->
       <!-- <ion-datetime class="product-scann" displayFormat="DD-MM-YYYY" max="2030" [(ngModel)]="FechaProd" ></ion-datetime> -->
     </ion-col>
   </ion-row>
@@ -92,7 +101,7 @@
       </ion-button>
     </ion-col>
     <ion-col>
-      <ion-button shape="round" expand="block" (click)="acceptRecepton()">
+      <ion-button shape="round" expand="block" (click)="captureData()">
         Aceptar
       </ion-button>
     </ion-col>

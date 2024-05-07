@@ -114,7 +114,7 @@ export class AbarrotesBatchPage implements OnInit {
 
     if (dif < 2) {
       this.loteAEnviar = [{
-        Code: this.batchNum,
+        Code: 'SI',
         Quantity: this.productData.OpenInvQty
       }];
     } else {
@@ -125,7 +125,7 @@ export class AbarrotesBatchPage implements OnInit {
       }
 
       this.loteAEnviar = [{
-        Code: this.batchNum,
+        Code: 'SI',
         Quantity: unitBaseValor
       }];
     }

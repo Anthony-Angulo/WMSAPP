@@ -51,12 +51,13 @@ export class AbarrotesPage implements OnInit {
     
     if(this.productInfo.Detail.busqueda == 0){
       console.log(this.productInfo)
-      let index = this.productInfo.Codebars.findIndex(x => x.BcdCode == this.productInfo.codeBar);
+      let index = this.productInfo.CodeBars.findIndex(x => x.BcdCode == this.productInfo.codeBar);
+      console.log(index)
       // if(index < 0) {
       //   this.presentToast("Unidad de medida no esta ligada a codigo de barra/GTIN", "warning");
       // }
-      this.uom = this.productInfo.uom.find(x => this.productInfo.Codebars[index].UomEntry == x.UomEntry);
-      // console.log(this.uom)
+      this.uom = this.productInfo.uom.find(x => this.productInfo.CodeBars[index].UomEntry == x.UomEntry);
+      console.log(this.uom)
     }
 
     console.log(this.productInfo)
