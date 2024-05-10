@@ -223,7 +223,7 @@ export class BeefPage implements OnInit {
     let foundInBatch = this.batch.findIndex((code:any) => code.U_IL_CodBar == this.codigoBarra.trim());
 
     if(foundInBatch < 0) {
-      let loteGenerico = this.batch.find((y: any) => y.BatchNum == 'SI');
+      let loteGenerico = this.batch.find((y: any) => y.BatchNum.toUpperCase() == 'SI');
 
       if (loteGenerico != undefined) {
 
@@ -312,7 +312,7 @@ export class BeefPage implements OnInit {
       return
     }
 
-    if(this.productData.QryGroup51 == 'N') {
+    // if(this.productData.QryGroup51 == 'N') {
 
       let isCodeBarExist = this.batch.findIndex((codeBar: any) => codeBar.U_IL_CodBar == this.codigoBarra.trim());
   
@@ -330,7 +330,7 @@ export class BeefPage implements OnInit {
         this.presentToast("Se Escaneo Correctamente", "success");
       } else {
   
-        let loteGenerico = this.batch.find((y: any) => y.BatchNum == 'SI');
+        let loteGenerico = this.batch.find((y: any) => y.BatchNum.toUpperCase() == 'SI');
   
         if (loteGenerico != undefined) {
   
@@ -346,14 +346,14 @@ export class BeefPage implements OnInit {
           this.presentToast("El Codigo de Barra No Fue Encontrado En Inventario O No Hay Cantidad Suficiente En Lote Generico. Revisar Con Auditoria.", "warning");
         }
       }
-    } else {
-      this.detail.push({
-        Code: 'SI',
-        Quantity: this.peso,
-        CodeBar: this.codigoBarra.trim(),
-        uom: this.productData.Uoms[madeByUom].BaseEntry
-      });
-    }
+    // } else {
+    //   this.detail.push({
+    //     Code: 'SI',
+    //     Quantity: this.peso,
+    //     CodeBar: this.codigoBarra.trim(),
+    //     uom: this.productData.Uoms[madeByUom].BaseEntry
+    //   });
+    // }
 
 
 

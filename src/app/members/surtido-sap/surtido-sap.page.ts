@@ -56,30 +56,31 @@ export class SurtidoSapPage implements OnInit {
 
     if (productsScanned.DeliveryRowDetailList) {
       let index = this.order.Lines.findIndex(product => product.ItemCode == productsScanned.ItemCode)
+
+      this.order.Lines[index].count = productsScanned.DeliveryRowDetailList.map(prod => prod.Count).reduce((a, b) => a + b, 0);
       
-      if(this.order.Lines[index].QryGroup42 == 'Y') {
-        console.log(this.order.Lines[index])
-        this.order.Lines[index].count = productsScanned.DeliveryRowDetailList.map(prod => prod.Cajas).reduce((a, b) => a + b, 0)
-      } else {
-        console.log(this.order.Lines[index])
-        this.order.Lines[index].count = productsScanned.DeliveryRowDetailList.map(prod => prod.Count).reduce((a, b) => a + b, 0)
-      }
+      // if(this.order.Lines[index].QryGroup42 == 'Y') {
+      //   console.log(this.order.Lines[index])
+      //   this.order.Lines[index].count = productsScanned.DeliveryRowDetailList.map(prod => prod.Cajas).reduce((a, b) => a + b, 0)
+      // } else {
+      //   console.log(this.order.Lines[index])
+      //   this.order.Lines[index].count = productsScanned.DeliveryRowDetailList.map(prod => prod.Count).reduce((a, b) => a + b, 0)
+      // }
 
       let isScanned = this.products.findIndex(prd => prd.ItemCode == productsScanned.ItemCode)
       if (isScanned < 0) {
-        this.products.push(productsScanned)
+        this.products.push(productsScanned);
       }
       this.crBars = this.order.Lines[index].crBarsUpdate;
     } else {
-      let ind = this.products.findIndex(product => product.ItemCode == productsScanned.ItemCode)
+      let ind = this.products.findIndex(product => product.ItemCode == productsScanned.ItemCode);
       if (ind >= 0) {
-        this.products.splice(ind, 1)
+        this.products.splice(ind, 1);
       }
     }
 
-    console.log(this.products)
 
-    this.receptionService.setReceptionData(null)
+    this.receptionService.setReceptionData(null);
   }
 
   async getOrden() {
@@ -90,11 +91,11 @@ export class SurtidoSapPage implements OnInit {
         this.order = data;
       }).catch(error => {
         if (error.status == 404) {
-          this.presentToast('No encontrado o no existe', 'warning')
+          this.presentToast('No encontrado o no existe', 'warning');
         } else if (error.status == 400) {
-          this.presentToast(error.statusText, 'warning')
+          this.presentToast(error.statusText, 'warning');
         } else if (error.status == 204) {
-          this.presentToast('Error de conexion', 'danger')
+          this.presentToast('Error de conexion', 'danger');
         }
       }).finally(() => {
         this.hideLoading()
@@ -178,14 +179,14 @@ export class SurtidoSapPage implements OnInit {
 
   public goToProduct(index) {
 
-    this.receptionService.setOrderData(this.order.Lines[index])
+    this.receptionService.setOrderData(this.order.Lines[index]);
 
-    if (this.order.Lines[index].U_IL_TipPes == 'V') {
-      this.router.navigate(['members/surtido-beef'])
-    } else if (this.order.Lines[index].U_IL_TipPes== 'F') {
-      this.router.navigate(['members/surtido-abarrotes-batch'])
+    if (this.order.Lines[index].ManBtchNum == 'Y') {
+      this.router.navigate(['members/surtido-beef']);
+    // } else if (this.order.Lines[index].U_IL_TipPes== 'F') {
+    //   this.router.navigate(['members/surtido-abarrotes-batch'])
     } else {
-      this.router.navigate(['/members/surtido-abarrotes'])
+      this.router.navigate(['/members/surtido-abarrotes']);
     }
   }
 

@@ -15,10 +15,11 @@ export class AbarrotesPage implements OnInit {
 
   public appSettings: any;
 
-  productData: any
-  cantidad: number
-  data: any
+  productData: any;
+  cantidad: number;
+  data: any; 
   porcentaje: any;
+  uom: any;
 
   constructor(
     private toastController: ToastController,
@@ -29,14 +30,35 @@ export class AbarrotesPage implements OnInit {
 
   ngOnInit() {
 
-
     this.appSettings = getSettingsFileData(this.platform, this.settings);
 
-    this.productData = this.receptionService.getOrderData()
+    this.productData = this.receptionService.getOrderData();
+
+    console.log(this.productData);
 
     if (this.productData.count) {
-      this.cantidad = this.productData.count
+      this.cantidad = this.productData.count;
     }
+  }
+
+  capturarDatos() {
+
+    if (this.cantidad == 0) {
+      this.productData.count = this.cantidad;
+      this.receptionService.setReceptionData(this.productData);
+      this.router.navigate(['/members/recepcion-sap']);
+      return
+    }
+
+    if(this.productData.UomEntry == this.uom.UomEntry) {
+      this.productData.count = this.cantidad;
+    } else {
+      let factor = this.productData.Uoms.find((x: any) => x.UomEntry == this.productData.UomEntry);
+      this.productData.count = Number(this.cantidad / factor.BaseQty);
+    }
+
+    this.receptionService.setReceptionData(this.productData);
+    this.router.navigate(['/members/recepcion-sap']);
   }
 
   acceptRecepton() {

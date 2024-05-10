@@ -229,10 +229,10 @@ export class TransferenciaSapPage implements OnInit {
 
     this.receptionService.setOrderData(this.transferData.Lines[indexOfProduct])
 
-    if (this.transferData.Lines[indexOfProduct].U_IL_TipPes == 'V') {
+    if (this.transferData.Lines[indexOfProduct].ManBtchNum == 'Y') {
       this.router.navigate(['members/transferencia-beef'])
-    } else if (this.transferData.Lines[indexOfProduct].U_IL_TipPes == 'F') {
-      this.router.navigate(['members/transferencia-abarrotes-batch'])
+    // } else if (this.transferData.Lines[indexOfProduct].U_IL_TipPes == 'F') {
+    //   this.router.navigate(['members/transferencia-abarrotes-batch'])
     } else {
       this.router.navigate(['/members/transferencia-abarrotes'])
     }

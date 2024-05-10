@@ -32,8 +32,8 @@ export class BeefPage implements OnInit {
   detailAux = []
   detailFinal = []
   crBars = [];
-  cantidadEscaneada: number = 0
-  cantidadPeso: number = 0
+  cantidadEscaneada: number = 0;
+  cantidadPeso: number = 0;
   lote: any
   load
   data
@@ -79,11 +79,6 @@ export class BeefPage implements OnInit {
       quantity: 0,
       // pedimento: (pedimento) ? '' : pedimento
     };
-    console.log(this.detailGS1)
-    // var date = new Date();
-    // date = new Date(date.setFullYear(date.getFullYear() + 1));
-    // this.FechaCad = date.toISOString();
-    // this.FechaProd = date.toISOString();
 
     if (!this.productData.detalle) {
       this.productData.detalle = []
@@ -136,11 +131,11 @@ export class BeefPage implements OnInit {
         })
       })
 
-      // this.promptCodeDesc()
+      // this.promptCodeDesc();
       // this.presentToast("Selecciona una configuracion", "warning")
     }
 
-    console.log(this.productData)
+    // console.log(this.productData)
   }
 
 
@@ -333,7 +328,6 @@ export class BeefPage implements OnInit {
       }
     }
 
-    if(this.productData.QryGroup51 == 'N') {
       let isScanned = this.detail.findIndex(prod => prod.code == this.codigoBarra.trim());
       let availableBatch = this.productData.batchs.findIndex(prod => prod.U_IL_CodBar == this.codigoBarra.trim());
   
@@ -345,21 +339,13 @@ export class BeefPage implements OnInit {
         document.getElementById('input-codigo').focus();
         return
       }
-    }
-
-    // if(this.productData.QryGroup52 == 'N') {
-    //   this.getDataFromCodeBar();
-    //   return;
-    // }
-
     
     try {
 
       let answer = parseBarcode(this.codigoBarra);
 
-      console.log(this.productData.Detail.SuppCatNum)
-      // console.log(answer)
       console.log(answer)
+
       if (this.productData.Detail.SuppCatNum == null) {
         this.productData.Detail.SuppCatNum = '';
         // this.productData.Detail.SuppCatNum = answer.parsedCodeItems[0].data
@@ -377,10 +363,8 @@ export class BeefPage implements OnInit {
 
 
 
-      // console.log(answer.parsedCodeItems.length)
       for (var x = 0; x < answer.parsedCodeItems.length; x++) {
 
-        console.log(this.detailGS1)
 
         if (answer.parsedCodeItems[x].ai == '10') {
           this.detailGS1.name = answer.parsedCodeItems[x].data;
@@ -432,19 +416,26 @@ export class BeefPage implements OnInit {
 
         
           if (answer.parsedCodeItems[x].ai == '3201' || answer.parsedCodeItems[x].ai == '3202') {
-            console.log(answer.parsedCodeItems[x].data)
             this.detailGS1.quantity = Number(Number(answer.parsedCodeItems[x].data / 2.2046).toFixed(2));
-            console.log(this.detailGS1.quantity)
+            if(this.detailGS1.quantity == 0 || this.detailGS1.quantity  == undefined) {
+              this.getDataFromCodeBar();
+              return;
+            }
             this.pesoBand = true;
           } else if(answer.parsedCodeItems[x].ai == '3101' || answer.parsedCodeItems[x].ai == '3102') {
             this.detailGS1.quantity = Number(Number(answer.parsedCodeItems[x].data).toFixed(2));
+            if(this.detailGS1.quantity == 0 || this.detailGS1.quantity  == undefined) {
+              this.getDataFromCodeBar();
+              return;
+            }
             this.pesoBand = true;
           }
 
-          if(this.detailGS1.quantity == 0) {
-            this.getDataFromCodeBar();
-            return;
-          }
+          // if(this.detailGS1.quantity == 0) {
+          //   console.log("SingPeso")
+          //   this.getDataFromCodeBar();
+          //   return;
+          // }
       
       }
 
@@ -474,22 +465,16 @@ export class BeefPage implements OnInit {
         return
       }
 
-      // this.codigoBarra = '';
-      // document.getElementById('input-codigo').setAttribute('value', '');
-      // document.getElementById('input-codigo').focus();
-
       this.detailGS1.name = this.codigoBarra.substr(this.codigoBarra.length - 36);
       this.detailGS1.code = this.codigoBarra.trim();
       this.detailGS1.attr1 = this.lote;
 
-      console.log(this.detailGS1)
 
       this.detailAux.push(this.detailGS1);
       this.detail.push(
         this.detailGS1
       );
 
-      console.log(this.detail)
 
       this.cantidadEscaneada = this.detail.length;
       this.cantidadPeso = this.detail.map(x => x.quantity).reduce((a, b) => a + b, 0);
@@ -596,7 +581,6 @@ export class BeefPage implements OnInit {
       return
     }
 
-    if(this.productData.QryGroup51 == 'N') {
 
       let availableBatch = this.productData.batchs.findIndex(prod => prod.U_IL_CodBar == this.codigoBarra.trim());
   
@@ -608,9 +592,6 @@ export class BeefPage implements OnInit {
         document.getElementById('input-codigo').focus();
         return
       }
-    }
-
-
 
     this.detail.push({
       name: this.codigoBarra.substr(this.codigoBarra.length - 36),
@@ -636,7 +617,7 @@ export class BeefPage implements OnInit {
     await this.presentLoading('Imprimiendo etiqueta...');
 
     this.http.get(`${environment.apiSAP}/api/Impresion/PruebaReciboTarima?Itemcode=${this.productData.ItemCode}&Total=${Number(this.cantidadPeso)}
-    &UoM=${this.productData.UomEntry}&DocNum=${this.productData.DocNum}&Cajas=${Number(this.cantidadEscaneada)}&printer=Label-Test23`).toPromise()
+    &UoM=${this.productData.UomEntry}&DocNum=${this.productData.DocNum}&Cajas=${Number(this.cantidadEscaneada)}&printer=${this.appSettings.IpImpresora}`).toPromise()
       .then((lo:any) => {
         let detailMap = []
         detailMap = this.detailAux.map((x:any) => {

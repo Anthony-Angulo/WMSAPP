@@ -48,34 +48,35 @@ export class RecepcionSapPage implements OnInit {
   ) { }
 
   ngOnInit() {
-
     this.appSettings = getSettingsFileData(this.platform, this.settings);
-
   }
 
   ionViewWillEnter() {
 
-    let productsScanned = this.receptionService.getReceptionData()
-
-    console.log(productsScanned)
+    let productsScanned = this.receptionService.getReceptionData();
 
     if (productsScanned == null) return
 
     if (productsScanned.count <= 0) {
-      let ind = this.products.findIndex(product => product.ItemCode == productsScanned.ItemCode)
+      let ind = this.products.findIndex(product => product.ItemCode == productsScanned.ItemCode);
+
       if (ind >= 0) {
         this.products.splice(ind, 1);
       }
+
     } else {
-      let index = this.order.POR1.findIndex(product => product.ItemCode == productsScanned.ItemCode)
-      this.order.POR1[index].count = productsScanned.count
 
-      for (let x = 0; x < this.order.POR1[index].crBars.length; x++) {
-        let array = [this.order.POR1[index].crBars[x].ItemCode, this.order.POR1[index].crBars[x].Peso, this.order.POR1[index].crBars[x].CodeBar, this.order.POR1[index].crBars[x].FechaCaducidad, this.order.POR1[index].crBars[x].FechaProduccion]
-        this.crbarras.push(array)
+      let index = this.order.POR1.findIndex(product => product.ItemCode == productsScanned.ItemCode);
+
+      this.order.POR1[index].count = productsScanned.count;
+
+      if(this.order.POR1[index].crBars) {
+        for (let x = 0; x < this.order.POR1[index].crBars.length; x++) {
+          let array = [this.order.POR1[index].crBars[x].ItemCode, this.order.POR1[index].crBars[x].Peso, this.order.POR1[index].crBars[x].CodeBar, this.order.POR1[index].crBars[x].FechaCaducidad, this.order.POR1[index].crBars[x].FechaProduccion]
+          this.crbarras.push(array)
+        }
       }
-
-      this.products.push(productsScanned)
+      this.products.push(productsScanned);
     }
 
 
@@ -83,15 +84,9 @@ export class RecepcionSapPage implements OnInit {
     this.receptionService.setReceptionData(null)
   }
 
-  // getGs1Data() {
-  //   console.log(this.number)
-  //   let answer = parseBarcode(this.number);
-  //   console.log(answer)
-  // }
-
   async getOrden() {
 
-    await this.presentLoading('Buscando....');
+    await this.presentLoading('Buscando Orden De Compra....');
 
 
     this.http.get(`${this.appSettings.apiSAP}/api/purchaseorder/Reception/${this.number}`).toPromise().then((data: any) => {
@@ -190,18 +185,13 @@ export class RecepcionSapPage implements OnInit {
     document.getElementById('input-codigo').setAttribute('value', '')
   }
 
-  goToProduct(index) {
-
-    console.log(this.order.POR1[index].crBars)
-
+  goToProduct(index:number) {
     this.order.POR1[index].DocNum = this.number;
-
     this.receptionService.setOrderData(this.order.POR1[index])
-
-    if (this.order.POR1[index].Detail.U_IL_TipPes == 'V') {
+    if (this.order.POR1[index].Detail.ManBtchNum == 'Y') {
       this.router.navigate(['members/beef'])
-    } else if (this.order.POR1[index].Detail.U_IL_TipPes == 'F') {
-      this.router.navigate(['members/abarrotes-batch'])
+    // } else if (this.order.POR1[index].Detail.U_IL_TipPes == 'F') {
+    //   this.router.navigate(['members/abarrotes-batch'])
     } else {
       this.router.navigate(['/members/abarrotes'])
     }

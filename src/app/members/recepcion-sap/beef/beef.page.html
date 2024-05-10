@@ -16,8 +16,9 @@
     <ion-col>
       <h6>Datos de Producto</h6>
       <ion-item lines="none" class="container-item">
-        Item Code: {{productData.Detail.ItemCode}}<br>
-        Descripcion: {{productData.Detail.ItemName}}
+        Codigo: {{productData.Detail.ItemCode}}<br>
+        Descripcion: {{productData.Detail.ItemName}}<br>
+        Ctd Pendiente: {{productData.OpenQty}} {{productData.UomCode}}
       </ion-item>
     </ion-col>
   </ion-row>
@@ -35,7 +36,7 @@
 
   <ion-row>
     <ion-col>
-      <h6>Ingresa Lote</h6>
+      <h6>Ingresar Un Lote</h6>
       <ion-input class="product-scann"  placeholder="Lote" [(ngModel)]="lote"
       name="lote">
     </ion-input>

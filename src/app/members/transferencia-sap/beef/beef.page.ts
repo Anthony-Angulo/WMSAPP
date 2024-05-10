@@ -181,7 +181,7 @@ export class BeefPage implements OnInit {
       this.presentToast("Se Escaneo Correctamente", "success");
     }
 
-    this.crBars.push({CodeBar: this.codeBarInput.trim(), Active: 1})
+    this.crBars.push({ CodeBar: this.codeBarInput.trim(), Active: 1 })
 
     this.cantidadEscaneada = this.batchDetail.length
     this.cantidadPeso = this.batchDetail.map((x: any) => x.Quantity).reduce((a, b) => a + b, 0);
@@ -238,6 +238,7 @@ export class BeefPage implements OnInit {
     }
 
     let isScanned = this.batchDetail.findIndex((codeBar: any) => codeBar.CodeBar == this.codeBarInput.trim());
+
     if (isScanned >= 0) {
       this.presentToast("Este Codigo De Barra Ya Fue Escaneado", "warning");
       this.peso = 0;
@@ -246,48 +247,46 @@ export class BeefPage implements OnInit {
       return
     }
 
-    if(this.productData.QryGroup51 == 'N') { 
+    // if(this.productData.QryGroup51 == 'N') { 
 
-      let isCodeBarExist = this.availableBatchs.findIndex((codeBar: any) => codeBar.U_IL_CodBar == this.codeBarInput.trim());
+    let isCodeBarExist = this.availableBatchs.findIndex((codeBar: any) => codeBar.U_IL_CodBar == this.codeBarInput.trim());
 
-      if (isCodeBarExist >= 0) {
-  
-        this.batchDetail.push({
-          Code: this.availableBatchs[isCodeBarExist].BatchNum,
-          Quantity: Number(this.availableBatchs[isCodeBarExist].Quantity),
-          CodeBar: this.codeBarInput.trim()
-        });
-  
-        this.availableBatchs.splice(isCodeBarExist, 1);
-        this.presentToast("Se Escaneo Correctamente", "success");
-      } else {
-  
-        let loteGenerico = this.availableBatchs.find((y: any) => y.BatchNum == 'SI' || y.BatchNum == 'si');
-  
-        if (loteGenerico != undefined) {
-  
-          this.batchDetail.push({
-            Code: loteGenerico.BatchNum,
-            Quantity: this.peso,
-            CodeBar: this.codeBarInput.trim()
-          });
-  
-          this.presentToast("Se Escaneo Correctamente", "success");
-        } else {
-          this.presentToast("El Codigo de Barra No Fue Encontrado En Inventario O No Hay Cantidad Suficiente En Lote Generico. Revisar Con Auditoria.", "warning");
-        }
-      }
-    } else {
+    if (isCodeBarExist >= 0) {
+
       this.batchDetail.push({
-        Code: this.codeBarInput.substr(this.codeBarInput.length - 36),
-        Quantity: this.peso,
+        Code: this.availableBatchs[isCodeBarExist].BatchNum,
+        Quantity: Number(this.availableBatchs[isCodeBarExist].Quantity),
         CodeBar: this.codeBarInput.trim()
       });
+
+      this.availableBatchs.splice(isCodeBarExist, 1);
+      this.presentToast("Se Escaneo Correctamente", "success");
+    } else {
+
+      let loteGenerico = this.availableBatchs.find((y: any) => y.BatchNum.toUpperCase() == 'SI');
+
+      if (loteGenerico != undefined) {
+
+        this.batchDetail.push({
+          Code: loteGenerico.BatchNum,
+          Quantity: this.peso,
+          CodeBar: this.codeBarInput.trim()
+        });
+
+        this.presentToast("Se Escaneo Correctamente", "success");
+      } else {
+        this.presentToast("El Codigo de Barra No Fue Encontrado En Inventario O No Hay Cantidad Suficiente En Lote Generico. Revisar Con Auditoria.", "warning");
+      }
     }
+    // } else {
+    //   this.batchDetail.push({
+    //     Code: this.codeBarInput.substr(this.codeBarInput.length - 36),
+    //     Quantity: this.peso,
+    //     CodeBar: this.codeBarInput.trim()
+    //   });
+    // }
 
-
-
-    this.cantidadEscaneada = this.batchDetail.length
+    this.cantidadEscaneada = this.batchDetail.length;
     this.cantidadPeso = this.batchDetail.map((x: any) => x.Quantity).reduce((a, b) => a + b, 0);
     document.getElementById('input-codigo').setAttribute('value', '');
     document.getElementById('input-codigo').focus();
@@ -309,8 +308,8 @@ export class BeefPage implements OnInit {
 
 
   public eliminar(index: number) {
-    this.batchDetail.splice(index, 1)
-    this.cantidadEscaneada = this.batchDetail.length
+    this.batchDetail.splice(index, 1);
+    this.cantidadEscaneada = this.batchDetail.length;
     this.cantidadPeso = this.batchDetail.map((x: any) => x.Quantity).reduce((a, b) => a + b, 0);
   }
 
@@ -337,7 +336,7 @@ export class BeefPage implements OnInit {
     this.productData.pallet = this.tarima;
     this.productData.detalle = this.batchDetail;
     this.productData.crBarsUpdate = this.crBars;
-    this.receptionService.setReceptionData(this.productData)
+    this.receptionService.setReceptionData(this.productData);
     this.router.navigate(['/members/transferencia-sap'])
 
   }

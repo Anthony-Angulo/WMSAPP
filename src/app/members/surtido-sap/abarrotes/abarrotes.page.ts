@@ -35,10 +35,12 @@ export class AbarrotesPage implements OnInit {
 
     this.productData = this.receptionService.getOrderData();
 
+    console.log(this.productData)
+
     this.appSettings = getSettingsFileData(this.platform, this.settings);
 
-    if(this.productData.DeliveryRowDetailList) {
-      this.DeliveryRowDetailList = this.productData.DeliveryRowDetailList;
+    if (this.productData.DeliveryRowDetailList) {
+      this.DeliveryRowDetailList = [];
     }
 
 
@@ -50,60 +52,71 @@ export class AbarrotesPage implements OnInit {
     })
   }
 
-  public calculateTotal() {
+  // public calculateTotal() {
 
-    if(this.cantidad == undefined || this.cantidad == 0) return
+  //   if(this.cantidad == undefined || this.cantidad == 0) return
 
-    this.totalConvertido = Number(this.uom.BaseQty * this.cantidad)
+  //   this.totalConvertido = Number(this.uom.BaseQty * this.cantidad)
 
-    let findProd = this.DeliveryRowDetailList.findIndex(prod => prod.uom == this.uom.UomCode)
+  //   let findProd = this.DeliveryRowDetailList.findIndex(prod => prod.uom == this.uom.UomCode)
 
-    if(findProd < 0) {
+  //   if(findProd < 0) {
+  //     this.DeliveryRowDetailList.push({
+  //       Count: this.cantidad,
+  //       Cajas: Number(this.cantidad),
+  //       UomEntry: this.uom.UomEntry,
+  //       ItemCode: this.productData.ItemCode,
+  //       total: this.totalConvertido,
+  //       uom: this.uom.UomCode,
+  //       BatchList: []
+  //     })
+  //   } else {
+  //     this.DeliveryRowDetailList[findProd].Count = this.cantidad
+  //     this.DeliveryRowDetailList[findProd].Cajas = Number(this.cantidad)
+  //     this.DeliveryRowDetailList[findProd].ItemCode = this.productData.ItemCode
+  //     this.DeliveryRowDetailList[findProd].total = this.totalConvertido
+  //   }
+
+  //   this.totalInUnitBase = this.DeliveryRowDetailList.map(prod => prod.total).reduce((a,b) => a + b, 0);
+
+  // }
+
+  public eliminarProducto(index: number) {
+    this.DeliveryRowDetailList.splice(index, 1);
+    this.totalInUnitBase = this.DeliveryRowDetailList.map(prod => prod.total).reduce((a, b) => a + b, 0);
+  }
+
+  acceptRecepton() {
+
+    if (this.cantidad == undefined || this.cantidad == 0) return
+
+
+    if (this.productData.UomEntry == this.uom.UomEntry) {
       this.DeliveryRowDetailList.push({
         Count: this.cantidad,
         Cajas: Number(this.cantidad),
         UomEntry: this.uom.UomEntry,
         ItemCode: this.productData.ItemCode,
-        total: this.totalConvertido,
+        total: 0,
         uom: this.uom.UomCode,
         BatchList: []
-      })
+      });
     } else {
-      this.DeliveryRowDetailList[findProd].Count = this.cantidad
-      this.DeliveryRowDetailList[findProd].Cajas = Number(this.cantidad)
-      this.DeliveryRowDetailList[findProd].ItemCode = this.productData.ItemCode
-      this.DeliveryRowDetailList[findProd].total = this.totalConvertido
+      let factor = this.productData.Uoms.find((x: any) => x.UomEntry == this.productData.UomEntry);
+      this.DeliveryRowDetailList.push({
+        Count: Number(this.cantidad / factor.BaseQty),
+        Cajas: Number(this.cantidad),
+        UomEntry: this.uom.UomEntry,
+        ItemCode: this.productData.ItemCode,
+        total: 0,
+        uom: this.uom.UomCode,
+        BatchList: []
+      });
     }
-
-    this.totalInUnitBase = this.DeliveryRowDetailList.map(prod => prod.total).reduce((a,b) => a + b, 0);
-    
-  }
-
-  public eliminarProducto(index: number) {
-    this.DeliveryRowDetailList.splice(index, 1);
-    this.totalInUnitBase = this.DeliveryRowDetailList.map(prod => prod.total).reduce((a,b) => a + b, 0);
-  }
-
-  acceptRecepton() {
-
-    if (!this.DeliveryRowDetailList) {
-      this.receptionService.setReceptionData(this.productData)
-      this.router.navigate(['/members/surtido-sap'])
-      return
-    }
-
-    let validPercent = (Number(this.appSettings.porcentaje) / 100) * Number(this.productData.OpenInvQty)
-    let validQuantity = Number(validPercent) + Number(this.productData.OpenInvQty)
-
-    if (Number(this.totalInUnitBase) > Number(validQuantity)) {
-      this.presentToast('Cantidad ingresada excede de la cantidad solicitada', 'warning')
-      return
-    }
-
 
     this.productData.DeliveryRowDetailList = this.DeliveryRowDetailList
 
-    console.log(this.productData)
+    // console.log(this.productData)
     this.receptionService.setReceptionData(this.productData)
     this.router.navigate(['/members/surtido-sap'])
   }

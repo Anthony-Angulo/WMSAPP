@@ -19,6 +19,7 @@ export class AbarrotesPage implements OnInit {
   public cantidad: number;
   public tarima: string;
   public appSettings: any;
+  public uom: any;
   public stock: string;
 
   constructor(
@@ -49,6 +50,27 @@ export class AbarrotesPage implements OnInit {
       this.presentToast(error.error, "danger");
     });
 
+  }
+
+  public captureData() {
+    // if (this.cantidad > getValidPercentage(this.productData, this.appSettings.porcentaje)) {
+    //   this.presentToast("Cantidad Ingresada Excede De La Cantidad Solicitada", "warning");
+    //   return;
+    // }
+    if (this.tarima == undefined || this.tarima == '') {
+      this.presentToast("Debes Ingresar Numero De Tarima", "warning");
+      return;
+    }
+
+    if(this.productData.UomEntry == this.uom.UomEntry) {
+      this.productData.count = this.cantidad;
+    } else {
+      let factor = this.productData.Uoms.find((x: any) => x.UomEntry == this.productData.UomEntry);
+      this.productData.count = Number(this.cantidad / factor.BaseQty);
+    }
+
+    this.receptionService.setReceptionData(this.productData)
+    this.router.navigate(['/members/transferencia-sap'])
   }
 
   /* Metodo para agregar producto a la lista a transferir, validara que no exceda de la cantidad permitida agergando el porcentaje configurada en la aplicacion */

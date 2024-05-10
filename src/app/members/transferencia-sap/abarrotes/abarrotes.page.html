@@ -15,6 +15,7 @@
       <ion-item lines="none" class="container-item">
         Codigo: {{productData.ItemCode}}<br>
         Nombre: {{productData.ItemName}}<br>
+        Ctd Pendiente: {{productData.OpenQty}} {{productData.UomCode}}<br>
         Stock: {{stock | number}}
       </ion-item>
     </ion-col>
@@ -29,9 +30,19 @@
       </ion-col>
     </ion-row>
 
-    <h6>Ingresar cantidad a transferir.</h6>
+      <ion-row>
+    <ion-col>
+      <h6>Selecciona Una Unidad de Medida</h6>
+      <ion-select class="product-scann" [(ngModel)]="uom" name="uom">
+        <ion-select-option *ngFor="let um of productData.Uoms" [value]="um">{{um.UomCode}}</ion-select-option>
+      </ion-select>
+    </ion-col>
+  </ion-row>
+
+
     <ion-row>
       <ion-col>
+        <h6>Ingresar cantidad a transferir</h6>
         <ion-input class="product-scann" [(ngModel)]="cantidad" name="cantidad" type="number"
           placeholder="Ingresa la cantidad"></ion-input>
       </ion-col>
@@ -44,7 +55,7 @@
         </ion-button>
       </ion-col>
       <ion-col>
-        <ion-button shape="round" expand="block" (click)="transferAbarrotes()">
+        <ion-button shape="round" expand="block" (click)="captureData()">
           Aceptar
         </ion-button>
       </ion-col>

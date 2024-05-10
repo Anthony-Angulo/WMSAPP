@@ -13,15 +13,26 @@
     <ion-col>
       <h6>Datos de Producto</h6>
       <ion-item lines="none" class="container-item">
-        Item Code: {{productData.Detail.ItemCode}}<br>
-        Descripcion: {{productData.Detail.ItemName}}
+        Codigo: {{productData.Detail.ItemCode}}<br>
+        Descripcion: {{productData.Detail.ItemName}}<br>
+        Ctd Pendiente: {{productData.OpenQty}} {{productData.UomCode}}
       </ion-item>
     </ion-col>
   </ion-row>
 
-  <h6>Ingresar cantidad a recibir.</h6>
   <ion-row>
     <ion-col>
+      <h6>Seleccionar Una Unidad de Medida</h6>
+      <ion-select class="product-scann" [(ngModel)]="uom" name="uom">
+        <ion-select-option *ngFor="let um of productData.Uoms" [value]="um">{{um.UomCode}}</ion-select-option>
+      </ion-select>
+    </ion-col>
+  </ion-row>
+
+
+  <ion-row>
+    <ion-col>
+      <h6>Ingresar cantidad a recibir</h6>
       <ion-input class="product-scann" [(ngModel)]="cantidad" name="cantidad" type="number"
         placeholder="Ingresa la cantidad"></ion-input>
     </ion-col>
@@ -34,7 +45,7 @@
       </ion-button>
     </ion-col>
     <ion-col>
-      <ion-button shape="round" expand="block" (click)="acceptRecepton()">
+      <ion-button shape="round" expand="block" (click)="capturarDatos()">
         Aceptar
       </ion-button>
     </ion-col>
