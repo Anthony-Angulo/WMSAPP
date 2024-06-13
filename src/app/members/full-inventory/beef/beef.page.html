@@ -11,12 +11,11 @@
 </ion-header>
 
 <ion-content>
-
   <ion-row *ngIf="productInfo">
     <ion-col>
       <h6>Datos de Producto</h6>
       <ion-item lines="none" class="container-item">
-        Codigo: {{productInfo.Detail.ItemCode}}<br>
+        Codigo: {{productInfo.Detail.ItemCode}}<br />
         Nombre: {{productInfo.Detail.ItemName}}
       </ion-item>
     </ion-col>
@@ -25,8 +24,12 @@
   <ion-row>
     <ion-col>
       <h6>Ingresa USDA</h6>
-      <ion-input class="input-recepcion"  placeholder="USDA" [(ngModel)]="lote"
-        name="lote">
+      <ion-input
+        class="input-recepcion"
+        placeholder="USDA"
+        [(ngModel)]="lote"
+        name="lote"
+      >
       </ion-input>
     </ion-col>
   </ion-row>
@@ -34,15 +37,33 @@
     <ion-col>
       <ion-item lines="none">
         <ion-label>Ingresar manualmente</ion-label>
-        <ion-toggle [(ngModel)]="manual" (ionChange)="weightManual()"></ion-toggle>
+        <ion-toggle
+          [(ngModel)]="manual"
+          (ionChange)="weightManual()"
+        ></ion-toggle>
+      </ion-item>
+    </ion-col>
+  </ion-row>
+  <ion-row>
+    <ion-col>
+      <ion-item lines="none">
+        <ion-label>Codigo Maestro</ion-label>
+        <ion-toggle [(ngModel)]="codigoMaestro"></ion-toggle>
       </ion-item>
     </ion-col>
   </ion-row>
   <ion-row>
     <ion-col>
       <h6>Ingresa un codigo de barra</h6>
-      <ion-input class="input-recepcion" id="input-codigo" placeholder="Codigo de Barra" [(ngModel)]="codigoBarra"
-        name="codigoBarra" (ionChange)="getGS1Data()" debounce="400">
+      <ion-input
+        class="input-recepcion"
+        id="input-codigo"
+        placeholder="Codigo de Barra"
+        [(ngModel)]="codigoBarra"
+        name="codigoBarra"
+        (ionChange)="getGS1Data()"
+        debounce="400"
+      >
       </ion-input>
     </ion-col>
   </ion-row>
@@ -50,12 +71,12 @@
   <div *ngIf="productInfo">
     <h6>Cajas Escaneadas: {{codeBarDetails.length}}</h6>
     <h6>Peso Escaneado: {{total}}</h6>
-    <h6>Lista  de Escaneado</h6>
+    <h6>Lista de Escaneado</h6>
     <ion-row *ngFor="let prod of codeBarDetails">
       <ion-col>
         <ion-item lines="none" class="container-item">
-          USDA: {{prod.Lote}}<br>
-          Codigo: {{prod.visual}}<br>
+          USDA: {{prod.Lote}}<br />
+          Codigo: {{prod.visual}}<br />
           Peso: {{prod.Quantity}}
         </ion-item>
       </ion-col>
@@ -64,7 +85,12 @@
 
   <ion-row *ngIf="productInfo">
     <ion-col>
-      <ion-button class="search-order-button" expand="full" (click)="saveInventory()">Enviar </ion-button>
+      <ion-button
+        class="search-order-button"
+        expand="full"
+        (click)="saveInventory()"
+        >Enviar
+      </ion-button>
     </ion-col>
   </ion-row>
 </ion-content>
