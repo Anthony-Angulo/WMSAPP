@@ -1,25 +1,27 @@
-import { Component, OnInit } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { environment } from 'src/environments/environment';
-import { SettingsService } from '../../services/settings.service';
-import { NavExtrasService } from '../../services/nav-extras.service';
-import { Router } from '@angular/router';
-import { getSettingsFileData } from '../commons';
-import { Platform, ToastController, LoadingController, AlertController } from '@ionic/angular';
-import { InventoryOrders } from '../../interfaces/fullInventory';
-import { Settings } from '../../interfaces/settings';
+import { Component, OnInit } from "@angular/core";
+import { HttpClient, HttpHeaders } from "@angular/common/http";
+import { environment } from "src/environments/environment";
+import { SettingsService } from "../../services/settings.service";
+import { NavExtrasService } from "../../services/nav-extras.service";
+import { Router } from "@angular/router";
+import { getSettingsFileData } from "../commons";
+import {
+  Platform,
+  ToastController,
+  LoadingController,
+  AlertController,
+} from "@ionic/angular";
+import { InventoryOrders } from "../../interfaces/fullInventory";
+import { Settings } from "../../interfaces/settings";
 
 declare var parseBarcode: any;
 
-
-
 @Component({
-  selector: 'app-full-inventory',
-  templateUrl: './full-inventory.page.html',
-  styleUrls: ['./full-inventory.page.scss'],
+  selector: "app-full-inventory",
+  templateUrl: "./full-inventory.page.html",
+  styleUrls: ["./full-inventory.page.scss"],
 })
 export class FullInventoryPage implements OnInit {
-
   inventory_orders: InventoryOrders;
   appSettings: Settings;
 
@@ -31,10 +33,10 @@ export class FullInventoryPage implements OnInit {
   headerId: number;
   search: string;
   searchType: boolean;
-  whsType:any;
+  whsType: any;
   location: string;
-  answer:any;
-  ip:any;
+  answer: any;
+  ip: any;
 
   constructor(
     private http: HttpClient,
@@ -44,290 +46,325 @@ export class FullInventoryPage implements OnInit {
     private settings: SettingsService,
     private alertController: AlertController,
     private navExtras: NavExtrasService,
-    private loading: LoadingController,
-  ) { }
+    private loading: LoadingController
+  ) {}
 
   async ngOnInit() {
-
-    await this.presentLoading('Buscando..');
+    await this.presentLoading("Buscando..");
 
     this.ip = this.navExtras.getIp();
 
-
-    this.http.get(`${environment.apiCCFN}/inventory/fullInventory`)
-      .toPromise().then((inventory_orders: InventoryOrders) => {
+    this.http
+      .get(`${environment.apiCCFN}/inventory/fullInventory`)
+      .toPromise()
+      .then((inventory_orders: InventoryOrders) => {
         this.inventory_orders = inventory_orders;
-      }).catch(() => {
-        this.presentToast('Error al obtener ordenes.', 'danger');
-      }).finally(() => {
+      })
+      .catch(() => {
+        this.presentToast("Error al obtener ordenes.", "danger");
+      })
+      .finally(() => {
         this.hideLoading();
       });
 
     this.appSettings = getSettingsFileData(this.platform, this.settings);
-
   }
 
   async promptLocation() {
     const alert = await this.alertController.create({
-      header: 'Ubicacion',
-      message: 'Ingresa ubicacion inicial',
+      header: "Ubicacion",
+      message: "Ingresa ubicacion inicial",
       inputs: [
         {
-          name: 'Ubicacion',
-          type: 'text',
+          name: "Ubicacion",
+          type: "text",
         },
       ],
       buttons: [
         {
-          text: 'Aceptar',
+          text: "Aceptar",
           handler: (data) => {
-            if (data.Ubicacion == '') {
-              this.presentToast('Debes ingresar una ubicacion', 'warning')
-              this.promptLocation()
+            if (data.Ubicacion == "") {
+              this.presentToast("Debes ingresar una ubicacion", "warning");
+              this.promptLocation();
             } else {
-              this.location = data.Ubicacion
+              this.location = data.Ubicacion;
             }
-          }
-        }
-      ]
+          },
+        },
+      ],
     });
 
     await alert.present();
   }
 
   async searchCode() {
-
     const alert = await this.alertController.create({
-      header: 'CodigoSAP',
-      message: 'Ingresa Codigo SAP',
+      header: "CodigoSAP",
+      message: "Ingresa Codigo SAP",
       inputs: [
         {
-          name: 'CodigoSAP',
-          type: 'text',
+          name: "CodigoSAP",
+          type: "text",
         },
       ],
       buttons: [
         {
-          text: 'Aceptar',
+          text: "Aceptar",
           handler: (data) => {
-            if (data.CodigoSAP == '') {
-              this.presentToast('Debes ingresar un codigo', 'warning')
-              this.searchCode()
+            if (data.CodigoSAP == "") {
+              this.presentToast("Debes ingresar un codigo", "warning");
+              this.searchCode();
             } else {
               this.productCode = data.CodigoSAP;
               this.getProductByCode();
             }
-          }
-        }
-      ]
+          },
+        },
+      ],
     });
 
     await alert.present();
-
   }
 
   goToInventory(index: number) {
-    this.headerId = this.inventory_orders[index].ID
+    this.headerId = this.inventory_orders[index].ID;
     // this.whsType = this.inventory_orders[index].WhsType
-    this.orders = false
-    this.promptLocation()
+    this.orders = false;
+    this.promptLocation();
   }
 
   async getProductByCode() {
-
-
-    await this.presentLoading('Buscando Producto...');
-
+    await this.presentLoading("Buscando Producto...");
 
     Promise.all([
-      this.http.get(`http://${this.ip}/api/Products/Detail/${this.productCode.toUpperCase()}`).toPromise(),
-      this.http.get(`${environment.apiCCFN}/codeBar/${this.productCode.toUpperCase()}`).toPromise()
-    ]).then(([productDetail, cBDetail]: any) => {
-
-      if (productDetail.Detail.ItemName == null) {
-        this.presentToast("No se Encontre Un Producto Con Ese Codigo", "warning");
-        return
-      }
-
-      this.productDetail = productDetail;
-      this.productDetail.Detail.busqueda = 1;
-      this.productDetail.headerId = this.headerId;
-      this.productDetail.location = this.location;
-
-      if (cBDetail.length != 0) {
-        this.productDetail.cBDetail = cBDetail;
-      } else {
-        this.productDetail.cBDetaiil = [];
-      }
-
-      this.navExtras.setInventoryProduct(this.productDetail);
-
-
-
-      if (this.productDetail.Detail.U_IL_TipPes == "F") {
-        this.router.navigate(['/members/full-abarrotes']);
-        return
-      }
-
-      this.router.navigate(['/members/full-beef']);
-
-    }).catch(async err => {
-      console.log(err)
-        this.presentToast(err.error, "danger");
-    }).finally(() => {
-      this.hideLoading();
-    });
-
-
-  }
-
-  async searchProductByCb() {
-
-
-    if (this.productCodeScanned == '') return
-
-    await this.presentLoading('Buscando Producto...');
-
-    console.log(this.ip)
-
-    if(this.ip == '192.168.0.32:8886') {
-      this.productDetail = await this.http.get(`http://${this.ip}/api/CodeBar/${this.productCodeScanned}`).toPromise().finally(() => this.hideLoading());
-    } else {
-      this.productDetail = await this.http.get(`http://${this.ip}/api/Products/CodeBar/${this.productCodeScanned}`).toPromise().finally(() => this.hideLoading());
-    }
-
-
-    
-
-    // this.productDetail = await this.http.get(`${environment.apiSAP}/api/CodeBar/${this.search}`).toPromise();
-
-    if (this.productDetail == null) {
-      this.presentToast("No se Encontro Un Producto Con Ese Codigo. Debe registrarlo", "warning");
-      this.productCodeScanned = '';
-      return
-    }
-
-    this.productDetail.codeBar = this.productCodeScanned;
-
-    console.log(this.productCodeScanned)
-
-    Promise.all([
-      // this.http.get(`${environment.apiSAP}/api/Products/Detail/${this.productDetail.Detail.ItemCode}`).toPromise(),
-      this.http.get(`${environment.apiCCFN}/codeBar/${this.productDetail.Detail.ItemCode}`).toPromise()
-    ]).then(([cBDetail]: any) => {
-
-      console.log(this.productCodeScanned)
-
-      // if (productDetail.Detail.ItemName == null) {
-      //   this.presentToast("No se Encontre Un Producto Con Ese Codigo", "warning");
-      //   this.productCodeAScanned = '';
-      //   return
-      // }
-
-      console.log(this.productCodeScanned)
-
-      // this.productDetail = productDetail;
-      this.productDetail.Detail.busqueda = 0;
-      //this.productDetail.codeBar = this.productCodeScanned;
-      this.productDetail.headerId = this.headerId;
-      this.productDetail.location = this.location;
-
-      if (cBDetail.length != 0) {
-        this.productDetail.cBDetail = cBDetail;
-      } else {
-        this.productDetail.cBDetaiil = [];
-      }
-      console.log(this.productDetail)
-      this.navExtras.setInventoryProduct(this.productDetail);
-
-      if (this.productDetail.Detail.U_IL_TipPes == "F" || this.productDetail.Detail.U_IL_TipPes == null) {
-        this.router.navigate(['/members/full-abarrotes']);
-        this.productCodeScanned = '';
-        return
-      }
-      // this.router.navigate(['/members/full-abarrotes']);
-      this.router.navigate(['/members/full-beef']);
-      this.productCodeScanned = '';
-
-    }).catch((err) => {
-      this.presentToast(err.error, "danger");
-    }).finally(() => {
-      this.hideLoading();
-    })
-
-    this.productCodeScanned = '';
-  }
-
-  async searchProductByCbVariado() {
-    if (this.search == '') return
-
-    try {
-
-      let answer = parseBarcode(this.search);
-
-      await this.presentLoading('Buscando Producto...');
-
-      if(this.ip == '192.168.0.32:8886') {
-        this.productDetail = await this.http.get(`${environment.apiSAP}/api/Products/GetbyGTIN/${answer.parsedCodeItems[0].data}`).toPromise();
-      } else {
-        this.presentToast("Buscar por Codigo de Producto", "warning");
-      }
-
-      
-
-
-      // this.productDetail = await this.http.get(`${environment.apiSAP}/api/CodeBar/${this.search}`).toPromise();
-  
-      if (this.productDetail.Detail.ItemName == null) {
-        this.presentToast("No se Encontro Un Producto Con Ese Codigo", "warning");
-        this.productCodeScanned = '';
-        return
-      }
-  
-      Promise.all([
-        this.http.get(`${environment.apiSAP}/api/Products/Detail/${this.productDetail.Detail.ItemCode}`).toPromise(),
-        this.http.get(`${environment.apiCCFN}/codeBar/${this.productDetail.Detail.ItemCode}`).toPromise()
-      ]).then(([productDetail, cBDetail]: any) => {
-  
+      this.http
+        .get(
+          `http://${
+            this.ip
+          }/api/Products/Detail/${this.productCode.toUpperCase()}`
+        )
+        .toPromise(),
+      this.http
+        .get(`${environment.apiCCFN}/codeBar/${this.productCode.toUpperCase()}`)
+        .toPromise(),
+    ])
+      .then(([productDetail, cBDetail]: any) => {
         if (productDetail.Detail.ItemName == null) {
-          this.presentToast("No se Encontre Un Producto Con Ese Codigo", "warning");
-          this.productCodeScanned = '';
-          return
+          this.presentToast(
+            "No se Encontre Un Producto Con Ese Codigo",
+            "warning"
+          );
+          return;
         }
-  
+
         this.productDetail = productDetail;
-        this.productDetail.Detail.busqueda = 0;
-        this.productDetail.codeBar = answer.parsedCodeItems[0].data;
+        this.productDetail.Detail.busqueda = 1;
         this.productDetail.headerId = this.headerId;
         this.productDetail.location = this.location;
-  
+
         if (cBDetail.length != 0) {
           this.productDetail.cBDetail = cBDetail;
         } else {
           this.productDetail.cBDetaiil = [];
         }
-  
-        this.navExtras.setInventoryProduct(this.productDetail);
-  
-        if (this.productDetail.Detail.U_IL_TipPes == "F") {
-          this.router.navigate(['/members/full-abarrotes']);
-          this.productCodeScanned = '';
-          return
-        }
-  
-        this.router.navigate(['/members/full-beef']);
-        this.productCodeScanned = '';
-  
-      }).catch((err) => {
-        this.presentToast(err.error, "danger");
-      }).finally(() => {
-        this.hideLoading();
-      })
-  
-      this.search = '';
 
-    }catch(err) {
-      console.log(err)
+        this.navExtras.setInventoryProduct(this.productDetail);
+
+        if (
+          this.productDetail.Detail.U_IL_TipPes == "F" ||
+          this.productDetail.Detail.U_IL_TipPes == null
+        ) {
+          this.router.navigate(["/members/full-abarrotes"]);
+          return;
+        }
+
+        this.router.navigate(["/members/full-beef"]);
+      })
+      .catch(async (err) => {
+        console.log(err);
+        this.presentToast(err.error, "danger");
+      })
+      .finally(() => {
+        this.hideLoading();
+      });
+  }
+
+  async searchProductByCb() {
+    if (this.productCodeScanned == "") return;
+
+    await this.presentLoading("Buscando Producto...");
+
+    console.log(this.ip);
+
+    if (this.ip == "192.168.0.32:8886") {
+      this.productDetail = await this.http
+        .get(`http://${this.ip}/api/CodeBar/${this.productCodeScanned}`)
+        .toPromise()
+        .finally(() => this.hideLoading());
+    } else {
+      this.productDetail = await this.http
+        .get(
+          `http://${this.ip}/api/Products/CodeBar/${this.productCodeScanned}`
+        )
+        .toPromise()
+        .finally(() => this.hideLoading());
+    }
+
+    // this.productDetail = await this.http.get(`${environment.apiSAP}/api/CodeBar/${this.search}`).toPromise();
+
+    if (this.productDetail == null) {
+      this.presentToast(
+        "No se Encontro Un Producto Con Ese Codigo. Debe registrarlo",
+        "warning"
+      );
+      this.productCodeScanned = "";
+      return;
+    }
+
+    this.productDetail.codeBar = this.productCodeScanned;
+
+    console.log(this.productCodeScanned);
+
+    Promise.all([
+      // this.http.get(`${environment.apiSAP}/api/Products/Detail/${this.productDetail.Detail.ItemCode}`).toPromise(),
+      this.http
+        .get(
+          `${environment.apiCCFN}/codeBar/${this.productDetail.Detail.ItemCode}`
+        )
+        .toPromise(),
+    ])
+      .then(([cBDetail]: any) => {
+        console.log(this.productCodeScanned);
+
+        // if (productDetail.Detail.ItemName == null) {
+        //   this.presentToast("No se Encontre Un Producto Con Ese Codigo", "warning");
+        //   this.productCodeAScanned = '';
+        //   return
+        // }
+
+        console.log(this.productCodeScanned);
+
+        // this.productDetail = productDetail;
+        this.productDetail.Detail.busqueda = 0;
+        //this.productDetail.codeBar = this.productCodeScanned;
+        this.productDetail.headerId = this.headerId;
+        this.productDetail.location = this.location;
+
+        if (cBDetail.length != 0) {
+          this.productDetail.cBDetail = cBDetail;
+        } else {
+          this.productDetail.cBDetaiil = [];
+        }
+        console.log(this.productDetail);
+        this.navExtras.setInventoryProduct(this.productDetail);
+
+        if (
+          this.productDetail.Detail.U_IL_TipPes == "F" ||
+          this.productDetail.Detail.U_IL_TipPes == null
+        ) {
+          this.router.navigate(["/members/full-abarrotes"]);
+          this.productCodeScanned = "";
+          return;
+        }
+        // this.router.navigate(['/members/full-abarrotes']);
+        this.router.navigate(["/members/full-beef"]);
+        this.productCodeScanned = "";
+      })
+      .catch((err) => {
+        this.presentToast(err.error, "danger");
+      })
+      .finally(() => {
+        this.hideLoading();
+      });
+
+    this.productCodeScanned = "";
+  }
+
+  async searchProductByCbVariado() {
+    if (this.search == "") return;
+
+    try {
+      let answer = parseBarcode(this.search);
+
+      await this.presentLoading("Buscando Producto...");
+
+      if (this.ip == "192.168.0.32:8886") {
+        this.productDetail = await this.http
+          .get(
+            `${environment.apiSAP}/api/Products/GetbyGTIN/${answer.parsedCodeItems[0].data}`
+          )
+          .toPromise();
+      } else {
+        this.presentToast("Buscar por Codigo de Producto", "warning");
+      }
+
+      // this.productDetail = await this.http.get(`${environment.apiSAP}/api/CodeBar/${this.search}`).toPromise();
+
+      if (this.productDetail.Detail.ItemName == null) {
+        this.presentToast(
+          "No se Encontro Un Producto Con Ese Codigo",
+          "warning"
+        );
+        this.productCodeScanned = "";
+        return;
+      }
+
+      Promise.all([
+        this.http
+          .get(
+            `${environment.apiSAP}/api/Products/Detail/${this.productDetail.Detail.ItemCode}`
+          )
+          .toPromise(),
+        this.http
+          .get(
+            `${environment.apiCCFN}/codeBar/${this.productDetail.Detail.ItemCode}`
+          )
+          .toPromise(),
+      ])
+        .then(([productDetail, cBDetail]: any) => {
+          if (productDetail.Detail.ItemName == null) {
+            this.presentToast(
+              "No se Encontre Un Producto Con Ese Codigo",
+              "warning"
+            );
+            this.productCodeScanned = "";
+            return;
+          }
+
+          this.productDetail = productDetail;
+          this.productDetail.Detail.busqueda = 0;
+          this.productDetail.codeBar = answer.parsedCodeItems[0].data;
+          this.productDetail.headerId = this.headerId;
+          this.productDetail.location = this.location;
+
+          if (cBDetail.length != 0) {
+            this.productDetail.cBDetail = cBDetail;
+          } else {
+            this.productDetail.cBDetaiil = [];
+          }
+
+          this.navExtras.setInventoryProduct(this.productDetail);
+
+          if (this.productDetail.Detail.U_IL_TipPes == "F") {
+            this.router.navigate(["/members/full-abarrotes"]);
+            this.productCodeScanned = "";
+            return;
+          }
+
+          this.router.navigate(["/members/full-beef"]);
+          this.productCodeScanned = "";
+        })
+        .catch((err) => {
+          this.presentToast(err.error, "danger");
+        })
+        .finally(() => {
+          this.hideLoading();
+        });
+
+      this.search = "";
+    } catch (err) {
+      console.log(err);
     }
   }
 
@@ -336,7 +373,7 @@ export class FullInventoryPage implements OnInit {
       message: msg,
       position: "bottom",
       color: color,
-      duration: 2000
+      duration: 2000,
     });
     toast.present();
   }
@@ -344,14 +381,13 @@ export class FullInventoryPage implements OnInit {
   async presentLoading(msg: string) {
     this.load = await this.loading.create({
       message: msg,
-      duration: 3000
+      duration: 3000,
     });
 
-    await this.load.present()
+    await this.load.present();
   }
 
   hideLoading() {
-    this.load.dismiss()
+    this.load.dismiss();
   }
-
 }
