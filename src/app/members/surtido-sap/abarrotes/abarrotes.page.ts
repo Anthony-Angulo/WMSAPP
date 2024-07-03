@@ -1,20 +1,19 @@
-import { Component, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
-import { ToastController } from '@ionic/angular';
-import { SettingsService } from '../../../services/settings.service';
-import { HttpClient } from '@angular/common/http';
-import { Platform } from '@ionic/angular';
-import { RecepcionDataService } from 'src/app/services/recepcion-data.service';
-import { getSettingsFileData } from '../../commons';
+import { Component, OnInit } from "@angular/core";
+import { Router } from "@angular/router";
+import { ToastController } from "@ionic/angular";
+import { SettingsService } from "../../../services/settings.service";
+import { HttpClient } from "@angular/common/http";
+import { Platform } from "@ionic/angular";
+import { RecepcionDataService } from "src/app/services/recepcion-data.service";
+import { getSettingsFileData } from "../../commons";
 
 @Component({
-  selector: 'app-abarrotes',
-  templateUrl: './abarrotes.page.html',
-  styleUrls: ['./abarrotes.page.scss'],
+  selector: "app-abarrotes",
+  templateUrl: "./abarrotes.page.html",
+  styleUrls: ["./abarrotes.page.scss"],
 })
 export class AbarrotesPage implements OnInit {
-
-  public productData: any
+  public productData: any;
   public appSettings: any;
   public uom: any;
   public cantidad: number;
@@ -29,13 +28,13 @@ export class AbarrotesPage implements OnInit {
     private router: Router,
     private platform: Platform,
     private settings: SettingsService,
-    private receptionService: RecepcionDataService) { }
+    private receptionService: RecepcionDataService
+  ) {}
 
   ngOnInit() {
-
     this.productData = this.receptionService.getOrderData();
 
-    console.log(this.productData)
+    console.log(this.productData);
 
     this.appSettings = getSettingsFileData(this.platform, this.settings);
 
@@ -43,13 +42,18 @@ export class AbarrotesPage implements OnInit {
       this.DeliveryRowDetailList = [];
     }
 
-
-    this.http.get(`${this.appSettings.apiSAP}/api/batch/${this.productData.WhsCode}/${this.productData.ItemCode}`).toPromise().then((val: any) => {
-      this.stock = val.stock;
-    }).catch((error) => {
-      console.log(error)
-      this.presentToast('Error al traer stock de producto', 'danger')
-    })
+    this.http
+      .get(
+        `${this.appSettings.apiSAP}/api/batch/${this.productData.WhsCode}/${this.productData.ItemCode}`
+      )
+      .toPromise()
+      .then((val: any) => {
+        this.stock = val.stock;
+      })
+      .catch((error) => {
+        console.log(error);
+        this.presentToast("Error al traer stock de producto", "danger");
+      });
   }
 
   // public calculateTotal() {
@@ -83,13 +87,13 @@ export class AbarrotesPage implements OnInit {
 
   public eliminarProducto(index: number) {
     this.DeliveryRowDetailList.splice(index, 1);
-    this.totalInUnitBase = this.DeliveryRowDetailList.map(prod => prod.total).reduce((a, b) => a + b, 0);
+    this.totalInUnitBase = this.DeliveryRowDetailList.map(
+      (prod) => prod.total
+    ).reduce((a, b) => a + b, 0);
   }
 
   acceptRecepton() {
-
-    if (this.cantidad == undefined || this.cantidad == 0) return
-
+    if (this.cantidad == undefined || this.cantidad == 0) return;
 
     if (this.productData.UomEntry == this.uom.UomEntry) {
       this.DeliveryRowDetailList.push({
@@ -99,35 +103,48 @@ export class AbarrotesPage implements OnInit {
         ItemCode: this.productData.ItemCode,
         total: 0,
         uom: this.uom.UomCode,
-        BatchList: []
+        BatchList: [],
       });
     } else {
-      let factor = this.productData.Uoms.find((x: any) => x.UomEntry == this.productData.UomEntry);
-      this.DeliveryRowDetailList.push({
-        Count: Number(this.cantidad / factor.BaseQty),
-        Cajas: Number(this.cantidad),
-        UomEntry: this.uom.UomEntry,
-        ItemCode: this.productData.ItemCode,
-        total: 0,
-        uom: this.uom.UomCode,
-        BatchList: []
-      });
+      let factor = this.productData.Uoms.find(
+        (x: any) => x.UomEntry == this.productData.UomEntry
+      );
+      if (factor.BaseQty == 1) {
+        this.DeliveryRowDetailList.push({
+          Count: Number(this.cantidad * factor.BaseQty),
+          Cajas: Number(this.cantidad),
+          UomEntry: this.uom.UomEntry,
+          ItemCode: this.productData.ItemCode,
+          total: 0,
+          uom: this.uom.UomCode,
+          BatchList: [],
+        });
+      } else {
+        this.DeliveryRowDetailList.push({
+          Count: Number(this.cantidad / factor.BaseQty),
+          Cajas: Number(this.cantidad),
+          UomEntry: this.uom.UomEntry,
+          ItemCode: this.productData.ItemCode,
+          total: 0,
+          uom: this.uom.UomCode,
+          BatchList: [],
+        });
+      }
     }
 
-    this.productData.DeliveryRowDetailList = this.DeliveryRowDetailList
+    this.productData.DeliveryRowDetailList = this.DeliveryRowDetailList;
 
     // console.log(this.productData)
-    this.receptionService.setReceptionData(this.productData)
-    this.router.navigate(['/members/surtido-sap'])
+    this.receptionService.setReceptionData(this.productData);
+    this.router.navigate(["/members/surtido-sap"]);
   }
 
   async presentToast(msg: string, color: string) {
     const toast = await this.toastController.create({
       message: msg,
       color: color,
-      duration: 4000
+      duration: 4000,
     });
     toast.present();
   }
-
 }

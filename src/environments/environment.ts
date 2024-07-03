@@ -10,7 +10,7 @@ export const environment = {
   apiCCFN: "http://apiccfn.ccfnweb.com.mx/api",
   // apiCCFN: 'http://localhost:5005/api',
   // apiSAP: 'http://192.168.0.32:8886',
-  apiSAP: "http://192.168.0.32:7896",
-  // apiSAP: 'http://192.168.0.32:8886',
+  apiSAP: "http://192.168.0.32:7892",
+  // apiSAP: "http://192.168.0.32:8886",
   update: "http://crm.ccfnweb.com.mx/sap10/update.xml",
 };
